@@ -455,30 +455,35 @@ public class EventHandler {
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
-                    .map(server -> HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "%s   [white]|   [yellow]Players: %s   [white]|  [cyan]Map: %s   [white]|   [red]Mods: ".formatted(//
-                            server.getName(), //
-                            server.getPlayers(), //
-                            server.getMapName() == null ? "[red]Not playing" : server.getMapName(), //
-                            server.getMods())))//
-                    .toList());
+                    .map(server -> {
+                        var result = new ArrayList<>(List.of(//
+                                HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), server.getName()), //
+                                HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[yellow]Players: %s".formatted(server.getPlayers())), //
+                                HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[cyan]Map: %s".formatted(server.getMapName() == null ? "[red]Not playing" : server.getMapName()))));
+
+                        result.add(HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[red]Mods: %s".formatted(server.getMods())));
+
+                        return result.stream().toList();
+                    }//
+            ).toList());
 
             if (page > 0) {
-                options.add(HudUtils.option((p, state) -> {
+                options.add(List.of(HudUtils.option((p, state) -> {
                     HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                     sendServerList(player, (int) state - 1);
-                }, "[yellow]Previous"));
+                }, "[yellow]Previous")));
             }
 
             if (servers.size() == size) {
-                options.add(HudUtils.option((p, state) -> {
+                options.add(List.of(HudUtils.option((p, state) -> {
                     HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                     sendServerList(player, (int) state + 1);
-                }, "[green]Next"));
+                }, "[green]Next")));
 
             }
-            options.add(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
+            options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close")));
 
-            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
+            HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
         });
     }
 

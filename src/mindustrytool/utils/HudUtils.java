@@ -73,13 +73,17 @@ public class HudUtils {
     }
 
     public static void showFollowDisplay(Player player, int id, String title, String description, Object state, List<Option> options) {
+        showFollowDisplays(player, id, title, description, state, options.stream().map(option -> List.of(option)).toList());
+    }
+
+    public static void showFollowDisplays(Player player, int id, String title, String description, Object state, List<List<Option>> options) {
 
         var optionTexts = options.stream()//
-                .map(option -> option.text)//
+                .map(data -> data.stream().map(d -> d.text).toArray(String[]::new))//
                 .toArray(String[][]::new);
 
         var callbacks = options.stream()//
-                .map(option -> option.callback)//
+                .flatMap(option -> option.stream())//
                 .toArray(PlayerPressCallback[]::new);
 
         Call.menu(player.con, id, title, description, optionTexts);
@@ -104,7 +108,6 @@ public class HudUtils {
         var callbacks = data.getCallbacks();
 
         if (callbacks == null || event.option <= -1 || event.option >= callbacks.length) {
-            Log.info("Callback not found: " + event.player.uuid());
             return;
         }
 

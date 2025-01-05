@@ -72,15 +72,22 @@ public class HudUtils {
         return new Option(callback, text);
     }
 
-    public static void showFollowDisplay(Player player, int id, String title, String description, Object state, List<Option> options) {
-        showFollowDisplays(player, id, title, description, state, options.stream().map(option -> List.of(option)).toList());
+    public static void showFollowDisplay(Player player, int id, String title, String description, Object state,
+            List<Option> options) {
+        showFollowDisplays(player, id, title, description, state,
+                options.stream().map(option -> List.of(option)).toList());
     }
 
-    public static void showFollowDisplays(Player player, int id, String title, String description, Object state, List<List<Option>> options) {
+    public static void showFollowDisplays(Player player, int id, String title, String description, Object state,
+            List<List<Option>> options) {
 
-        var optionTexts = options.stream()//
-                .map(data -> data.stream().map(d -> d.text).toArray(String[]::new))//
-                .toArray(String[][]::new);
+        var optionTexts = new String[options.size()][];
+        for (int i = 0; i < options.size(); i++) {
+            var op = options.get(i);
+            optionTexts[i] = op.stream()//
+                    .map(data -> data.text)//
+                    .toArray(String[]::new);
+        }
 
         var callbacks = options.stream()//
                 .flatMap(option -> option.stream())//

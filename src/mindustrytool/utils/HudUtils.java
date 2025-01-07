@@ -35,7 +35,7 @@ public class HudUtils {
     @Data
     @AllArgsConstructor
     public static class MenuData {
-        PlayerPressCallback[] callbacks;
+        List<PlayerPressCallback> callbacks;
         Object state;
     }
 
@@ -90,8 +90,8 @@ public class HudUtils {
         }
 
         var callbacks = options.stream()//
-                .flatMap(option -> option.stream())//
-                .toArray(PlayerPressCallback[]::new);
+                .flatMap(option -> option.stream().map(l -> l.callback))//
+                .toList();
 
         Call.menu(player.con, id, title, description, optionTexts);
         ConcurrentHashMap<String, MenuData> userMenu = menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>());
@@ -114,11 +114,19 @@ public class HudUtils {
         }
         var callbacks = data.getCallbacks();
 
-        if (callbacks == null || event.option <= -1 || event.option >= callbacks.length) {
+        if (callbacks == null || event.option <= -1 || event.option >= callbacks.size()) {
             return;
         }
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> callbacks[event.option].accept(event.player, data.state));
+        var callback = callbacks.get(event.option);
+
+        if (callback == null) {
+            return;
+        }
+
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            callback.accept(event.player, data.state);
+        });
     }
 
     public static void cleanUpCallback() {

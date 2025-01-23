@@ -1,7 +1,8 @@
 package mindustrytool;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 import arc.*;
 import arc.util.*;
@@ -13,25 +14,23 @@ import mindustry.core.Version;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.mod.*;
 import mindustry.net.Administration.Config;
-import mindustrytool.handlers.APIHandler;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.RtvVoteHandler;
-import mindustrytool.messages.NotMessageException;
+import mindustrytool.skeleton.ApiGateway;
+import mindustrytool.skeleton.ApiGateway.ApiGatewayImpl;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.VPNUtils;
 
 public class MindustryToolPlugin extends Plugin {
-
-    public static final APIGateway apiGateway = new APIGateway();
     public static final RtvVoteHandler voteHandler = new RtvVoteHandler();
-    public static final APIHandler apiHandler = new APIHandler();
     public static final EventHandler eventHandler = new EventHandler();
     public static final CommandHandler handler = new CommandHandler("");
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
+    public static final ApiGatewayImpl remote = ApiGateway.ApiGatewayImpl.getInstance();
 
     @Override
     public void init() {
@@ -56,23 +55,22 @@ public class MindustryToolPlugin extends Plugin {
         Timer.schedule(() -> System.gc(), 0, 60);
 
         Runnable inputReader = () -> {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String line;
             try {
-                while ((line = reader.readLine()) != null) {
-                    try {
-                        apiGateway.handleMessage(line);
-                    } catch (NotMessageException ignored) {
-                        handleCommandString(line);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                String port = System.getenv("RMI_PORT");
+                int portNumber = 78877;
+
+                try {
+                    portNumber = port == null ? 78877 : Integer.parseInt(port);
+                } catch (Exception e) {
+                    // do nothing
                 }
+
+                Registry registry = LocateRegistry.getRegistry(portNumber);
+                registry.rebind("BasicDataRemote", remote);
+            } catch (RemoteException e) {
+                Log.err("Remote exception: " + e.getMessage(), e);
             } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                System.out.println("Server closed");
-                System.exit(0);
+                Log.err("Unexpected exception: " + e.getMessage(), e);
             }
         };
 
@@ -82,7 +80,6 @@ public class MindustryToolPlugin extends Plugin {
         inputThread.start();
 
         eventHandler.init();
-        apiHandler.registerHandler(apiGateway);
 
         HudUtils.init();
         VPNUtils.init();

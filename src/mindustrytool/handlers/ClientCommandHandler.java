@@ -13,7 +13,6 @@ import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.PlayerMessageRequest;
-import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.type.Team;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.Session;
@@ -120,8 +119,7 @@ public class ClientCommandHandler {
                             .setName(team.name)//
                             .setColor(team.color.toString()));
 
-            var playerData = MindustryToolPlugin.apiGateway.execute("PLAYER_JOIN", request,
-                    SetPlayerMessageRequest.class);
+            var playerData = MindustryToolPlugin.remote.onPlayerJoin(request);
 
             var loginLink = playerData.getLoginLink();
             if (loginLink != null && !loginLink.isEmpty()) {

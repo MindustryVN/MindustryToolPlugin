@@ -1,17 +1,21 @@
 package mindustrytool.type;
 
+import java.util.function.Consumer;
+
 import mindustrytool.utils.JsonUtils;
 
 public class ServerMessageEvent<T> {
     private final String id;
     private final String method;
+    private final Consumer<String> response;
 
     private final T payload;
 
-    public ServerMessageEvent(String id, String method, T payload) {
+    public ServerMessageEvent(String id, String method, T payload, Consumer<String> response) {
         this.id = id;
         this.method = method;
         this.payload = payload;
+        this.response = response;
     }
 
     public String getMethod() {
@@ -29,7 +33,7 @@ public class ServerMessageEvent<T> {
                 .setMethod(method)//
                 .setId(id);
 
-        System.out.println(JsonUtils.toJsonString(message));
+        response.accept(JsonUtils.toJsonString(message));
     }
 
     public void error(Object data) {
@@ -39,6 +43,6 @@ public class ServerMessageEvent<T> {
                 .setData(data)//
                 .setId(id);
 
-        System.out.println(JsonUtils.toJsonString(message));
+        response.accept(JsonUtils.toJsonString(message));
     }
 }

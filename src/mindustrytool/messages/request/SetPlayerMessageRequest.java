@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class SetPlayerMessageResquest {
+public class SetPlayerMessageRequest {
     String uuid;
     boolean admin;
     String name;

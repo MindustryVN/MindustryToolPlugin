@@ -122,7 +122,7 @@ public class ClientCommandHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                SetPlayerMessageRequest playerData = MindustryToolPlugin.remote.callback.onLogin(request);
+                SetPlayerMessageRequest playerData = MindustryToolPlugin.serverGateway.onLogin(request);
 
                 var loginLink = playerData.getLoginLink();
                 if (loginLink != null && !loginLink.isEmpty()) {

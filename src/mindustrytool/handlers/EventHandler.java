@@ -216,7 +216,7 @@ public class EventHandler {
 
                 if (System.currentTimeMillis() - lastTimeGetPlayers > GET_PLAYERS_DURATION_GAP)
                     try {
-                        players = MindustryToolPlugin.apiGateway.callback.onTotalPlayer();
+                        players = MindustryToolPlugin.serverGateway.onTotalPlayer();
                         lastTimeGetPlayers = System.currentTimeMillis();
                         lastPlayers = players;
                     } catch (Exception e) {
@@ -282,7 +282,7 @@ public class EventHandler {
             String chat = Strings.format("[@] => @", player.plainName(), message);
 
             try {
-                MindustryToolPlugin.apiGateway.callback.onChatMessage(chat);
+                MindustryToolPlugin.serverGateway.onChatMessage(chat);
             } catch (Exception e) {
                 Log.err(e);
             }
@@ -311,8 +311,8 @@ public class EventHandler {
             playerMeta.remove(event.player.uuid());
 
             try {
-                MindustryToolPlugin.apiGateway.callback.onChatMessage(chat);
-                MindustryToolPlugin.apiGateway.callback.onPlayerLeave(new PlayerMessageRequest()//
+                MindustryToolPlugin.serverGateway.onChatMessage(chat);
+                MindustryToolPlugin.serverGateway.onPlayerLeave(new PlayerMessageRequest()//
                         .setName(playerName)//
                         .setIp(event.player.ip())//
                         .setUuid(event.player.uuid()));
@@ -353,9 +353,9 @@ public class EventHandler {
                             .setColor(team.color.toString()));
 
             try {
-                MindustryToolPlugin.apiGateway.callback.onChatMessage(chat);
+                MindustryToolPlugin.serverGateway.onChatMessage(chat);
 
-                var playerData = MindustryToolPlugin.apiGateway.callback.onLogin(request);
+                var playerData = MindustryToolPlugin.serverGateway.onLogin(request);
                 if (Config.isHub()) {
                     sendHub(event.player, playerData.getLoginLink());
                 } else {
@@ -440,7 +440,7 @@ public class EventHandler {
                         Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
 
         try {
-            MindustryToolPlugin.apiGateway.callback.onChatMessage(message);
+            MindustryToolPlugin.serverGateway.onChatMessage(message);
         } catch (Exception e) {
             Log.err(e);
         }
@@ -485,7 +485,7 @@ public class EventHandler {
                         .setPage(page)//
                         .setSize(size);
 
-                var response = MindustryToolPlugin.apiGateway.callback.onGetServer(request);
+                var response = MindustryToolPlugin.serverGateway.onGetServer(request);
                 var servers = response.getServers();
                 var options = new ArrayList<>(servers.stream()//
                         .map(server -> {
@@ -537,7 +537,7 @@ public class EventHandler {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
-                var data = MindustryToolPlugin.apiGateway.callback.onStartServer(id);
+                var data = MindustryToolPlugin.serverGateway.onStartServer(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));

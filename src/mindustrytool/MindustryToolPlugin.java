@@ -29,7 +29,7 @@ public class MindustryToolPlugin extends Plugin {
     public static final CommandHandler handler = new CommandHandler("");
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    public static final ApiGatewayImpl remote = new ApiGatewayImpl();
+    public static final ApiGatewayImpl apiGateway = new ApiGatewayImpl();
 
     @Override
     public void init() {
@@ -63,7 +63,7 @@ public class MindustryToolPlugin extends Plugin {
                 }
 
                 Registry registry = LocateRegistry.getRegistry(portNumber);
-                registry.rebind("BasicDataRemote", remote);
+                registry.rebind("BasicDataRemote", apiGateway);
             } catch (RemoteException e) {
                 Log.err("Remote exception: " + e.getMessage(), e);
             } catch (Exception e) {

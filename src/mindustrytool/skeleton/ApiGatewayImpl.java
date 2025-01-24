@@ -23,12 +23,6 @@ import mindustrytool.utils.HudUtils;
 
 public class ApiGatewayImpl implements ApiGateway {
     private static final String TEMP_SAVE_NAME = "TempSave";
-    public RemoteClientCallback callback;
-
-    @Override
-    public void init(RemoteClientCallback callback) {
-        this.callback = callback;
-    }
 
     @Override
     public void discordMessage(String message) throws RemoteException {

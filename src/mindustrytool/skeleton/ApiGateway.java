@@ -7,8 +7,6 @@ import mindustrytool.messages.request.StartServerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
 
 public interface ApiGateway extends java.rmi.Remote {
-    public void init(RemoteClientCallback callback) throws RemoteException;
-
     public boolean serverLoaded(String message) throws RemoteException;
 
     public void discordMessage(String message) throws RemoteException;

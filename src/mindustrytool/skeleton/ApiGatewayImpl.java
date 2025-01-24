@@ -16,13 +16,19 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.MindustryToolPlugin;
-import mindustrytool.messages.request.SetPlayerMessageResquet;
+import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.request.StartServerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
 import mindustrytool.utils.HudUtils;
 
 public class ApiGatewayImpl implements ApiGateway {
     private static final String TEMP_SAVE_NAME = "TempSave";
+    public RemoteClientCallback callback;
+
+    @Override
+    public void init(RemoteClientCallback callback) {
+        this.callback = callback;
+    }
 
     @Override
     public void discordMessage(String message) throws RemoteException {
@@ -106,7 +112,7 @@ public class ApiGatewayImpl implements ApiGateway {
     }
 
     @Override
-    public void setPlayer(SetPlayerMessageResquet request) throws RemoteException {
+    public void setPlayer(SetPlayerMessageRequest request) throws RemoteException {
         String uuid = request.getUuid();
         boolean isAdmin = request.isAdmin();
 

@@ -3,6 +3,7 @@ package mindustrytool.handlers;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.CommandHandler;
+import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
 import arc.util.Timer.Task;
@@ -13,6 +14,7 @@ import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.PlayerMessageRequest;
+import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.type.Team;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.Session;
@@ -110,22 +112,26 @@ public class ClientCommandHandler {
         });
 
         handler.<Player>register("login", "", "Login", (args, player) -> {
-            var team = player.team();
-            var request = new PlayerMessageRequest()//
-                    .setName(player.coloredName())//
-                    .setIp(player.ip())//
-                    .setUuid(player.uuid())//
-                    .setTeam(new Team()//
-                            .setName(team.name)//
-                            .setColor(team.color.toString()));
+            try {
+                var team = player.team();
+                var request = new PlayerMessageRequest()//
+                        .setName(player.coloredName())//
+                        .setIp(player.ip())//
+                        .setUuid(player.uuid())//
+                        .setTeam(new Team()//
+                                .setName(team.name)//
+                                .setColor(team.color.toString()));
 
-            var playerData = MindustryToolPlugin.remote.onPlayerJoin(request);
+                SetPlayerMessageRequest playerData = MindustryToolPlugin.remote.callback.onLogin(request);
 
-            var loginLink = playerData.getLoginLink();
-            if (loginLink != null && !loginLink.isEmpty()) {
-                Call.openURI(player.con, loginLink);
-            } else {
-                player.sendMessage("Already logged in");
+                var loginLink = playerData.getLoginLink();
+                if (loginLink != null && !loginLink.isEmpty()) {
+                    Call.openURI(player.con, loginLink);
+                } else {
+                    player.sendMessage("Already logged in");
+                }
+            } catch (Exception e) {
+                Log.err(e);
             }
         });
 
@@ -171,7 +177,8 @@ public class ClientCommandHandler {
                     @Override
                     public void run() {
                         Call.sendMessage("[scarlet]Vote for "
-                                + (waveVoted == 1 ? "sending a new wave" : "skipping [scarlet]" + waveVoted + "[] waves")
+                                + (waveVoted == 1 ? "sending a new wave"
+                                        : "skipping [scarlet]" + waveVoted + "[] waves")
                                 + " failed! []Not enough votes.");
                         waveVoted = 0;
                         cancel();

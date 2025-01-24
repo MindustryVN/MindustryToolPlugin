@@ -18,8 +18,7 @@ import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.RtvVoteHandler;
-import mindustrytool.skeleton.ApiGateway;
-import mindustrytool.skeleton.ApiGateway.ApiGatewayImpl;
+import mindustrytool.skeleton.ApiGatewayImpl;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.VPNUtils;
@@ -30,7 +29,7 @@ public class MindustryToolPlugin extends Plugin {
     public static final CommandHandler handler = new CommandHandler("");
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    public static final ApiGatewayImpl remote = ApiGateway.ApiGatewayImpl.getInstance();
+    public static final ApiGatewayImpl remote = new ApiGatewayImpl();
 
     @Override
     public void init() {
@@ -40,9 +39,7 @@ public class MindustryToolPlugin extends Plugin {
 
         // update log level
         Config.debug.set(Config.debug.bool());
-
         Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f, 60));
-
         Vars.customMapDirectory.mkdirs();
 
         // set up default shuffle mode

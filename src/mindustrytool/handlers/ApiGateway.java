@@ -26,7 +26,7 @@ public class ApiGateway {
     }
 
     private URI path(String... path) {
-        return URI.create("http://server-manager:8080/" + Strings.join("/", path));
+        return URI.create("http://server-manager:8080/internal-api/v1/" + Strings.join("/", path));
     }
 
     public SetPlayerMessageRequest setPlayer(PlayerMessageRequest payload) {

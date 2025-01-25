@@ -14,6 +14,7 @@ import mindustry.mod.*;
 import mindustry.net.Administration.Config;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
+import mindustrytool.handlers.HttpServer;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
@@ -28,6 +29,7 @@ public class MindustryToolPlugin extends Plugin {
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
     public static final ApiGateway apiGateway = new ApiGateway();
+    private static final HttpServer httpServer = new HttpServer();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
@@ -50,6 +52,7 @@ public class MindustryToolPlugin extends Plugin {
 
         Timer.schedule(() -> System.gc(), 0, 60);
 
+        httpServer.init();
         eventHandler.init();
 
         HudUtils.init();

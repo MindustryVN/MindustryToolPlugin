@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import mindustrytool.error.NotJsonException;
 import mindustrytool.messages.NotMessageException;
 
 public class JsonUtils {
@@ -28,7 +27,7 @@ public class JsonUtils {
         try {
             return objectMapper.readValue(data, clazz);
         } catch (Exception e) {
-            throw new NotJsonException("Can not parse to json: " + e.getMessage(), e);
+            throw new RuntimeException("Can not parse to json: " + e.getMessage(), e);
         }
     }
 
@@ -36,7 +35,7 @@ public class JsonUtils {
         try {
             return objectMapper.readTree(data);
         } catch (Exception e) {
-            throw new NotJsonException("Can not parse to json: " + e.getMessage(), e);
+            throw new RuntimeException("Can not parse to json: " + e.getMessage(), e);
         }
     }
 

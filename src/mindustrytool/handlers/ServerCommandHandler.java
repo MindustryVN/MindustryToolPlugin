@@ -13,6 +13,7 @@ import arc.util.Structs;
 import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
 import arc.util.serialization.JsonValue.ValueType;
+import lombok.Getter;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
@@ -35,7 +36,12 @@ import mindustrytool.MindustryToolPlugin;
 
 public class ServerCommandHandler {
 
+    @Getter
+    private static CommandHandler handler;
+
     public void registerCommands(CommandHandler handler) {
+        ServerCommandHandler.handler = handler;
+
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {
                 Command command = handler.getCommandList().find(c -> c.text.equalsIgnoreCase(arg[0]));
@@ -43,21 +49,18 @@ public class ServerCommandHandler {
                     Log.err("Command " + arg[0] + " not found!");
                 } else {
                     Log.info(command.text + ":");
-                    Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi")
-                            + command.paramText + "&fr - &lw" + command.description);
+                    Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi") + command.paramText + "&fr - &lw" + command.description);
                 }
             } else {
                 Log.info("Commands:");
                 for (Command command : handler.getCommandList()) {
-                    Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi")
-                            + command.paramText + "&fr - &lw" + command.description);
+                    Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi") + command.paramText + "&fr - &lw" + command.description);
                 }
             }
         });
 
         handler.register("version", "Displays server version info.", arg -> {
-            Log.info("Version: Mindustry @-@ @ / build @", Version.number, Version.modifier, Version.type,
-                    Version.build + (Version.revision == 0 ? "" : "." + Version.revision));
+            Log.info("Version: Mindustry @-@ @ / build @", Version.number, Version.modifier, Version.type, Version.build + (Version.revision == 0 ? "" : "." + Version.revision));
             Log.info("Java Version: @", OS.javaVersion);
         });
 
@@ -73,90 +76,85 @@ public class ServerCommandHandler {
             Log.info("Stopped server.");
         });
 
-        handler.register("host", "[mapname] [mode]",
-                "Open the server. Will default to survival and a random map if not specified.", arg -> {
-                    if (Vars.state.isGame()) {
-                        Log.err("Already hosting. Type 'stop' to stop hosting first.");
-                        return;
-                    }
-                    Gamemode preset = Gamemode.survival;
+        handler.register("host", "[mapname] [mode]", "Open the server. Will default to survival and a random map if not specified.", arg -> {
+            if (Vars.state.isGame()) {
+                Log.err("Already hosting. Type 'stop' to stop hosting first.");
+                return;
+            }
+            Gamemode preset = Gamemode.survival;
 
-                    if (arg.length > 1) {
-                        try {
-                            preset = Gamemode.valueOf(arg[1]);
-                        } catch (IllegalArgumentException event) {
-                            Log.err("No gamemode '@' found.", arg[1]);
-                            return;
-                        }
-                    }
+            if (arg.length > 1) {
+                try {
+                    preset = Gamemode.valueOf(arg[1]);
+                } catch (IllegalArgumentException event) {
+                    Log.err("No gamemode '@' found.", arg[1]);
+                    return;
+                }
+            }
 
-                    Map result;
-                    if (arg.length > 0) {
-                        result = Vars.maps.all().find(map -> map.plainName().replace('_', ' ')
-                                .equalsIgnoreCase(Strings.stripColors(arg[0]).replace('_', ' ')));
+            Map result;
+            if (arg.length > 0) {
+                result = Vars.maps.all().find(map -> map.plainName().replace('_', ' ').equalsIgnoreCase(Strings.stripColors(arg[0]).replace('_', ' ')));
 
-                        if (result == null) {
-                            Log.err("No map with name '@' found.", arg[0]);
-                            return;
-                        }
-                    } else {
-                        result = Vars.maps.getShuffleMode().next(preset, Vars.state.map);
-                        Log.info("Randomized next map to be @.", result.plainName());
-                    }
+                if (result == null) {
+                    Log.err("No map with name '@' found.", arg[0]);
+                    return;
+                }
+            } else {
+                result = Vars.maps.getShuffleMode().next(preset, Vars.state.map);
+                Log.info("Randomized next map to be @.", result.plainName());
+            }
 
-                    Log.info("Loading map...");
+            Log.info("Loading map...");
 
-                    Vars.logic.reset();
-                    MindustryToolPlugin.eventHandler.lastMode = preset;
-                    Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+            Vars.logic.reset();
+            MindustryToolPlugin.eventHandler.lastMode = preset;
+            Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
 
-                    try {
-                        Vars.world.loadMap(result, result.applyRules(MindustryToolPlugin.eventHandler.lastMode));
-                        Vars.state.rules = result.applyRules(preset);
-                        Vars.logic.play();
+            try {
+                Vars.world.loadMap(result, result.applyRules(MindustryToolPlugin.eventHandler.lastMode));
+                Vars.state.rules = result.applyRules(preset);
+                Vars.logic.play();
 
-                        Log.info("Map loaded.");
+                Log.info("Map loaded.");
 
-                        Vars.netServer.openServer();
-                    } catch (MapException event) {
-                        Log.err("@: @", event.map.plainName(), event.getMessage());
-                    }
-                });
+                Vars.netServer.openServer();
+            } catch (MapException event) {
+                Log.err("@: @", event.map.plainName(), event.getMessage());
+            }
+        });
 
-        handler.register("maps", "[all/custom/default]",
-                "Display available maps. Displays only custom maps by default.", arg -> {
-                    boolean custom = arg.length == 0 || arg[0].equals("custom") || arg[0].equals("all");
-                    boolean def = arg.length > 0 && (arg[0].equals("default") || arg[0].equals("all"));
+        handler.register("maps", "[all/custom/default]", "Display available maps. Displays only custom maps by default.", arg -> {
+            boolean custom = arg.length == 0 || arg[0].equals("custom") || arg[0].equals("all");
+            boolean def = arg.length > 0 && (arg[0].equals("default") || arg[0].equals("all"));
 
-                    if (!Vars.maps.all().isEmpty()) {
-                        Seq<Map> all = new Seq<>();
+            if (!Vars.maps.all().isEmpty()) {
+                Seq<Map> all = new Seq<>();
 
-                        if (custom)
-                            all.addAll(Vars.maps.customMaps());
-                        if (def)
-                            all.addAll(Vars.maps.defaultMaps());
+                if (custom)
+                    all.addAll(Vars.maps.customMaps());
+                if (def)
+                    all.addAll(Vars.maps.defaultMaps());
 
-                        if (all.isEmpty()) {
-                            Log.info("No custom maps loaded. &fiTo display built-in maps, use the \"@\" argument.",
-                                    "all");
+                if (all.isEmpty()) {
+                    Log.info("No custom maps loaded. &fiTo display built-in maps, use the \"@\" argument.", "all");
+                } else {
+                    Log.info("Maps:");
+
+                    for (Map map : all) {
+                        String mapName = map.plainName().replace(' ', '_');
+                        if (map.custom) {
+                            Log.info("  @ (@): &fiCustom / @x@", mapName, map.file.name(), map.width, map.height);
                         } else {
-                            Log.info("Maps:");
-
-                            for (Map map : all) {
-                                String mapName = map.plainName().replace(' ', '_');
-                                if (map.custom) {
-                                    Log.info("  @ (@): &fiCustom / @x@", mapName, map.file.name(), map.width,
-                                            map.height);
-                                } else {
-                                    Log.info("  @: &fiDefault / @x@", mapName, map.width, map.height);
-                                }
-                            }
+                            Log.info("  @: &fiDefault / @x@", mapName, map.width, map.height);
                         }
-                    } else {
-                        Log.info("No maps found.");
                     }
-                    Log.info("Map directory: &fi@", Vars.customMapDirectory.file().getAbsoluteFile().toString());
-                });
+                }
+            } else {
+                Log.info("No maps found.");
+            }
+            Log.info("Map directory: &fi@", Vars.customMapDirectory.file().getAbsoluteFile().toString());
+        });
 
         handler.register("reloadmaps", "Reload all maps from disk.", arg -> {
             int beforeMaps = Vars.maps.all().size;
@@ -175,16 +173,14 @@ public class ServerCommandHandler {
                 Log.info("Status: &rserver closed");
             } else {
                 Log.info("Status:");
-                Log.info("  Playing on map &fi@ / Wave @", Strings.capitalize(Vars.state.map.plainName()),
-                        Vars.state.wave);
+                Log.info("  Playing on map &fi@ / Wave @", Strings.capitalize(Vars.state.map.plainName()), Vars.state.wave);
 
                 if (Vars.state.rules.waves) {
                     Log.info("  @ seconds until next wave.", (int) (Vars.state.wavetime / 60));
                 }
                 Log.info("  @ units / @ enemies", Groups.unit.size(), Vars.state.enemies);
 
-                Log.info("  @ FPS, @ MB used.", Core.graphics.getFramesPerSecond(),
-                        Core.app.getJavaHeap() / 1024 / 1024);
+                Log.info("  @ FPS, @ MB used.", Core.graphics.getFramesPerSecond(), Core.app.getJavaHeap() / 1024 / 1024);
 
                 if (Groups.player.size() > 0) {
                     Log.info("  Players: @", Groups.player.size());
@@ -201,8 +197,7 @@ public class ServerCommandHandler {
             if (!Vars.mods.list().isEmpty()) {
                 Log.info("Mods:");
                 for (LoadedMod mod : Vars.mods.list()) {
-                    Log.info("  @ &fi@ " + (mod.enabled() ? "" : " &lr(" + mod.state + ")"), mod.meta.displayName,
-                            mod.meta.version);
+                    Log.info("  @ &fi@ " + (mod.enabled() ? "" : " &lr(" + mod.state + ")"), mod.meta.displayName, mod.meta.version);
                 }
             } else {
                 Log.info("No mods found.");
@@ -239,58 +234,57 @@ public class ServerCommandHandler {
             Log.info("&fi&lcServer: &fr@", "&lw" + arg[0]);
         });
 
-        handler.register("rules", "[remove/add] [name] [value...]",
-                "List, remove or add global rules. These will apply regardless of map.", arg -> {
-                    String rules = Core.settings.getString("globalrules");
-                    JsonValue base = JsonIO.json.fromJson(null, rules);
+        handler.register("rules", "[remove/add] [name] [value...]", "List, remove or add global rules. These will apply regardless of map.", arg -> {
+            String rules = Core.settings.getString("globalrules");
+            JsonValue base = JsonIO.json.fromJson(null, rules);
 
-                    if (arg.length == 0) {
-                        Log.info("Rules:\n@", JsonIO.print(rules));
-                    } else if (arg.length == 1) {
-                        Log.err("Invalid usage. Specify which rule to remove or add.");
+            if (arg.length == 0) {
+                Log.info("Rules:\n@", JsonIO.print(rules));
+            } else if (arg.length == 1) {
+                Log.err("Invalid usage. Specify which rule to remove or add.");
+            } else {
+                if (!(arg[0].equals("remove") || arg[0].equals("add"))) {
+                    Log.err("Invalid usage. Either add or remove rules.");
+                    return;
+                }
+
+                boolean remove = arg[0].equals("remove");
+                if (remove) {
+                    if (base.has(arg[1])) {
+                        Log.info("Rule '@' removed.", arg[1]);
+                        base.remove(arg[1]);
                     } else {
-                        if (!(arg[0].equals("remove") || arg[0].equals("add"))) {
-                            Log.err("Invalid usage. Either add or remove rules.");
-                            return;
-                        }
-
-                        boolean remove = arg[0].equals("remove");
-                        if (remove) {
-                            if (base.has(arg[1])) {
-                                Log.info("Rule '@' removed.", arg[1]);
-                                base.remove(arg[1]);
-                            } else {
-                                Log.err("Rule not defined, so not removed.");
-                                return;
-                            }
-                        } else {
-                            if (arg.length < 3) {
-                                Log.err("Missing last argument. Specify which value to set the rule to.");
-                                return;
-                            }
-
-                            try {
-                                JsonValue value = new JsonReader().parse(arg[2]);
-                                value.name = arg[1];
-
-                                JsonValue parent = new JsonValue(ValueType.object);
-                                parent.addChild(value);
-
-                                JsonIO.json.readField(Vars.state.rules, value.name, parent);
-                                if (base.has(value.name)) {
-                                    base.remove(value.name);
-                                }
-                                base.addChild(arg[1], value);
-                                Log.info("Changed rule: @", value.toString().replace("\n", " "));
-                            } catch (Throwable event) {
-                                Log.err("Error parsing rule JSON: @", event.getMessage());
-                            }
-                        }
-
-                        Core.settings.put("globalrules", base.toString());
-                        Call.setRules(Vars.state.rules);
+                        Log.err("Rule not defined, so not removed.");
+                        return;
                     }
-                });
+                } else {
+                    if (arg.length < 3) {
+                        Log.err("Missing last argument. Specify which value to set the rule to.");
+                        return;
+                    }
+
+                    try {
+                        JsonValue value = new JsonReader().parse(arg[2]);
+                        value.name = arg[1];
+
+                        JsonValue parent = new JsonValue(ValueType.object);
+                        parent.addChild(value);
+
+                        JsonIO.json.readField(Vars.state.rules, value.name, parent);
+                        if (base.has(value.name)) {
+                            base.remove(value.name);
+                        }
+                        base.addChild(arg[1], value);
+                        Log.info("Changed rule: @", value.toString().replace("\n", " "));
+                    } catch (Throwable event) {
+                        Log.err("Error parsing rule JSON: @", event.getMessage());
+                    }
+                }
+
+                Core.settings.put("globalrules", base.toString());
+                Call.setRules(Vars.state.rules);
+            }
+        });
 
         handler.register("fillitems", "[team]", "Fill the core with items.", arg -> {
             if (!Vars.state.isGame()) {
@@ -321,8 +315,7 @@ public class ServerCommandHandler {
 
         handler.register("playerlimit", "[off/somenumber]", "Set the server player limit.", arg -> {
             if (arg.length == 0) {
-                Log.info("Player limit is currently @.",
-                        Vars.netServer.admins.getPlayerLimit() == 0 ? "off" : Vars.netServer.admins.getPlayerLimit());
+                Log.info("Player limit is currently @.", Vars.netServer.admins.getPlayerLimit() == 0 ? "off" : Vars.netServer.admins.getPlayerLimit());
                 return;
             }
             if (arg[0].equals("off")) {
@@ -376,76 +369,73 @@ public class ServerCommandHandler {
                     Core.settings.forceSave();
                 }
             } else {
-                Log.err("Unknown config: '@'. Run the command with no arguments to get a list of valid configs.",
-                        arg[0]);
+                Log.err("Unknown config: '@'. Run the command with no arguments to get a list of valid configs.", arg[0]);
             }
         });
 
-        handler.register("subnet-ban", "[add/remove] [address]",
-                "Ban a subnet. This simply rejects all connections with IPs starting with some string.", arg -> {
-                    if (arg.length == 0) {
-                        Log.info("Subnets banned: @", Vars.netServer.admins.getSubnetBans().isEmpty() ? "<none>" : "");
-                        for (String subnet : Vars.netServer.admins.getSubnetBans()) {
-                            Log.info("&lw  " + subnet);
-                        }
-                    } else if (arg.length == 1) {
-                        Log.err("You must provide a subnet to add or remove.");
+        handler.register("subnet-ban", "[add/remove] [address]", "Ban a subnet. This simply rejects all connections with IPs starting with some string.", arg -> {
+            if (arg.length == 0) {
+                Log.info("Subnets banned: @", Vars.netServer.admins.getSubnetBans().isEmpty() ? "<none>" : "");
+                for (String subnet : Vars.netServer.admins.getSubnetBans()) {
+                    Log.info("&lw  " + subnet);
+                }
+            } else if (arg.length == 1) {
+                Log.err("You must provide a subnet to add or remove.");
+            } else {
+                if (arg[0].equals("add")) {
+                    if (Vars.netServer.admins.getSubnetBans().contains(arg[1])) {
+                        Log.err("That subnet is already banned.");
+                        return;
+                    }
+
+                    Vars.netServer.admins.addSubnetBan(arg[1]);
+                    Log.info("Banned @**", arg[1]);
+                } else if (arg[0].equals("remove")) {
+                    if (!Vars.netServer.admins.getSubnetBans().contains(arg[1])) {
+                        Log.err("That subnet isn't banned.");
+                        return;
+                    }
+
+                    Vars.netServer.admins.removeSubnetBan(arg[1]);
+                    Log.info("Unbanned @**", arg[1]);
+                } else {
+                    Log.err("Incorrect usage. Provide add/remove as the second argument.");
+                }
+            }
+        });
+
+        handler.register("whitelist", "[add/remove] [ID]", "Add/remove players from the whitelist using their ID.", arg -> {
+            if (arg.length == 0) {
+                Seq<PlayerInfo> whitelist = Vars.netServer.admins.getWhitelisted();
+
+                if (whitelist.isEmpty()) {
+                    Log.info("No whitelisted players found.");
+                } else {
+                    Log.info("Whitelist:");
+                    whitelist.each(p -> Log.info("- Name: @ / UUID: @", p.plainLastName(), p.id));
+                }
+            } else {
+                if (arg.length == 2) {
+                    PlayerInfo info = Vars.netServer.admins.getInfoOptional(arg[1]);
+
+                    if (info == null) {
+                        Log.err("Player ID not found. You must use the ID displayed when a player joins a server.");
                     } else {
                         if (arg[0].equals("add")) {
-                            if (Vars.netServer.admins.getSubnetBans().contains(arg[1])) {
-                                Log.err("That subnet is already banned.");
-                                return;
-                            }
-
-                            Vars.netServer.admins.addSubnetBan(arg[1]);
-                            Log.info("Banned @**", arg[1]);
+                            Vars.netServer.admins.whitelist(arg[1]);
+                            Log.info("Player '@' has been whitelisted.", info.plainLastName());
                         } else if (arg[0].equals("remove")) {
-                            if (!Vars.netServer.admins.getSubnetBans().contains(arg[1])) {
-                                Log.err("That subnet isn't banned.");
-                                return;
-                            }
-
-                            Vars.netServer.admins.removeSubnetBan(arg[1]);
-                            Log.info("Unbanned @**", arg[1]);
+                            Vars.netServer.admins.unwhitelist(arg[1]);
+                            Log.info("Player '@' has been un-whitelisted.", info.plainLastName());
                         } else {
                             Log.err("Incorrect usage. Provide add/remove as the second argument.");
                         }
                     }
-                });
-
-        handler.register("whitelist", "[add/remove] [ID]", "Add/remove players from the whitelist using their ID.",
-                arg -> {
-                    if (arg.length == 0) {
-                        Seq<PlayerInfo> whitelist = Vars.netServer.admins.getWhitelisted();
-
-                        if (whitelist.isEmpty()) {
-                            Log.info("No whitelisted players found.");
-                        } else {
-                            Log.info("Whitelist:");
-                            whitelist.each(p -> Log.info("- Name: @ / UUID: @", p.plainLastName(), p.id));
-                        }
-                    } else {
-                        if (arg.length == 2) {
-                            PlayerInfo info = Vars.netServer.admins.getInfoOptional(arg[1]);
-
-                            if (info == null) {
-                                Log.err("Player ID not found. You must use the ID displayed when a player joins a server.");
-                            } else {
-                                if (arg[0].equals("add")) {
-                                    Vars.netServer.admins.whitelist(arg[1]);
-                                    Log.info("Player '@' has been whitelisted.", info.plainLastName());
-                                } else if (arg[0].equals("remove")) {
-                                    Vars.netServer.admins.unwhitelist(arg[1]);
-                                    Log.info("Player '@' has been un-whitelisted.", info.plainLastName());
-                                } else {
-                                    Log.err("Incorrect usage. Provide add/remove as the second argument.");
-                                }
-                            }
-                        } else {
-                            Log.err("Incorrect usage. Provide an ID to add or remove.");
-                        }
-                    }
-                });
+                } else {
+                    Log.err("Incorrect usage. Provide an ID to add or remove.");
+                }
+            }
+        });
 
         handler.register("shuffle", "[none/all/custom/builtin]", "Set map shuffling mode.", arg -> {
             if (arg.length == 0) {
@@ -462,17 +452,15 @@ public class ServerCommandHandler {
             }
         });
 
-        handler.register("nextmap", "<mapname...>",
-                "Set the next map to be played after a game-over. Overrides shuffling.", arg -> {
-                    Map res = Vars.maps.all().find(map -> map.plainName().replace('_', ' ')
-                            .equalsIgnoreCase(Strings.stripColors(arg[0]).replace('_', ' ')));
-                    if (res != null) {
-                        Vars.maps.setNextMapOverride(res);
-                        Log.info("Next map set to '@'.", res.plainName());
-                    } else {
-                        Log.err("No map '@' found.", arg[0]);
-                    }
-                });
+        handler.register("nextmap", "<mapname...>", "Set the next map to be played after a game-over. Overrides shuffling.", arg -> {
+            Map res = Vars.maps.all().find(map -> map.plainName().replace('_', ' ').equalsIgnoreCase(Strings.stripColors(arg[0]).replace('_', ' ')));
+            if (res != null) {
+                Vars.maps.setNextMapOverride(res);
+                Log.info("Next map set to '@'.", res.plainName());
+            } else {
+                Log.err("No map '@' found.", arg[0]);
+            }
+        });
 
         handler.register("kick", "<username...>", "Kick a person by name.", arg -> {
             if (!Vars.state.isGame()) {
@@ -621,8 +609,7 @@ public class ServerCommandHandler {
             } else {
                 Log.info("Players: @", Groups.player.size());
                 for (Player user : Groups.player) {
-                    Log.info(" @&lm @ / ID: @ / IP: @", user.admin ? "&r[A]&c" : "&b[P]&c", user.plainName(),
-                            user.uuid(), user.ip());
+                    Log.info(" @&lm @ / ID: @ / IP: @", user.admin ? "&r[A]&c" : "&b[P]&c", user.plainName(), user.uuid(), user.ip());
                 }
             }
         });
@@ -647,27 +634,25 @@ public class ServerCommandHandler {
             Events.fire(new GameOverEvent(Vars.state.rules.waveTeam));
         });
 
-        handler.register("info", "<IP/UUID/name...>",
-                "Find playerLog.Info(s). Can optionally check for all names or IPs a player has had.", arg -> {
-                    ObjectSet<PlayerInfo> infos = Vars.netServer.admins.findByName(arg[0]);
+        handler.register("info", "<IP/UUID/name...>", "Find playerLog.Info(s). Can optionally check for all names or IPs a player has had.", arg -> {
+            ObjectSet<PlayerInfo> infos = Vars.netServer.admins.findByName(arg[0]);
 
-                    if (infos.size > 0) {
-                        Log.info("Players found: @", infos.size);
+            if (infos.size > 0) {
+                Log.info("Players found: @", infos.size);
 
-                        int i = 0;
-                        for (PlayerInfo info : infos) {
-                            Log.info("[@] Trace info for player '@' / UUID @ / RAW @", i++, info.plainLastName(),
-                                    info.id, info.lastName);
-                            Log.info("  all names used: @", info.names);
-                            Log.info("  IP: @", info.lastIP);
-                            Log.info("  all IPs used: @", info.ips);
-                            Log.info("  times joined: @", info.timesJoined);
-                            Log.info("  times kicked: @", info.timesKicked);
-                        }
-                    } else {
-                        Log.info("Nobody with that name could be found.");
-                    }
-                });
+                int i = 0;
+                for (PlayerInfo info : infos) {
+                    Log.info("[@] Trace info for player '@' / UUID @ / RAW @", i++, info.plainLastName(), info.id, info.lastName);
+                    Log.info("  all names used: @", info.names);
+                    Log.info("  IP: @", info.lastIP);
+                    Log.info("  all IPs used: @", info.ips);
+                    Log.info("  times joined: @", info.timesJoined);
+                    Log.info("  times kicked: @", info.timesKicked);
+                }
+            } else {
+                Log.info("Nobody with that name could be found.");
+            }
+        });
 
         handler.register("search", "<name...>", "Search players who have used part of a name.", arg -> {
             ObjectSet<PlayerInfo> infos = Vars.netServer.admins.searchNames(arg[0]);

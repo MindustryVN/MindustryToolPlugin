@@ -1,8 +1,6 @@
 package mindustrytool;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.util.UUID;
 
 import arc.*;
 import arc.util.*;
@@ -17,9 +15,8 @@ import mindustry.net.Administration.Config;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
+import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
-import mindustrytool.skeleton.ApiGatewayImpl;
-import mindustrytool.skeleton.ServerGateway;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.VPNUtils;
@@ -30,7 +27,9 @@ public class MindustryToolPlugin extends Plugin {
     public static final CommandHandler handler = new CommandHandler("");
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    public static final ServerGateway serverGateway = getServerGateway();
+    public static final ApiGateway apiGateway = new ApiGateway();
+
+    public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
     @Override
     public void init() {
@@ -51,8 +50,6 @@ public class MindustryToolPlugin extends Plugin {
 
         Timer.schedule(() -> System.gc(), 0, 60);
 
-        initRmiServer();
-
         eventHandler.init();
 
         HudUtils.init();
@@ -64,27 +61,6 @@ public class MindustryToolPlugin extends Plugin {
         if (Version.build == -1) {
             Log.warn("&lyYour server is running a custom build, which means that client checking is disabled.");
             Log.warn("&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
-        }
-    }
-
-    private void initRmiServer() {
-        try {
-            String port = System.getenv("RMI_PORT");
-            int portNumber = 78877;
-
-            try {
-                portNumber = port == null ? 78877 : Integer.parseInt(port);
-            } catch (Exception e) {
-                // do nothing
-            }
-
-            Registry registry = LocateRegistry.getRegistry(portNumber);
-            registry.rebind("ApiGateway", new ApiGatewayImpl());
-
-        } catch (RemoteException e) {
-            Log.err("Remote exception: " + e.getMessage(), e);
-        } catch (Exception e) {
-            Log.err("Unexpected exception: " + e.getMessage(), e);
         }
     }
 
@@ -124,14 +100,5 @@ public class MindustryToolPlugin extends Plugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
         clientCommandHandler.registerCommands(handler);
-    }
-
-    private static ServerGateway getServerGateway() {
-        try {
-            Registry registry = LocateRegistry.getRegistry("server-manager", 0);
-            return (ServerGateway) registry.lookup("ServerGateway");
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 }

@@ -7,6 +7,7 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
 import arc.util.Timer.Task;
+import lombok.Getter;
 import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -24,7 +25,12 @@ public class ClientCommandHandler {
     private static boolean isPreparingForNewWave = false;
     private static short waveVoted = 0;
 
+    @Getter
+    private static CommandHandler handler;
+
     public void registerCommands(CommandHandler handler) {
+        ClientCommandHandler.handler = handler;
+
         handler.<Player>register("rtv", "<mapId>", "Vote to change map (map id in /maps)", (args, player) -> {
             if (args.length != 1) {
                 return;
@@ -46,17 +52,13 @@ public class ClientCommandHandler {
                 return;
             }
             if (MindustryToolPlugin.voteHandler.isVoted(player, mapId)) {
-                Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
-                        + maps.get(mapId).name());
+                Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]" + maps.get(mapId).name());
                 MindustryToolPlugin.voteHandler.removeVote(player, mapId);
                 return;
             }
             MindustryToolPlugin.voteHandler.vote(player, mapId);
-            Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
-                    + maps.get(mapId).name());
-            Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
-                    + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/"
-                    + MindustryToolPlugin.voteHandler.getRequire());
+            Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]" + maps.get(mapId).name());
+            Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]" + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/" + MindustryToolPlugin.voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
             MindustryToolPlugin.voteHandler.check(mapId);
         });
@@ -122,7 +124,7 @@ public class ClientCommandHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                SetPlayerMessageRequest playerData = MindustryToolPlugin.serverGateway.onLogin(request);
+                SetPlayerMessageRequest playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
                 if (loginLink != null && !loginLink.isEmpty()) {
@@ -168,18 +170,13 @@ public class ClientCommandHandler {
 
             session.votedVNW = true;
             int cur = Session.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
-            Call.sendMessage(player.name + "[orange] has voted to "
-                    + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray]("
-                    + (req - cur) + " votes missing)");
+            Call.sendMessage(player.name + "[orange] has voted to " + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray](" + (req - cur) + " votes missing)");
 
             if (!isPreparingForNewWave)
                 Timer.schedule(new Task() {
                     @Override
                     public void run() {
-                        Call.sendMessage("[scarlet]Vote for "
-                                + (waveVoted == 1 ? "sending a new wave"
-                                        : "skipping [scarlet]" + waveVoted + "[] waves")
-                                + " failed! []Not enough votes.");
+                        Call.sendMessage("[scarlet]Vote for " + (waveVoted == 1 ? "sending a new wave" : "skipping [scarlet]" + waveVoted + "[] waves") + " failed! []Not enough votes.");
                         waveVoted = 0;
                         cancel();
                     }
@@ -194,9 +191,7 @@ public class ClientCommandHandler {
             if (cur < req)
                 return;
 
-            Call.sendMessage("[green]Vote for "
-                    + (waveVoted == 1 ? "sending a new wave" : "skiping [scarlet]" + waveVoted + "[] waves")
-                    + " is Passed. New Wave will be Spawned.");
+            Call.sendMessage("[green]Vote for " + (waveVoted == 1 ? "sending a new wave" : "skiping [scarlet]" + waveVoted + "[] waves") + " is Passed. New Wave will be Spawned.");
 
             if (waveVoted > 0) {
                 while (waveVoted-- > 0) {
@@ -224,25 +219,20 @@ public class ClientCommandHandler {
                     return;
                 }
 
-                int page = arg.length == 2 ? Strings.parseInt(arg[1]) : 1, lines = 12,
-                        pages = Mathf.ceil(effects.size / lines);
+                int page = arg.length == 2 ? Strings.parseInt(arg[1]) : 1, lines = 12, pages = Mathf.ceil(effects.size / lines);
                 if (effects.size % lines != 0)
                     pages++;
 
                 if (page > pages || page < 0) {
-                    player.sendMessage(
-                            "[scarlet]'page' must be a number between[orange] 1[] and[orange] " + pages + "[scarlet].");
+                    player.sendMessage("[scarlet]'page' must be a number between[orange] 1[] and[orange] " + pages + "[scarlet].");
                     return;
                 }
 
-                player.sendMessage("\n[orange]---- [gold]Effects list [lightgray]" + page + "[gray]/[lightgray]" + pages
-                        + "[orange] ----");
+                player.sendMessage("\n[orange]---- [gold]Effects list [lightgray]" + page + "[gray]/[lightgray]" + pages + "[orange] ----");
                 for (int i = (page - 1) * lines; i < lines * page; i++) {
                     try {
                         e = effects.get(i);
-                        builder.append(
-                                "  [orange]- [lightgray]ID:[white] " + e.id + "[orange] | [lightgray]Name:[white] "
-                                        + e.name + (e.forAdmin ? "[orange] | [scarlet]Admin" : "") + "\n");
+                        builder.append("  [orange]- [lightgray]ID:[white] " + e.id + "[orange] | [lightgray]Name:[white] " + e.name + (e.forAdmin ? "[orange] | [scarlet]Admin" : "") + "\n");
                     } catch (Exception err) {
                         break;
                     }
@@ -267,8 +257,7 @@ public class ClientCommandHandler {
                     target.effect = effects.random();
 
                     player.sendMessage("Randomised effect ...");
-                    player.sendMessage("[green]Start particles effect [accent]" + target.effect.id + "[scarlet] - []"
-                            + target.effect.name);
+                    player.sendMessage("[green]Start particles effect [accent]" + target.effect.id + "[scarlet] - []" + target.effect.name);
 
                 }
 
@@ -306,8 +295,7 @@ public class ClientCommandHandler {
                                 target.hasEffect = true;
                                 target.effect = e;
 
-                                player.sendMessage("[green]Start particles effect [accent]" + e.id + "[scarlet] - []"
-                                        + e.name + "[] for [accent]" + player.name);
+                                player.sendMessage("[green]Start particles effect [accent]" + e.id + "[scarlet] - []" + e.name + "[] for [accent]" + player.name);
                             }
                         }
                     }

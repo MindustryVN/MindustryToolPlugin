@@ -40,6 +40,12 @@ public class HttpServer {
             context.result();
         });
 
+        app.get("command", (context) -> {
+            ServerCommandHandler.getHandler().handleMessage(context.body());
+            
+            context.result();
+        });
+
         app.post("discord", context -> {
             String message = context.body();
 

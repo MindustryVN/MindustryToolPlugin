@@ -2,6 +2,9 @@ package mindustrytool.handlers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import arc.Core;
 import arc.files.Fi;
 import arc.util.Log;
@@ -24,126 +27,130 @@ import io.javalin.Javalin;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
+    private static final ExecutorService executor = Executors.newScheduledThreadPool(2);
 
     public void init() {
-        var app = Javalin.create();
+        executor.execute(() -> {
 
-        app.get("stats", context -> {
-            context.json(getStats());
-        });
+            var app = Javalin.create();
 
-        app.get("detail-stats", context -> {
-            context.json(detailStats());
-        });
+            app.get("stats", context -> {
+                context.json(getStats());
+            });
 
-        app.get("ok", (context) -> {
-            context.result();
-        });
+            app.get("detail-stats", context -> {
+                context.json(detailStats());
+            });
 
-        app.get("command", (context) -> {
-            ServerCommandHandler.getHandler().handleMessage(context.body());
-            
-            context.result();
-        });
+            app.get("ok", (context) -> {
+                context.result();
+            });
 
-        app.post("discord", context -> {
-            String message = context.body();
+            app.get("command", (context) -> {
+                ServerCommandHandler.getHandler().handleMessage(context.body());
 
-            Call.sendMessage(message);
+                context.result();
+            });
 
-            context.result();
-        });
+            app.post("discord", context -> {
+                String message = context.body();
 
-        app.post("start-server", context -> {
-            StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
+                Call.sendMessage(message);
 
-            String mapName = request.getMapName();
-            String gameMode = request.getMode();
+                context.result();
+            });
 
-            if (Vars.state.isGame()) {
-                throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
-            }
+            app.post("start-server", context -> {
+                StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
 
-            Gamemode preset = Gamemode.survival;
+                String mapName = request.getMapName();
+                String gameMode = request.getMode();
 
-            if (gameMode != null) {
+                if (Vars.state.isGame()) {
+                    throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
+                }
+
+                Gamemode preset = Gamemode.survival;
+
+                if (gameMode != null) {
+                    try {
+                        preset = Gamemode.valueOf(gameMode);
+                    } catch (IllegalArgumentException e) {
+                        Log.err("No gamemode '@' found.", gameMode);
+                        return;
+                    }
+                }
+
+                Map result;
                 try {
-                    preset = Gamemode.valueOf(gameMode);
-                } catch (IllegalArgumentException e) {
-                    Log.err("No gamemode '@' found.", gameMode);
+                    result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
+                } catch (IOException e) {
+                    throw new RuntimeException("Cannot read map file: " + mapName);
+                }
+                if (result == null) {
+                    Log.err("No map with name '@' found.", mapName);
                     return;
                 }
-            }
 
-            Map result;
-            try {
-                result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot read map file: " + mapName);
-            }
-            if (result == null) {
-                Log.err("No map with name '@' found.", mapName);
-                return;
-            }
+                Log.info("Loading map...");
 
-            Log.info("Loading map...");
+                Vars.logic.reset();
+                MindustryToolPlugin.eventHandler.lastMode = preset;
+                Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
 
-            Vars.logic.reset();
-            MindustryToolPlugin.eventHandler.lastMode = preset;
-            Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+                try {
+                    Vars.world.loadMap(result, result.applyRules(preset));
+                    Vars.state.rules = result.applyRules(preset);
+                    Vars.logic.play();
 
-            try {
-                Vars.world.loadMap(result, result.applyRules(preset));
-                Vars.state.rules = result.applyRules(preset);
-                Vars.logic.play();
+                    Log.info("Map loaded.");
 
-                Log.info("Map loaded.");
+                    Vars.netServer.openServer();
 
-                Vars.netServer.openServer();
-
-            } catch (MapException e) {
-                Log.err("@: @", e.map.plainName(), e.getMessage());
-            }
-            context.result();
-        });
-
-        app.post("set-player", context -> {
-            SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
-
-            String uuid = request.getUuid();
-            boolean isAdmin = request.isAdmin();
-
-            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-            Player player = Groups.player.find(p -> p.getInfo() == target);
-
-            if (target != null) {
-                if (isAdmin) {
-                    Vars.netServer.admins.adminPlayer(target.id, player == null ? target.adminUsid : player.usid());
-                } else {
-                    Vars.netServer.admins.unAdminPlayer(target.id);
+                } catch (MapException e) {
+                    Log.err("@: @", e.map.plainName(), e.getMessage());
                 }
-                if (player != null)
-                    player.admin = isAdmin;
-            } else {
-                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
-            }
+                context.result();
+            });
 
-            if (player != null) {
-                HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                player.sendMessage("[green]Logged in successfully");
-                MindustryToolPlugin.eventHandler.addPlayer(request, player);
-            }
-            context.result();
+            app.post("set-player", context -> {
+                SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
+
+                String uuid = request.getUuid();
+                boolean isAdmin = request.isAdmin();
+
+                PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+                Player player = Groups.player.find(p -> p.getInfo() == target);
+
+                if (target != null) {
+                    if (isAdmin) {
+                        Vars.netServer.admins.adminPlayer(target.id, player == null ? target.adminUsid : player.usid());
+                    } else {
+                        Vars.netServer.admins.unAdminPlayer(target.id);
+                    }
+                    if (player != null)
+                        player.admin = isAdmin;
+                } else {
+                    Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+                }
+
+                if (player != null) {
+                    HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                    player.sendMessage("[green]Logged in successfully");
+                    MindustryToolPlugin.eventHandler.addPlayer(request, player);
+                }
+                context.result();
+            });
+
+            app.post("command", context -> {
+                String command = context.body();
+                ServerCommandHandler.getHandler().handleMessage(command);
+
+                context.result();
+            });
+
+            app.start(8080);
         });
-
-        app.post("command", context -> {
-            String command = context.body();
-            ServerCommandHandler.getHandler().handleMessage(command);
-
-            context.result();
-        });
-
-        app.start(8080);
     }
 
     private StatsMessageResponse getStats() {

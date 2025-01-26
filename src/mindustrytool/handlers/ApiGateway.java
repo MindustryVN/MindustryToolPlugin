@@ -49,10 +49,9 @@ public class ApiGateway {
                 .build();
 
         try {
-
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
             return JsonUtils.readJsonAsClass(result, Integer.class);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             return 0;
         }
 

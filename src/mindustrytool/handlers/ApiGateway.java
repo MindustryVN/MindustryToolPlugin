@@ -53,7 +53,8 @@ public class ApiGateway {
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
             return JsonUtils.readJsonAsClass(result, Integer.class);
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return 0;
         }
 
     }

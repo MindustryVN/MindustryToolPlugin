@@ -1,5 +1,8 @@
 package mindustrytool;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.UUID;
 
 import arc.*;
@@ -35,6 +38,8 @@ public class MindustryToolPlugin extends Plugin {
 
     @Override
     public void init() {
+
+        initOutputStream();
 
         Core.settings.defaults("bans", "", "admins", "", "shufflemode", "custom", "globalrules", "{reactorExplosions: false, logicUnitBuild: false}");
 
@@ -103,5 +108,35 @@ public class MindustryToolPlugin extends Plugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
         clientCommandHandler.registerCommands(handler);
+    }
+
+    private void initOutputStream() {
+        var origin = System.out;
+        var custom = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                origin.write(b);
+                apiGateway.sendConsoleMessage(String.valueOf((char) b));
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                origin.write(b, off, len);
+                String message = new String(b, off, len);
+                apiGateway.sendConsoleMessage(message);
+            }
+
+            @Override
+            public void flush() throws IOException {
+                origin.flush();
+            }
+
+            @Override
+            public void close() throws IOException {
+                origin.close();
+            }
+        };
+
+        System.setOut(new PrintStream(custom));
     }
 }

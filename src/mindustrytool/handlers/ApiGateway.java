@@ -63,6 +63,13 @@ public class ApiGateway {
 
         httpClient.sendAsync(request, BodyHandlers.ofString());
     }
+    public void sendConsoleMessage(String chat) {
+        var request = setHeaders(HttpRequest.newBuilder(path("console")))//
+                .POST(HttpRequest.BodyPublishers.ofString(chat))//
+                .build();
+
+        httpClient.sendAsync(request, BodyHandlers.ofString());
+    }
 
     public void onPlayerLeave(PlayerMessageRequest request) {
         var req = setHeaders(HttpRequest.newBuilder(path("player-leave")))//

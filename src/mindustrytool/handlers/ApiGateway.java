@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.MindustryToolPlugin;
@@ -26,7 +27,7 @@ public class ApiGateway {
     }
 
     private URI path(String... path) {
-        return URI.create("http://server-manager:8080/internal-api/v1/" + Strings.join("/", path));
+        return URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
     }
 
     public SetPlayerMessageRequest setPlayer(PlayerMessageRequest payload) {
@@ -48,6 +49,7 @@ public class ApiGateway {
                 .build();
 
         try {
+
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
             return JsonUtils.readJsonAsClass(result, Integer.class);
         } catch (IOException | InterruptedException e) {
@@ -63,12 +65,19 @@ public class ApiGateway {
 
         httpClient.sendAsync(request, BodyHandlers.ofString());
     }
+
     public void sendConsoleMessage(String chat) {
         var request = setHeaders(HttpRequest.newBuilder(path("console")))//
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        httpClient.sendAsync(request, BodyHandlers.ofString());
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 
     public void onPlayerLeave(PlayerMessageRequest request) {

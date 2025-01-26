@@ -11,6 +11,10 @@ public class Config {
 
     public static Boolean isLoaded = false;
 
+    public static final String ENV = System.getenv("ENV");
+
+    public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
+
     public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
 
     public static final String SERVER_IP = "103.20.96.24";

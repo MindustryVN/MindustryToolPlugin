@@ -37,10 +37,9 @@ import mindustrytool.MindustryToolPlugin;
 public class ServerCommandHandler {
 
     @Getter
-    private static CommandHandler handler;
+    private static CommandHandler handler = MindustryToolPlugin.handler;
 
     public void registerCommands(CommandHandler handler) {
-        ServerCommandHandler.handler = handler;
 
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {

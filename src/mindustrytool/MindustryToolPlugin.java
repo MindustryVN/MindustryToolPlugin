@@ -36,6 +36,8 @@ public class MindustryToolPlugin extends Plugin {
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
+    public static final PrintStream standardOutputStream = System.out;
+
     @Override
     public void init() {
 
@@ -111,29 +113,28 @@ public class MindustryToolPlugin extends Plugin {
     }
 
     private void initOutputStream() {
-        var origin = System.out;
         var custom = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                origin.write(b);
+                standardOutputStream.write(b);
                 apiGateway.sendConsoleMessage(String.valueOf((char) b));
             }
 
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
-                origin.write(b, off, len);
+                standardOutputStream.write(b, off, len);
                 String message = new String(b, off, len);
                 apiGateway.sendConsoleMessage(message);
             }
 
             @Override
             public void flush() throws IOException {
-                origin.flush();
+                standardOutputStream.flush();
             }
 
             @Override
             public void close() throws IOException {
-                origin.close();
+                standardOutputStream.close();
             }
         };
 

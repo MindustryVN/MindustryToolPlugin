@@ -31,6 +31,7 @@ dependencies{
     
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.2'
 	implementation "io.javalin:javalin:6.4.0"
+    implementation "org.slf4j:slf4j-simple:2.0.16"
 
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor "com.github.Anuken:jabel:$jabelVersion"

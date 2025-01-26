@@ -53,7 +53,6 @@ public class ApiGateway {
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
             return JsonUtils.readJsonAsClass(result, Integer.class);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
             return 0;
         }
 
@@ -72,13 +71,7 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        httpClient.sendAsync(request, BodyHandlers.ofString());
     }
 
     public void onPlayerLeave(PlayerMessageRequest request) {

@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import arc.Core;
 import arc.files.Fi;
 import arc.util.Log;
@@ -24,6 +27,7 @@ import mindustrytool.messages.response.StatsMessageResponse;
 import mindustrytool.utils.HudUtils;
 
 import io.javalin.Javalin;
+import io.javalin.json.JavalinJackson;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
@@ -32,7 +36,15 @@ public class HttpServer {
     public void init() {
         executor.execute(() -> {
 
-            var app = Javalin.create();
+            var app = Javalin.create(config -> {
+                config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                    mapper//
+                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
+                            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
+                            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+                }));
+            });
 
             app.get("stats", context -> {
                 context.json(getStats());
@@ -45,7 +57,7 @@ public class HttpServer {
             app.get("ok", (context) -> {
                 context.result();
             });
-      
+
             app.get("hosting", (context) -> {
                 context.json(Vars.state.isPlaying());
             });
@@ -58,7 +70,7 @@ public class HttpServer {
                 context.result();
             });
 
-            app.post("start-server", context -> {
+            app.post("host", context -> {
                 StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
 
                 String mapName = request.getMapName();
@@ -81,10 +93,10 @@ public class HttpServer {
 
                 Map result;
                 try {
-                    if (mapName == null){
+                    if (mapName == null) {
                         var maps = Vars.customMapDirectory.list();
-                        
-                        if (maps.length == 0){
+
+                        if (maps.length == 0) {
                             Log.err("No custom maps found.");
                             return;
                         }

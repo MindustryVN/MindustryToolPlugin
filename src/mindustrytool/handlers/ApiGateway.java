@@ -82,8 +82,8 @@ public class ApiGateway {
     }
 
     public int startServer(String targetServerId) {
-        var request = setHeaders(HttpRequest.newBuilder(path("start-server", targetServerId)))//
-                .POST(HttpRequest.BodyPublishers.noBody())//
+        var request = setHeaders(HttpRequest.newBuilder(path("start-server")))//
+                .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .build();
 
         try {
@@ -95,8 +95,8 @@ public class ApiGateway {
     }
 
     public GetServersMessageResponse getServers(GetServersMessageRequest request) {
-        var req = setHeaders(HttpRequest.newBuilder(path("servers")))//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(request)))//
+        var req = setHeaders(HttpRequest.newBuilder(path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
+                .GET()//
                 .build();
 
         try {

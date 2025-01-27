@@ -48,7 +48,7 @@ public class HudUtils {
     @RequiredArgsConstructor
     public static class Option {
         private final PlayerPressCallback callback;
-        private final String text[];
+        private final String text;
     }
 
     public static void init() {
@@ -68,7 +68,7 @@ public class HudUtils {
         leaved.add(event.player);
     }
 
-    public static Option option(PlayerPressCallback callback, String... text) {
+    public static Option option(PlayerPressCallback callback, String text) {
         return new Option(callback, text);
     }
 
@@ -81,7 +81,7 @@ public class HudUtils {
     public static void showFollowDisplays(Player player, int id, String title, String description, Object state,
             List<List<Option>> options) {
 
-        var optionTexts = new String[options.size()][];
+        String[][] optionTexts = new String[options.size()][];
         for (int i = 0; i < options.size(); i++) {
             var op = options.get(i);
             optionTexts[i] = op.stream()//

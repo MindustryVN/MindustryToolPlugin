@@ -46,12 +46,6 @@ public class HttpServer {
                 context.result();
             });
 
-            app.get("command", (context) -> {
-                ServerCommandHandler.getHandler().handleMessage(context.body());
-
-                context.result();
-            });
-
             app.post("discord", context -> {
                 String message = context.body();
 
@@ -83,7 +77,17 @@ public class HttpServer {
 
                 Map result;
                 try {
-                    result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
+                    if (mapName == null){
+                        var maps = Vars.customMapDirectory.list();
+                        
+                        if (maps.length == 0){
+                            Log.err("No custom maps found.");
+                            return;
+                        }
+                        result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
+                    } else {
+                        result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException("Cannot read map file: " + mapName);
                 }

@@ -45,6 +45,10 @@ public class HttpServer {
             app.get("ok", (context) -> {
                 context.result();
             });
+      
+            app.get("hosting", (context) -> {
+                context.json(Vars.state.isPlaying());
+            });
 
             app.post("discord", context -> {
                 String message = context.body();

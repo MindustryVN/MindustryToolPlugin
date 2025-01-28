@@ -476,11 +476,11 @@ public class EventHandler {
                 var options = new ArrayList<>(servers.stream()//
                         .map(server -> {
                             var result = new ArrayList<>(List.of(//
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), server.getName()), //
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[yellow]Players: %s".formatted(server.getPlayers())), //
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[cyan]Map: %s".formatted(server.getMapName() == null ? "[red]Not playing" : server.getMapName()))));
+                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), server.getName()), //
+                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[yellow]Players: %s".formatted(server.getPlayers())), //
+                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[cyan]Map: %s".formatted(server.getMapName() == null ? "[red]Not playing" : server.getMapName()))));
 
-                            result.add(HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()), "[red]Mods: %s".formatted(server.getMods())));
+                            result.add(HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[red]Mods: %s".formatted(server.getMods())));
 
                             return result.stream().toList();
                         }//
@@ -570,7 +570,6 @@ public class EventHandler {
             }
         };
 
-        
         if (wait) {
             lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
         } else {

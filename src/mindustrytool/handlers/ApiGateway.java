@@ -81,14 +81,13 @@ public class ApiGateway {
         httpClient.sendAsync(req, BodyHandlers.ofString());
     }
 
-    public int host(String targetServerId) {
-        var request = setHeaders(HttpRequest.newBuilder(path("start-server")))//
+    public String host(String targetServerId) {
+        var request = setHeaders(HttpRequest.newBuilder(path("host")))//
                 .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .build();
 
         try {
-            var result = httpClient.send(request, BodyHandlers.ofString()).body();
-            return JsonUtils.readJsonAsClass(result, Integer.class);
+            return httpClient.send(request, BodyHandlers.ofString()).body();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

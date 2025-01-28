@@ -516,7 +516,20 @@ public class EventHandler {
                 var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow".formatted(player.coloredName(), name));
-                Call.connect(player.con, Config.SERVER_IP, data);
+
+                String host = "";
+                int port = 6567;
+
+                var colon = data.lastIndexOf(":");
+
+                if (colon > 0) {
+                    host = data.substring(0, colon + 1);
+                    port = Integer.parseInt(data.substring(colon + 1));
+                } else {
+                    host = data;
+                }
+
+                Call.connect(player.con, host, port);
             } catch (Exception e) {
                 player.sendMessage("Error: Can not load server");
             }

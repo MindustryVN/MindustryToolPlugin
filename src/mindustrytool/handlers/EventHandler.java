@@ -513,7 +513,7 @@ public class EventHandler {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
-                var data = MindustryToolPlugin.apiGateway.startServer(id);
+                var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow".formatted(player.coloredName(), name));
                 Call.connect(player.con, Config.SERVER_IP, data);

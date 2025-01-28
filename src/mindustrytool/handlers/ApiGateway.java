@@ -81,7 +81,7 @@ public class ApiGateway {
         httpClient.sendAsync(req, BodyHandlers.ofString());
     }
 
-    public int startServer(String targetServerId) {
+    public int host(String targetServerId) {
         var request = setHeaders(HttpRequest.newBuilder(path("start-server")))//
                 .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .build();

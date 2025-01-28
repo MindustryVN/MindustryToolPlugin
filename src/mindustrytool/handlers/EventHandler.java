@@ -366,6 +366,8 @@ public class EventHandler {
 
                 var isAdmin = playerData.isAdmin();
 
+                Log.info(playerData);
+
                 addPlayer(playerData, player);
 
                 Player playert = Groups.player.find(p -> p.getInfo() == target);
@@ -568,6 +570,7 @@ public class EventHandler {
             }
         };
 
+        
         if (wait) {
             lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
         } else {

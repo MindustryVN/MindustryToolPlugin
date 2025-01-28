@@ -183,7 +183,7 @@ public class HttpServer {
         List<String> mods = Vars.mods.list().map(mod -> mod.name).list();
         int players = Groups.player.size();
 
-        return new StatsMessageResponse().setRamUsage(Core.app.getJavaHeap() / 1024 / 1024).setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(players).setMapName(mapName).setMods(mods).setHosted(Vars.state.isGame());
+        return new StatsMessageResponse().setRamUsage(Core.app.getJavaHeap() / 1024 / 1024).setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(players).setMapName(mapName).setMods(mods).setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 
     public StatsMessageResponse detailStats() {

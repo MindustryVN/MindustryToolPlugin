@@ -8,7 +8,6 @@ import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 
-import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.MindustryToolPlugin;
@@ -32,8 +31,6 @@ public class ApiGateway {
     }
 
     public SetPlayerMessageRequest setPlayer(PlayerMessageRequest payload) {
-        Log.info(payload);
-        
         var request = setHeaders(HttpRequest.newBuilder(path("players")))//
                 .header("Content-Type", "application/json")//
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//

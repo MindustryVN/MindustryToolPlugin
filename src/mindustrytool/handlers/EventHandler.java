@@ -494,13 +494,19 @@ public class EventHandler {
                     options.add(List.of(HudUtils.option(valid, "[#B0B0B0]Description: %s".formatted(server.getDescription() != null ? server.getDescription() : "N/A"))));
                 });
 
-                options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
-                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
-                    sendServerList(player, (int) state - 1);
-                }, "[yellow]Previous") : null, servers.size() == size ? HudUtils.option((p, state) -> {
-                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
-                    sendServerList(player, (int) state + 1);
-                }, "[green]Next") : null).stream().filter(r -> r != null).toList());
+                options.add(List.of(//
+                        page > 0//
+                                ? HudUtils.option((p, state) -> {
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    sendServerList(player, (int) state - 1);
+                                }, "[yellow]Previous")
+                                : HudUtils.option(invalid, "First page"), //
+                        servers.size() == size//
+                                ? HudUtils.option((p, state) -> {
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    sendServerList(player, (int) state + 1);
+                                }, "[green]Next")
+                                : HudUtils.option(invalid, "No more")));
 
                 options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close")));
 

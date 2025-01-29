@@ -127,6 +127,7 @@ public class ClientCommandHandler {
                 SetPlayerMessageRequest playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
+                
                 if (loginLink != null && !loginLink.isEmpty()) {
                     Call.openURI(player.con, loginLink);
                 } else {

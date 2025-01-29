@@ -32,8 +32,8 @@ public class ApiGateway {
 
     public SetPlayerMessageRequest setPlayer(PlayerMessageRequest payload) {
         var request = setHeaders(HttpRequest.newBuilder(path("players")))//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
                 .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
                 .build();
 
         try {
@@ -60,8 +60,8 @@ public class ApiGateway {
 
     public void sendChatMessage(String chat) {
         var request = setHeaders(HttpRequest.newBuilder(path("chat")))//
-                .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
         httpClient.sendAsync(request, BodyHandlers.ofString());
@@ -69,8 +69,8 @@ public class ApiGateway {
 
     public void sendConsoleMessage(String chat) {
         var request = setHeaders(HttpRequest.newBuilder(path("console")))//
-                .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
         httpClient.sendAsync(request, BodyHandlers.ofString());
@@ -78,8 +78,8 @@ public class ApiGateway {
 
     public void onPlayerLeave(PlayerMessageRequest request) {
         var req = setHeaders(HttpRequest.newBuilder(path("player-leave")))//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(request)))//
                 .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(request)))//
                 .build();
 
         httpClient.sendAsync(req, BodyHandlers.ofString());
@@ -87,8 +87,8 @@ public class ApiGateway {
 
     public String host(String targetServerId) {
         var request = setHeaders(HttpRequest.newBuilder(path("host")))//
-                .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .build();
 
         try {

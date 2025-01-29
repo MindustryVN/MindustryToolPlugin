@@ -49,6 +49,7 @@ import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
 import mindustrytool.utils.VPNUtils;
 import mindustrytool.utils.HudUtils.Option;
+import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
@@ -119,7 +120,8 @@ public class EventHandler {
 
         Vars.net.handleServer(Packets.Connect.class, (con, packet) -> {
             Events.fire(new EventType.ConnectionEvent(con));
-            Seq<NetConnection> connections = Seq.with(Vars.net.getConnections()).select(other -> other.address.equals(con.address));
+            Seq<NetConnection> connections = Seq.with(Vars.net.getConnections())
+                    .select(other -> other.address.equals(con.address));
             if (connections.size > Config.MAX_IDENTICAL_IPS) {
                 Vars.netServer.admins.blacklistDos(con.address);
                 connections.each(NetConnection::close);
@@ -304,7 +306,8 @@ public class EventHandler {
             MindustryToolPlugin.voteHandler.removeVote(player);
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ leaved the server, current players: @", playerName, Groups.player.size() - 1);
+            String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                    Groups.player.size() - 1);
 
             playerMeta.remove(event.player.uuid());
 
@@ -374,7 +377,8 @@ public class EventHandler {
 
                 if (target != null) {
                     if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+                        Vars.netServer.admins.adminPlayer(target.id,
+                                playert == null ? target.adminUsid : playert.usid());
                     } else {
                         Vars.netServer.admins.unAdminPlayer(target.id);
                     }
@@ -403,15 +407,22 @@ public class EventHandler {
         }
 
         if (Vars.state.rules.waves) {
-            Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+            Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave, Groups.player.size(),
+                    Strings.capitalize(Vars.state.map.plainName()));
         } else {
-            Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+            Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
+                    Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
         }
 
         // set the next map to be played
         Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
         if (map != null) {
-            Call.infoMessage((Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n" : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]" + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "." + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num() + " seconds.");
+            Call.infoMessage(
+                    (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
+                            : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
+                            + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
+                            + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
+                            + " seconds.");
 
             Vars.state.gameOver = true;
             Call.updateGameOver(event.winner);
@@ -425,7 +436,11 @@ public class EventHandler {
             Vars.net.closeServer();
         }
 
-        String message = Vars.state.rules.waves ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName())) : Strings.format("Game over! Team @ is victorious with @ players online on map @.", event.winner.name, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+        String message = Vars.state.rules.waves
+                ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
+                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
+                : Strings.format("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
+                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
 
         try {
             MindustryToolPlugin.apiGateway.sendChatMessage(message);
@@ -448,8 +463,10 @@ public class EventHandler {
         }
 
         options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"));
-        options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"));
-        options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
+        options.add(
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"));
+        options.add(
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
         options.add(HudUtils.option((p, state) -> {
             HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
             sendServerList(player, 0);
@@ -473,18 +490,37 @@ public class EventHandler {
 
                 var response = MindustryToolPlugin.apiGateway.getServers(request);
                 var servers = response.getServers();
-                var options = new ArrayList<>(servers.stream()//
-                        .map(server -> {
-                            var result = new ArrayList<>(List.of(//
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), server.getName()), //
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[yellow]Players: %s".formatted(server.getPlayers())), //
-                                    HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[cyan]Map: %s".formatted(server.getMapName() == null ? "[red]Not playing" : server.getMapName()))));
 
-                            result.add(HudUtils.option((p, state) -> onServerChoose(p, server.getId().toString(), server.getName()), "[red]Mods: %s".formatted(server.getMods())));
+                PlayerPressCallback invalid = (p, s) -> {
+                    Call.infoToast(p.con, "Please don't click there", 10f);
+                    sendServerList(p, (int) s);
+                };
 
-                            return result.stream().toList();
-                        }//
-                ).toList());
+                List<List<HudUtils.Option>> options = new ArrayList<>(List.of(
+                        List.of(HudUtils.option(invalid, "[#FFD700]Server name"),
+                                HudUtils.option(invalid, "[#FFD700]Players playing")),
+                        List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"),
+                                HudUtils.option(invalid, "[#FFA500]Map Playing")),
+                        List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")),
+                        List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
+
+                // Thêm danh sách server
+                servers.forEach(server -> {
+                    PlayerPressCallback valid = (p, s) -> //
+                    onServerChoose(p, server.getId().toString(), server.getName());
+
+                    options.add(List.of(
+                            HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())),
+                            HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(List.of(
+                            HudUtils.option(valid, "[#87CEEB]Mode: %s".formatted(server.getMode())),
+                            HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(
+                                    server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
+                    options.add(List.of(HudUtils.option(valid,
+                            "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
+                    options.add(List.of(HudUtils.option(valid, "[#B0B0B0]Description: %s" //
+                            .formatted(server.getDescription() != null ? server.getDescription() : "N/A"))));
+                });
 
                 if (page > 0) {
                     options.add(List.of(HudUtils.option((p, state) -> {
@@ -500,7 +536,8 @@ public class EventHandler {
                     }, "[green]Next")));
 
                 }
-                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close")));
+                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
+                        "[red]Close")));
 
                 HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
             } catch (Exception e) {
@@ -517,7 +554,8 @@ public class EventHandler {
             try {
                 var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
-                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow".formatted(player.coloredName(), name));
+                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
+                        .formatted(player.coloredName(), name));
 
                 String host = "";
                 int port = 6567;

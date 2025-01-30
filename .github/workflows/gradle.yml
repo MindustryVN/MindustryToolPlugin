@@ -27,4 +27,4 @@ jobs:
           prerelease: true
           title: 'Release'
           files: |
-            *.jar
+            build/libs/${{ github.event.repository.name }}.jarr

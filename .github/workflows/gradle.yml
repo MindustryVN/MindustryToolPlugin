@@ -19,3 +19,12 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}
           path: build/libs/${{ github.event.repository.name }}.jar
+
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          automatic_release_tag: 'latest'
+          prerelease: true
+          title: 'Release'
+          files: |
+            *.jar

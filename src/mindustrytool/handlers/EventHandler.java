@@ -494,7 +494,7 @@ public class EventHandler {
                         options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
                     }
 
-                    if (server.getDescription() != null && server.getDescription().trim().isEmpty()) {
+                    if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
                         options.add(List.of(HudUtils.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
                     }
                     

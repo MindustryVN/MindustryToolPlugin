@@ -87,7 +87,7 @@ public class ApiGateway {
 
     public String host(String targetServerId) {
         var request = setHeaders(HttpRequest.newBuilder(path("host")))//
-                .header("Content-Type", "text/plain")//
+                .header("Content-Type", "application/json")//
                 .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
                 .build();
 

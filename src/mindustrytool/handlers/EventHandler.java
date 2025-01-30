@@ -478,16 +478,22 @@ public class EventHandler {
 
                 List<List<HudUtils.Option>> options = new ArrayList<>(List.of(List.of(HudUtils.option(invalid, "[#FFD700]Server name"), HudUtils.option(invalid, "[#FFD700]Players playing")), List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"), HudUtils.option(invalid, "[#FFA500]Map Playing")), List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")), List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
 
-                // Thêm danh sách server
                 servers.forEach(server -> {
                     PlayerPressCallback valid = (p, s) -> //
                     onServerChoose(p, server.getId().toString(), server.getName());
 
-                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())), HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
-                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Mode: %s".formatted(server.getMode())), HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
-                    options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
                     options.add(List.of(HudUtils.option(invalid, "-----------------")));
-                    options.add(List.of(HudUtils.option(valid, "[#B0B0B0]Description: %s".formatted(server.getDescription() != null ? server.getDescription() : "N/A"))));
+                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())), HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())), HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
+                    
+                    if (server.getMods() != null && !server.getMods().isEmpty()) {
+                        options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
+                    }
+
+                    if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
+                        options.add(List.of(HudUtils.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
+                    }
+                    
                 });
 
                 options.add(List.of(//

@@ -180,9 +180,9 @@ public class HttpServer {
             });
 
             app.post("command", context -> {
-                String commands = context.body();
-                if (commands != null && !commands.isBlank()) {
-                    for (var command : commands.split("\n")) {
+                String[] commands = context.bodyAsClass(String[].class);
+                if (commands != null) {
+                    for (var command : commands) {
                         ServerCommandHandler.getHandler().handleMessage(command);
                     }
                 }

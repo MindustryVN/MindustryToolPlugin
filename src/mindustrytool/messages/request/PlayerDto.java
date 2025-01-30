@@ -6,9 +6,8 @@ import mindustrytool.type.Team;
 
 @Data
 @Accessors(chain = true)
-public class PlayerMessageRequest {
+public class PlayerDto {
     private String name;
     private String uuid;
-    private String ip;
     private Team team;
 }

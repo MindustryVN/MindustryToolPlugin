@@ -76,15 +76,6 @@ public class ApiGateway {
         httpClient.sendAsync(request, BodyHandlers.ofString());
     }
 
-    public void onPlayerLeave(PlayerMessageRequest request) {
-        var req = setHeaders(HttpRequest.newBuilder(path("player-leave")))//
-                .header("Content-Type", "application/json")//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(request)))//
-                .build();
-
-        httpClient.sendAsync(req, BodyHandlers.ofString());
-    }
-
     public String host(String targetServerId) {
         var request = setHeaders(HttpRequest.newBuilder(path("host")))//
                 .header("Content-Type", "text/plain")//

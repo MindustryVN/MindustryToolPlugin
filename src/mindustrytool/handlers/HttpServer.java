@@ -1,9 +1,11 @@
 package mindustrytool.handlers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,9 +23,11 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.PlayerDto;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.request.StartServerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
+import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
 
 import io.javalin.Javalin;
@@ -159,6 +163,20 @@ public class HttpServer {
                     MindustryToolPlugin.eventHandler.addPlayer(request, player);
                 }
                 context.result();
+            });
+
+            app.get("players", context -> {
+                var players = new ArrayList<Player>();
+                Groups.player.forEach(players::add);
+
+                context.json(players.stream()//
+                        .map(player -> new PlayerDto()//
+                                .setName(player.coloredName())//
+                                .setUuid(player.uuid())//
+                                .setTeam(new Team()//
+                                        .setColor(player.team().color.toString())//
+                                        .setName(player.team().name)))
+                        .collect(Collectors.toList()));
             });
 
             app.post("command", context -> {

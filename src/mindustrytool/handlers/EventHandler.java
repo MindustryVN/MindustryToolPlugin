@@ -311,10 +311,6 @@ public class EventHandler {
 
             try {
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
-                MindustryToolPlugin.apiGateway.onPlayerLeave(new PlayerMessageRequest()//
-                        .setName(playerName)//
-                        .setIp(event.player.ip())//
-                        .setUuid(event.player.uuid()));
             } catch (Exception e) {
                 Log.err(e);
             }

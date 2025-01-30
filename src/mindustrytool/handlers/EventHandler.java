@@ -487,10 +487,10 @@ public class EventHandler {
                     PlayerPressCallback valid = (p, s) -> //
                     onServerChoose(p, server.getId().toString(), server.getName());
 
+                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
                     options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())), HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
                     options.add(List.of(HudUtils.option(valid, "[#87CEEB]Mode: %s".formatted(server.getMode())), HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
                     options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
-                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
                     options.add(List.of(HudUtils.option(valid, "[#B0B0B0]Description: %s".formatted(server.getDescription() != null ? server.getDescription() : "N/A"))));
                 });
 

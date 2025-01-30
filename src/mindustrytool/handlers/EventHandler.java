@@ -535,13 +535,11 @@ public class EventHandler {
                 var colon = data.lastIndexOf(":");
 
                 if (colon > 0) {
-                    host = data.substring(0, colon + 1);
+                    host = data.substring(0, colon);
                     port = Integer.parseInt(data.substring(colon + 1));
                 } else {
                     host = data;
                 }
-
-                Log.info("Host: " + host + " Port: " + port);
 
                 Call.connect(player.con, host, port);
             } catch (Exception e) {

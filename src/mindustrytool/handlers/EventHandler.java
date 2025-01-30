@@ -363,8 +363,6 @@ public class EventHandler {
 
                 var isAdmin = playerData.isAdmin();
 
-                Log.info(playerData);
-
                 addPlayer(playerData, player);
 
                 Player playert = Groups.player.find(p -> p.getInfo() == target);

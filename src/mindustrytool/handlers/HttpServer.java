@@ -156,7 +156,6 @@ public class HttpServer {
 
                 if (player != null) {
                     HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                    player.sendMessage("[green]Logged in successfully");
                     MindustryToolPlugin.eventHandler.addPlayer(request, player);
                 }
                 context.result();

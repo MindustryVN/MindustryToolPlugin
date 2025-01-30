@@ -599,6 +599,7 @@ public class EventHandler {
 
         if (isLoggedIn) {
             setName(player, name, (int) Math.sqrt(exp));
+            player.sendMessage("Logged in as " + name);
         }
     }
 

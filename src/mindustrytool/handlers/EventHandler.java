@@ -539,6 +539,8 @@ public class EventHandler {
                     host = data;
                 }
 
+                Log.info("Redirecting player to " + host + ":" + port);
+
                 Call.connect(player.con, host, port);
             } catch (Exception e) {
                 player.sendMessage("Error: Can not load server");

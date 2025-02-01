@@ -173,6 +173,7 @@ public class HttpServer {
                         .map(player -> new PlayerDto()//
                                 .setName(player.coloredName())//
                                 .setUuid(player.uuid())//
+                                .setLocale(player.locale())//
                                 .setTeam(new Team()//
                                         .setColor(player.team().color.toString())//
                                         .setName(player.team().name)))

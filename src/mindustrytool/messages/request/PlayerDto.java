@@ -9,5 +9,6 @@ import mindustrytool.type.Team;
 public class PlayerDto {
     private String name;
     private String uuid;
+    private String locale;
     private Team team;
 }

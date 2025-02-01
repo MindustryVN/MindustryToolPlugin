@@ -1,5 +1,8 @@
 package mindustrytool.handlers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.CommandHandler;
@@ -14,11 +17,15 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.type.Team;
 import mindustrytool.utils.Effects;
+import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustrytool.utils.Session;
+import mindustrytool.utils.Utils;
 
 public class ClientCommandHandler {
 
@@ -127,7 +134,7 @@ public class ClientCommandHandler {
                 SetPlayerMessageRequest playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
-                
+
                 if (loginLink != null && !loginLink.isEmpty()) {
                     Call.openURI(player.con, loginLink);
                 } else {
@@ -337,6 +344,14 @@ public class ClientCommandHandler {
             }
         });
 
+        handler.<Player>register("redirect", "<code...>", "Execute JavaScript code.", (args, player) -> {
+            if (player.admin) {
+                sendRedirectServerList(player, 0);
+            } else {
+                player.sendMessage("[scarlet]You must be admin to use this command.");
+            }
+        });
+
     }
 
     private boolean isError(String output) {
@@ -348,4 +363,99 @@ public class ClientCommandHandler {
             return false;
         }
     }
+
+    public void onServerChoose(Player player, String id, String name) {
+        HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
+        Utils.executeExpectError(() -> {
+            player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
+
+            try {
+                var data = MindustryToolPlugin.apiGateway.host(id);
+                player.sendMessage("[green]Redirecting");
+                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow".formatted(player.coloredName(), name));
+
+                String host = "";
+                int port = 6567;
+
+                var colon = data.lastIndexOf(":");
+
+                if (colon > 0) {
+                    host = data.substring(0, colon);
+                    port = Integer.parseInt(data.substring(colon + 1));
+                } else {
+                    host = data;
+                }
+
+                final var h = host;
+                final var p = port;
+
+                Groups.player.forEach(target -> {
+                    Log.info("Redirecting player " + target.name + " to " + h + ":" + p);
+                    Call.connect(target.con, h, p);
+                });
+            } catch (Exception e) {
+                player.sendMessage("Error: Can not load server");
+            }
+        });
+    }
+
+    public void sendRedirectServerList(Player player, int page) {
+        Utils.executeExpectError(() -> {
+            try {
+                var size = 8;
+                var request = new GetServersMessageRequest()//
+                        .setPage(page)//
+                        .setSize(size);
+
+                var response = MindustryToolPlugin.apiGateway.getServers(request);
+                var servers = response.getServers();
+
+                PlayerPressCallback invalid = (p, s) -> {
+                    Call.infoToast(p.con, "Please don't click there", 10f);
+                    sendRedirectServerList(p, (int) s);
+                };
+
+                List<List<HudUtils.Option>> options = new ArrayList<>(List.of(List.of(HudUtils.option(invalid, "[#FFD700]Server name"), HudUtils.option(invalid, "[#FFD700]Players playing")), List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"), HudUtils.option(invalid, "[#FFA500]Map Playing")), List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")), List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
+
+                servers.forEach(server -> {
+                    PlayerPressCallback valid = (p, s) -> //
+                    onServerChoose(p, server.getId().toString(), server.getName());
+
+                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
+                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())), HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())), HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
+
+                    if (server.getMods() != null && !server.getMods().isEmpty()) {
+                        options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
+                    }
+
+                    if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
+                        options.add(List.of(HudUtils.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
+                    }
+
+                });
+
+                options.add(List.of(//
+                        page > 0//
+                                ? HudUtils.option((p, state) -> {
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    sendRedirectServerList(player, (int) state - 1);
+                                }, "[yellow]Previous")
+                                : HudUtils.option(invalid, "First page"), //
+                        servers.size() == size//
+                                ? HudUtils.option((p, state) -> {
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    sendRedirectServerList(player, (int) state + 1);
+                                }, "[green]Next")
+                                : HudUtils.option(invalid, "No more")));
+
+                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close")));
+
+                HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
+            } catch (Exception e) {
+                Log.err(e);
+            }
+        });
+    }
+
 }

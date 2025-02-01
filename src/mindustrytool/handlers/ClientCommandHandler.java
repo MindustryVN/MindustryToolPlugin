@@ -344,7 +344,7 @@ public class ClientCommandHandler {
             }
         });
 
-        handler.<Player>register("redirect", "<code...>", "Execute JavaScript code.", (args, player) -> {
+        handler.<Player>register("redirect", "", "Redirect all player to server", (args, player) -> {
             if (player.admin) {
                 sendRedirectServerList(player, 0);
             } else {

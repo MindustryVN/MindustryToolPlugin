@@ -11,4 +11,5 @@ public class PlayerMessageRequest {
     private String uuid;
     private String ip;
     private Team team;
+    private String locale;
 }

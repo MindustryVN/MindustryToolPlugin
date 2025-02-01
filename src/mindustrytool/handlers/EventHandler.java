@@ -342,6 +342,7 @@ public class EventHandler {
             var request = new PlayerMessageRequest()//
                     .setName(player.coloredName())//
                     .setIp(player.ip())//
+                    .setLocale(player.locale())//
                     .setUuid(player.uuid())//
                     .setTeam(new Team()//
                             .setName(team.name)//

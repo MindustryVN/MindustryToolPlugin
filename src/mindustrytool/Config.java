@@ -31,4 +31,9 @@ public class Config {
             [yellow]/hub[white] show this
             [green]Log in to get more feature
             """;
+
+    public static final String CHOOSE_SERVER_MESSAGE = """
+            [accent]Click[] [orange]any server data[] to [lime]play[]
+            [accent]Click[] to [scarlet]offline server[] to [lime]starting & play[] this.
+            """;
 }

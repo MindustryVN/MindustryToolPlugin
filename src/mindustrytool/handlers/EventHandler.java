@@ -502,8 +502,6 @@ public class EventHandler {
                     var mods = server.getMods();
                     mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
-                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
-
                     if (server.getMapName() == null) {
                         options.add(List.of(HudUtils.option(valid, "[yellow]%s".formatted(server.getName())),
                                 HudUtils.option(valid, "[scarlet]Server offline.")));
@@ -511,17 +509,22 @@ public class EventHandler {
                         options.add(List.of(HudUtils.option(valid, server.getName()),
                                 HudUtils.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
 
-                        options.add(List.of(HudUtils.option(valid, "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
+                        options.add(List.of(
+                                HudUtils.option(valid,
+                                        "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
                                 HudUtils.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
                     }
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {
-                        options.add(List.of(HudUtils.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
+                        options.add(List
+                                .of(HudUtils.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
                     }
 
                     if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
                         options.add(List.of(HudUtils.option(valid, "[grey]%s".formatted(server.getDescription()))));
                     }
+
+                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
                 });
 
                 options.add(List.of(

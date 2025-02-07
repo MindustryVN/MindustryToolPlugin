@@ -184,6 +184,7 @@ public class HttpServer {
                 String[] commands = context.bodyAsClass(String[].class);
                 if (commands != null) {
                     for (var command : commands) {
+                        Log.info("Execute: " + command);
                         ServerCommandHandler.getHandler().handleMessage(command);
                     }
                 }

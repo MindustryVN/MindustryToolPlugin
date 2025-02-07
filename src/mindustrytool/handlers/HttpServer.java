@@ -59,7 +59,7 @@ public class HttpServer {
             });
 
             app.get("ok", (context) -> {
-                context.result();
+                context.result("Ok");
             });
 
             app.get("hosting", (context) -> {
@@ -71,7 +71,7 @@ public class HttpServer {
 
                 Call.sendMessage(message);
 
-                context.result();
+                context.result("Ok");
             });
 
             app.post("host", context -> {
@@ -134,7 +134,7 @@ public class HttpServer {
                 } catch (MapException e) {
                     Log.err("@: @", e.map.plainName(), e.getMessage());
                 }
-                context.result();
+                context.result("Ok");
             });
 
             app.post("set-player", context -> {
@@ -162,7 +162,7 @@ public class HttpServer {
                     HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
                     MindustryToolPlugin.eventHandler.addPlayer(request, player);
                 }
-                context.result();
+                context.result("Ok");
             });
 
             app.get("players", context -> {
@@ -188,7 +188,7 @@ public class HttpServer {
                     }
                 }
 
-                context.result();
+                context.result("Ok");
             });
 
             app.start(9999);

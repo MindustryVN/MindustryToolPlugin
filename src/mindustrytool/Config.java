@@ -5,11 +5,10 @@ import java.util.concurrent.Executors;
 
 public class Config {
 
-    public static boolean isHub() {
-        return mindustry.net.Administration.Config.all.find(conf -> conf.name.equalsIgnoreCase("port")).num() == 6567;
-    }
-
     public static Boolean isLoaded = false;
+
+    public static final String HUB = System.getenv("IS_HUB");
+    public static final boolean IS_HUB = HUB != null && HUB.equals("true");
 
     public static final String ENV = System.getenv("ENV");
 

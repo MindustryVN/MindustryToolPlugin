@@ -140,7 +140,7 @@ public class EventHandler {
         Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.run(EventType.Trigger.update, this::onUpdate);
 
-        if (Config.isHub()) {
+        if (Config.IS_HUB) {
             executor.execute(() -> setupCustomServerDiscovery());
         }
     }
@@ -356,7 +356,7 @@ public class EventHandler {
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
 
                 var playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
-                if (Config.isHub()) {
+                if (Config.IS_HUB) {
                     sendHub(event.player, playerData.getLoginLink());
                 } else {
                     if (playerData.getLoginLink() != null) {

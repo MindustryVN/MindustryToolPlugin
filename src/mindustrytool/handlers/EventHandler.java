@@ -372,7 +372,7 @@ public class EventHandler {
                     if (playerData.getLoginLink() != null) {
                         player.sendMessage("[green]Logged in successfully");
                     } else {
-
+                        player.sendMessage("You are not logged in, consider log in via MindustryTool using /login");
                     }
                 }
 
@@ -641,6 +641,8 @@ public class EventHandler {
         if (isLoggedIn) {
             setName(player, name, (int) Math.sqrt(exp));
             player.sendMessage("Logged in as " + name);
+        } else {
+            player.sendMessage("You are not logged in, consider log in via MindustryTool using /login");
         }
     }
 

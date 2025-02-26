@@ -465,8 +465,6 @@ public class EventHandler {
                 HudUtils.closeFollowDisplay(trigger, HudUtils.HUB_UI);
 
             }, "[green]Login via MindustryTool"));
-        } else {
-            player.sendMessage("[green]Logged in successfully");
         }
 
         options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"));

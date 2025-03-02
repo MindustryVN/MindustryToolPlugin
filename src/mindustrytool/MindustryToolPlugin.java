@@ -43,7 +43,8 @@ public class MindustryToolPlugin extends Plugin {
 
         initOutputStream();
 
-        Core.settings.defaults("bans", "", "admins", "", "shufflemode", "custom", "globalrules", "{reactorExplosions: false, logicUnitBuild: false}");
+        Core.settings.defaults("bans", "", "admins", "", "shufflemode", "custom", "globalrules",
+                "{reactorExplosions: false, logicUnitBuild: false}");
 
         // update log level
         Config.debug.set(Config.debug.bool());
@@ -70,8 +71,11 @@ public class MindustryToolPlugin extends Plugin {
 
         if (Version.build == -1) {
             Log.warn("&lyYour server is running a custom build, which means that client checking is disabled.");
-            Log.warn("&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
+            Log.warn(
+                    "&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
         }
+
+        Log.info("MindustryToolPlugin initialized.");
     }
 
     public void handleCommandString(String line) {

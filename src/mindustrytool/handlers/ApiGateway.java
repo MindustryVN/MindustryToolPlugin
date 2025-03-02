@@ -90,13 +90,27 @@ public class ApiGateway {
     }
 
     public GetServersMessageResponse getServers(GetServersMessageRequest request) {
-        var req = setHeaders(HttpRequest.newBuilder(path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
+        var req = setHeaders(
+                HttpRequest.newBuilder(path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
                 .GET()//
                 .build();
 
         try {
             var result = httpClient.send(req, BodyHandlers.ofString()).body();
             return JsonUtils.readJsonAsClass(result, GetServersMessageResponse.class);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String translate(String text, String targetLanguage) {
+        var req = setHeaders(HttpRequest.newBuilder(path("translate/%s".formatted(targetLanguage))))//
+                .POST(HttpRequest.BodyPublishers.ofString(text))//
+                .build();
+
+        try {
+            var result = httpClient.send(req, BodyHandlers.ofString()).body();
+            return result;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

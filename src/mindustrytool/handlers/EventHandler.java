@@ -131,6 +131,8 @@ public class EventHandler {
             }
         });
 
+        setupChatTranslation();
+
         Events.on(GameOverEvent.class, this::onGameOver);
         Events.on(PlayEvent.class, this::onPlay);
         Events.on(PlayerJoin.class, this::onPlayerJoin);
@@ -143,6 +145,12 @@ public class EventHandler {
         if (Config.IS_HUB) {
             executor.execute(() -> setupCustomServerDiscovery());
         }
+    }
+
+    private void setupChatTranslation() {
+        Vars.netServer.admins.addChatFilter((player, message) -> {
+            return MindustryToolPlugin.apiGateway.translate(message, player.locale());
+        });
     }
 
     private void updatePlayerLevels() {

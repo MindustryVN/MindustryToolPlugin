@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 import arc.Core;
@@ -78,7 +77,7 @@ public class EventHandler {
     private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();
-    HashMap<String, String> translationCache = new HashMap<String, String>();
+    private static final ConcurrentHashMap<String, String> translationCache = new ConcurrentHashMap<String, String>();
 
     private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //

@@ -291,14 +291,18 @@ public class EventHandler {
         executor.execute(() -> {
             var locale = player.locale();
 
-            Groups.player.each(p -> {
-                if (p != player) {
-                    var translatedMessage = translationCache.computeIfAbsent(locale,
-                            key -> MindustryToolPlugin.apiGateway.translate(message, locale));
-                    p.sendMessage("Translation: " + translatedMessage, player);
-                }
-            });
-            translationCache.clear();
+            try {
+                Groups.player.each(p -> {
+                    if (p != player) {
+                        var translatedMessage = translationCache.computeIfAbsent(locale,
+                                key -> MindustryToolPlugin.apiGateway.translate(message, locale));
+                        p.sendMessage("Translation: " + translatedMessage, player);
+                    }
+                });
+                translationCache.clear();
+            } catch (Exception e) {
+                Log.err(e);
+            }
 
         });
     }

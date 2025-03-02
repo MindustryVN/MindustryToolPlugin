@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import arc.Core;
@@ -60,11 +61,9 @@ import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.time.Instant;
-import java.time.Duration;
 
 public class EventHandler {
 
@@ -78,7 +77,8 @@ public class EventHandler {
 
     private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    HashMap<String, String> translationCache = new HashMap<String, String>();
 
     private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //
@@ -105,8 +105,6 @@ public class EventHandler {
             lastMode = Gamemode.survival;
         }
 
-        executor.scheduleAtFixedRate(this::updatePlayerLevels, 0, 1, TimeUnit.MINUTES);
-
         if (!Vars.mods.orderedMods().isEmpty()) {
             Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
         }
@@ -131,8 +129,6 @@ public class EventHandler {
             }
         });
 
-        setupChatTranslation();
-
         Events.on(GameOverEvent.class, this::onGameOver);
         Events.on(PlayEvent.class, this::onPlay);
         Events.on(PlayerJoin.class, this::onPlayerJoin);
@@ -145,24 +141,6 @@ public class EventHandler {
         if (Config.IS_HUB) {
             executor.execute(() -> setupCustomServerDiscovery());
         }
-    }
-
-    private void setupChatTranslation() {
-        Vars.netServer.admins.addChatFilter((player, message) -> {
-            return MindustryToolPlugin.apiGateway.translate(message, player.locale());
-        });
-    }
-
-    private void updatePlayerLevels() {
-        playerMeta.values().forEach(meta -> {
-            if (meta.isLoggedIn == false)
-                return;
-
-            var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
-            var level = (int) Math.sqrt(exp);
-
-            setName(meta.player, meta.name, level);
-        });
     }
 
     private void setName(Player player, String name, int level) {
@@ -291,14 +269,15 @@ public class EventHandler {
     }
 
     public void onPlayerChat(PlayerChatEvent event) {
-        executor.execute(() -> {
-            Player player = event.player;
-            String message = event.message;
+        Player player = event.player;
+        String message = event.message;
 
-            // Filter all commands
-            if (message.startsWith("/")) {
-                return;
-            }
+        // Filter all commands
+        if (message.startsWith("/")) {
+            return;
+        }
+
+        executor.execute(() -> {
 
             String chat = Strings.format("[@] => @", player.plainName(), message);
 
@@ -307,6 +286,18 @@ public class EventHandler {
             } catch (Exception e) {
                 Log.err(e);
             }
+        });
+
+        executor.execute(() -> {
+            var locale = player.locale();
+
+            Groups.player.each(p -> {
+                var translatedMessage = translationCache.computeIfAbsent(locale,
+                        key -> MindustryToolPlugin.apiGateway.translate(message, locale));
+                p.sendMessage("Translation: " + translatedMessage, player);
+            });
+            translationCache.clear();
+
         });
     }
 

@@ -9,12 +9,6 @@ sourceSets.main.java.srcDirs = ["src"]
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
-repositories{
-    mavenCentral()
-    maven{ url "https://raw.githubusercontent.com/Zelaux/MindustryRepo/master/repository" }
-    maven{ url 'https://www.jitpack.io' }
-}
-
 ext{
     //the build number that this plugin is made for
     mindustryVersion = 'v146'

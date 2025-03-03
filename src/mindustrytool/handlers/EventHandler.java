@@ -295,6 +295,7 @@ public class EventHandler {
                     if (p != player) {
                         var translatedMessage = translationCache.computeIfAbsent(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));
+                        Log.info(message + " | " + translatedMessage);
                         p.sendMessage("Translation: " + translatedMessage, player);
                     }
                 });
@@ -457,7 +458,7 @@ public class EventHandler {
             MindustryToolPlugin.apiGateway.sendChatMessage(message);
         } catch (Exception e) {
             Log.err(e);
-        }
+        
     }
 
     public void sendHub(Player player, String loginLink) {

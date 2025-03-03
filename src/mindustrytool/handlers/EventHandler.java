@@ -290,21 +290,19 @@ public class EventHandler {
         executor.execute(() -> {
             var locale = player.locale();
 
-            Log.info("Player chat: " + message);
-
-            try {
-                Groups.player.each(p -> {
-                    if (p != player) {
+            Groups.player.each(p -> {
+                if (p.id != player.id) {
+                    try {
                         var translatedMessage = translationCache.computeIfAbsent(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));
                         Log.info(message + " | " + translatedMessage);
                         p.sendMessage("Translation: " + translatedMessage, player);
+                    } catch (Exception e) {
+                        Log.err(e);
                     }
-                });
-                translationCache.clear();
-            } catch (Exception e) {
-                Log.err(e);
-            }
+                }
+            });
+            translationCache.clear();
 
         });
     }

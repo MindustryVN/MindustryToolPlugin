@@ -288,10 +288,10 @@ public class EventHandler {
         });
 
         executor.execute(() -> {
-            var locale = player.locale();
 
             Groups.player.each(p -> {
                 if (p.id != player.id) {
+                    var locale = p.locale();
                     try {
                         var translatedMessage = translationCache.computeIfAbsent(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));

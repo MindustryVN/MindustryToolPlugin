@@ -290,6 +290,8 @@ public class EventHandler {
         executor.execute(() -> {
             var locale = player.locale();
 
+            Log.info("Player chat: " + message);
+
             try {
                 Groups.player.each(p -> {
                     if (p != player) {
@@ -459,7 +461,7 @@ public class EventHandler {
         } catch (Exception e) {
             Log.err(e);
         }
-        
+
     }
 
     public void sendHub(Player player, String loginLink) {

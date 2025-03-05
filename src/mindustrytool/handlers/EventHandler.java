@@ -287,22 +287,21 @@ public class EventHandler {
             }
         });
 
-        Groups.player.each(p -> {
-            if (p.id != player.id) {
-                var locale = p.locale();
-                try {
-                    executor.execute(() -> {
+        executor.execute(() -> {
+            Groups.player.each(p -> {
+                if (p.id != player.id) {
+                    var locale = p.locale();
+                    try {
                         var translatedMessage = translationCache.computeIfAbsent(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));
                         p.sendMessage("Translation: " + translatedMessage, player);
-                    });
-                } catch (Exception e) {
-                    Log.err(e);
+                    } catch (Exception e) {
+                        Log.err(e);
+                    }
                 }
-            }
+            });
+            translationCache.clear();
         });
-        translationCache.clear();
-
     }
 
     public void onPlayerLeave(PlayerLeave event) {

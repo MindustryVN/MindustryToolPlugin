@@ -292,9 +292,11 @@ public class EventHandler {
                 if (p.id != player.id) {
                     var locale = p.locale();
                     try {
+                        Log.info(locale + " " + message);
                         var translatedMessage = translationCache.computeIfAbsent(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));
                         p.sendMessage("Translation: " + translatedMessage, player);
+                        Log.info(locale + " translated:" + translatedMessage);
                     } catch (Exception e) {
                         Log.err(e);
                     }

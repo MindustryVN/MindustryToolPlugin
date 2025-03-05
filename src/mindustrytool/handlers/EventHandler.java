@@ -293,7 +293,7 @@ public class EventHandler {
                     var locale = p.locale();
                     try {
                         Log.info(locale + " " + message);
-                        var translatedMessage = translationCache.computeIfAbsent(locale,
+                        var translatedMessage = translationCache.computeIfAbsent(locale + message,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, locale));
                         p.sendMessage("Translation: [%s]: %s".formatted(player.name(), translatedMessage.trim()),
                                 player);

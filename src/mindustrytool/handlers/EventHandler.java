@@ -1,5 +1,7 @@
 package mindustrytool.handlers;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +64,7 @@ import mindustry.net.WorldReloader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.time.Duration;
 import java.time.Instant;
 
 public class EventHandler {
@@ -77,7 +80,10 @@ public class EventHandler {
     private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();
-    private static final ConcurrentHashMap<String, String> translationCache = new ConcurrentHashMap<String, String>();
+    private static final Cache<String, String> translationCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(10))
+            .maximumSize(1000) 
+            .build();
 
     private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //
@@ -287,23 +293,19 @@ public class EventHandler {
             }
         });
 
-        executor.execute(() -> {
-            Groups.player.each(p -> {
-                if (p.id != player.id) {
-                    var locale = p.locale();
+        Groups.player.each(p -> {
+            if (p.id != player.id) {
+                var locale = p.locale();
+                executor.execute(() -> {
                     try {
-                        Log.info(locale + " " + message);
-                        var translatedMessage = translationCache.computeIfAbsent(locale + message,
-                                key -> MindustryToolPlugin.apiGateway.translate(message, locale));
-                        p.sendMessage("Translation: [%s]: %s".formatted(player.name(), translatedMessage.trim()),
-                                player);
-                        Log.info(locale + " translated:" + translatedMessage);
+                        String translatedMessage = translationCache.get(locale,
+                                key -> MindustryToolPlugin.apiGateway.translate(message, key));
+                        p.sendMessage("Translation: " + translatedMessage, player);
                     } catch (Exception e) {
                         Log.err(e);
                     }
-                }
-            });
-            translationCache.clear();
+                });
+            }
         });
     }
 

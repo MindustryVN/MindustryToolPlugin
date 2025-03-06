@@ -220,7 +220,7 @@ public class EventHandler {
                     });
                     name = serverData.name;
                     description = serverData.description;
-                    map = serverData.mapName;
+                    map = serverData.mapName == null ? "" : serverData.mapName;
                     players = (int) serverData.players;
                 }
 

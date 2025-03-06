@@ -25,6 +25,7 @@ public class HudUtils {
     public static final int HUB_UI = 1;
     public static final int SERVERS_UI = 2;
     public static final int LOGIN_UI = 3;
+    public static final int SERVER_REDIRECT = 4;
 
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private static final List<Player> leaved = new ArrayList<Player>();

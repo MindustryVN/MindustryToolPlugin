@@ -277,7 +277,6 @@ public class EventHandler {
         }
 
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-
             String chat = Strings.format("[@] => @", player.plainName(), message);
 
             try {
@@ -287,19 +286,19 @@ public class EventHandler {
             }
         });
 
-        Groups.player.each(p -> {
-            if (p.id != player.id) {
-                var locale = p.locale();
-                Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            Groups.player.each(p -> {
+                if (p.id != player.id) {
+                    var locale = p.locale();
                     try {
                         String translatedMessage = translationCache.get(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, key));
-                        p.sendMessage("Translation: " + translatedMessage, player);
+                        p.sendMessage("[white]Translation: " + translatedMessage, player);
                     } catch (Exception e) {
                         Log.err(e);
                     }
-                });
-            }
+                }
+            });
         });
     }
 

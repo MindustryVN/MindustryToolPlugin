@@ -2,6 +2,8 @@ package mindustrytool.messages.response;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -9,7 +11,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 public class GetServersMessageResponse {
 
-    private List<ResponseData> servers;
+    private List<ResponseData> servers = new ArrayList<>();
 
     @Data
     @Accessors(chain = true)

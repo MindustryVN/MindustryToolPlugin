@@ -209,11 +209,15 @@ public class EventHandler {
                 int players = Groups.player.size();
 
                 if (Config.IS_HUB) {
-                    var serverData = getRandomServer();
-                    name = serverData.name;
-                    description = serverData.description;
-                    map = serverData.mapName == null ? "" : serverData.mapName;
-                    players = (int) serverData.players;
+                    try {
+                        var serverData = getRandomServer();
+                        name = serverData.name;
+                        description = serverData.description;
+                        map = serverData.mapName == null ? "" : serverData.mapName;
+                        players = (int) serverData.players;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 writeString(buffer, name, 100);

@@ -403,15 +403,14 @@ public class EventHandler {
                 }
 
                 if (Config.IS_HUB) {
-
                     var serverData = getRandomServer();
                     var options = List.of(//
                             HudUtils.option((p, state) -> {
                                 HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
-                            }, "Close"),
+                            }, "[red]No"),
                             HudUtils.option((p, state) -> {
                                 onServerChoose(player, serverData.id.toString(), serverData.name);
-                            }, "Yes"));
+                            }, "[green]Yes"));
 
                     HudUtils.showFollowDisplay(playert, HudUtils.SERVER_REDIRECT, "Redirect",
                             "Do you want to go to server: " + serverData.getName(), null, options);

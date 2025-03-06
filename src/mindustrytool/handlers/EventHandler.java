@@ -212,12 +212,7 @@ public class EventHandler {
                 int players = Groups.player.size();
 
                 if (Config.IS_HUB) {
-                    var serverData = serversCache.get("server", ignore -> {
-                        var request = new GetServersMessageRequest().setPage(0).setSize(10);
-                        var response = MindustryToolPlugin.apiGateway.getServers(request);
-                        var servers = response.getServers();
-                        return servers.get((int) Math.round(Math.random() * 100) % servers.size());
-                    });
+                    var serverData = getRandomServer();
                     name = serverData.name;
                     description = serverData.description;
                     map = serverData.mapName == null ? "" : serverData.mapName;
@@ -341,6 +336,15 @@ public class EventHandler {
         });
     }
 
+    public GetServersMessageResponse.ResponseData getRandomServer() {
+        return serversCache.get("server", ignore -> {
+            var request = new GetServersMessageRequest().setPage(0).setSize(10);
+            var response = MindustryToolPlugin.apiGateway.getServers(request);
+            var servers = response.getServers();
+            return servers.get((int) Math.round(Math.random() * 100) % servers.size());
+        });
+    }
+
     public void onPlayerJoin(PlayerJoin event) {
         executor.execute(() -> {
 
@@ -400,6 +404,11 @@ public class EventHandler {
                     }
                     if (playert != null)
                         playert.admin = isAdmin;
+                }
+
+                if (Config.IS_HUB) {
+                    var serverData = getRandomServer();
+                    onServerChoose(player, serverData.id.toString(), serverData.name);
                 }
             } catch (Exception e) {
                 Log.err(e);

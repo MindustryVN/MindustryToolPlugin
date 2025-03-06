@@ -46,6 +46,7 @@ import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
+import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.messages.response.GetServersMessageResponse.ResponseData;
 import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
@@ -74,15 +75,16 @@ public class EventHandler {
     public Gamemode lastMode;
     public boolean inGameOverWait;
 
-    private long lastTimeGetPlayers = 0;
-    private int lastPlayers = 0;
-
-    private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();
     private static final Cache<String, String> translationCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(10))
-            .maximumSize(1000) 
+            .maximumSize(1000)
+            .build();
+
+    private static final Cache<String, GetServersMessageResponse.ResponseData> serversCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(1))
+            .maximumSize(1000)
             .build();
 
     private final List<String> icons = List.of(//
@@ -200,26 +202,26 @@ public class EventHandler {
             var server = (Server) serverField.get(provider);
 
             server.setDiscoveryHandler((address, handler) -> {
+
                 String name = mindustry.net.Administration.Config.serverName.string();
                 String description = mindustry.net.Administration.Config.desc.string();
                 String map = Vars.state.map.name();
 
                 ByteBuffer buffer = ByteBuffer.allocate(500);
 
-                int players = lastPlayers;
+                int players = Groups.player.size();
 
                 if (Config.IS_HUB) {
-
-                    if (System.currentTimeMillis() - lastTimeGetPlayers > GET_PLAYERS_DURATION_GAP)
-                        try {
-                            players = MindustryToolPlugin.apiGateway.getTotalPlayer();
-                            lastTimeGetPlayers = System.currentTimeMillis();
-                            lastPlayers = players;
-                        } catch (Exception e) {
-                            Log.err(e);
-                        }
-                } else {
-                    players = Groups.player.size();
+                    var serverData = serversCache.get("server", ignore -> {
+                        var request = new GetServersMessageRequest().setPage(0).setSize(10);
+                        var response = MindustryToolPlugin.apiGateway.getServers(request);
+                        var servers = response.getServers();
+                        return servers.get((int) Math.round(Math.random() * 100) % servers.size());
+                    });
+                    name = serverData.name;
+                    description = serverData.description;
+                    map = serverData.mapName;
+                    players = (int) serverData.players;
                 }
 
                 writeString(buffer, name, 100);

@@ -63,8 +63,6 @@ import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -76,7 +74,6 @@ public class EventHandler {
     public boolean inGameOverWait;
 
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
     private static final Cache<String, String> translationCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(10))
             .maximumSize(1000)
@@ -146,7 +143,7 @@ public class EventHandler {
         Events.run(EventType.Trigger.update, this::onUpdate);
 
         if (Config.IS_HUB) {
-            executor.execute(() -> setupCustomServerDiscovery());
+            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> setupCustomServerDiscovery());
         }
     }
 
@@ -176,7 +173,7 @@ public class EventHandler {
     }
 
     private void onPlayerConnect(PlayerConnect event) {
-        executor.submit(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             var player = event.player;
 
             for (int i = 0; i < player.name().length(); i++) {
@@ -279,7 +276,7 @@ public class EventHandler {
             return;
         }
 
-        executor.execute(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
 
             String chat = Strings.format("[@] => @", player.plainName(), message);
 
@@ -293,7 +290,7 @@ public class EventHandler {
         Groups.player.each(p -> {
             if (p.id != player.id) {
                 var locale = p.locale();
-                executor.execute(() -> {
+                Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
                     try {
                         String translatedMessage = translationCache.get(locale,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, key));
@@ -307,7 +304,7 @@ public class EventHandler {
     }
 
     public void onPlayerLeave(PlayerLeave event) {
-        executor.execute(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
 
             Timer.schedule(() -> {
                 if (!Vars.state.isPaused() && Groups.player.size() == 0) {
@@ -346,7 +343,7 @@ public class EventHandler {
     }
 
     public void onPlayerJoin(PlayerJoin event) {
-        executor.execute(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
 
             if (Vars.state.isPaused()) {
                 Vars.state.set(State.playing);

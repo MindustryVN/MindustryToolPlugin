@@ -14,7 +14,7 @@ public class Config {
 
     public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
 
-    public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
+    public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newCachedThreadPool();
 
     public static final String SERVER_IP = "103.20.96.24";
     public static final String DISCORD_INVITE_URL = "https://discord.com/invite/DCX5yrRUyp";

@@ -64,7 +64,11 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        httpClient.sendAsync(request, BodyHandlers.ofString());
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendConsoleMessage(String chat) {
@@ -73,7 +77,11 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        httpClient.sendAsync(request, BodyHandlers.ofString());
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public String host(String targetServerId) {

@@ -121,14 +121,19 @@ public class MindustryToolPlugin extends Plugin {
             @Override
             public void write(int b) throws IOException {
                 standardOutputStream.write(b);
-                apiGateway.sendConsoleMessage(String.valueOf((char) b));
+                mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                    apiGateway.sendConsoleMessage(String.valueOf((char) b));
+                });
             }
 
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
                 standardOutputStream.write(b, off, len);
                 String message = new String(b, off, len);
-                apiGateway.sendConsoleMessage(message);
+
+                mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                    apiGateway.sendConsoleMessage(message);
+                });
             }
 
             @Override

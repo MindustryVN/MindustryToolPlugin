@@ -336,7 +336,7 @@ public class EventHandler {
         });
     }
 
-    public GetServersMessageResponse.ResponseData getRandomServer() {
+    public synchronized GetServersMessageResponse.ResponseData getRandomServer() {
         return serversCache.get("server", ignore -> {
             var request = new GetServersMessageRequest().setPage(0).setSize(10);
             var response = MindustryToolPlugin.apiGateway.getServers(request);

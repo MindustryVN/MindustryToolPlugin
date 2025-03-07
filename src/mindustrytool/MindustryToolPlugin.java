@@ -116,24 +116,32 @@ public class MindustryToolPlugin extends Plugin {
         clientCommandHandler.registerCommands(handler);
     }
 
+    private void sendToConsole(String message) {
+        mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            try {
+                apiGateway.sendConsoleMessage(message);
+            } catch (Exception e) {
+                try {
+                    standardOutputStream.write(message.getBytes());
+                } catch (IOException e1) {
+                }
+            }
+        });
+    }
+
     private void initOutputStream() {
         var custom = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
                 standardOutputStream.write(b);
-                mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-                    apiGateway.sendConsoleMessage(String.valueOf((char) b));
-                });
+                sendToConsole(String.valueOf((char) b));
             }
 
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
                 standardOutputStream.write(b, off, len);
                 String message = new String(b, off, len);
-
-                mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-                    apiGateway.sendConsoleMessage(message);
-                });
+                sendToConsole(message);
             }
 
             @Override

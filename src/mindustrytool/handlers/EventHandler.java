@@ -2,6 +2,8 @@ package mindustrytool.handlers;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -336,7 +338,7 @@ public class EventHandler {
         });
     }
 
-    public synchronized GetServersMessageResponse.ResponseData getRandomServer() {
+    public synchronized GetServersMessageResponse.ResponseData getRandomServer() throws IOException {
         return serversCache.get("server", ignore -> {
             var request = new GetServersMessageRequest().setPage(0).setSize(10);
             var response = MindustryToolPlugin.apiGateway.getServers(request);

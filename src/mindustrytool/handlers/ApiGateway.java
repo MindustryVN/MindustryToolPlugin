@@ -19,7 +19,7 @@ import mindustrytool.messages.response.GetServersMessageResponse;
 public class ApiGateway {
 
     private final HttpClient httpClient = HttpClient.newBuilder()//
-            .connectTimeout(Duration.ofSeconds(20))//
+            .connectTimeout(Duration.ofSeconds(2))//
             .build();
 
     private Builder setHeaders(Builder builder) {

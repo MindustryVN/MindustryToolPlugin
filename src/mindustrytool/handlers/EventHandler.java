@@ -297,7 +297,7 @@ public class EventHandler {
                 if (p.id != player.id) {
                     var locale = p.locale();
                     try {
-                        String translatedMessage = translationCache.get(locale,
+                        String translatedMessage = translationCache.get(locale + message,
                                 key -> MindustryToolPlugin.apiGateway.translate(message, key));
                         p.sendMessage("[white]Translation: " + translatedMessage, player);
                     } catch (Exception e) {

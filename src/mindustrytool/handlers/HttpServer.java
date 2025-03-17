@@ -3,8 +3,6 @@ package mindustrytool.handlers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -35,10 +33,9 @@ import io.javalin.json.JavalinJackson;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
-    private static final ExecutorService executor = Executors.newScheduledThreadPool(2);
 
     public void init() {
-        executor.execute(() -> {
+        var thread = new Thread(() -> {
 
             var app = Javalin.create(config -> {
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
@@ -193,7 +190,11 @@ public class HttpServer {
             });
 
             app.start(9999);
-        });
+        }, "HttpServer");
+
+        thread.setDaemon(true);
+        thread.start();
+
     }
 
     private StatsMessageResponse getStats() {
@@ -202,7 +203,9 @@ public class HttpServer {
         List<String> mods = Vars.mods.list().map(mod -> mod.name).list();
         int players = Groups.player.size();
 
-        return new StatsMessageResponse().setRamUsage(Core.app.getJavaHeap() / 1024 / 1024).setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(players).setMapName(mapName).setMods(mods).setStatus(Vars.state.isGame() ? "HOST" : "UP");
+        return new StatsMessageResponse().setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
+                .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(players).setMapName(mapName)
+                .setMods(mods).setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 
     public StatsMessageResponse detailStats() {

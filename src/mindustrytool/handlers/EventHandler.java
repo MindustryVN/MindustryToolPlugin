@@ -212,7 +212,7 @@ public class EventHandler {
 
                 if (Config.IS_HUB) {
                     try {
-                        var serverData = getRandomServer();
+                        var serverData = getTopServer();
                         name = serverData.name;
                         description = serverData.description;
                         map = serverData.mapName == null ? "" : serverData.mapName;
@@ -338,12 +338,12 @@ public class EventHandler {
         });
     }
 
-    public synchronized GetServersMessageResponse.ResponseData getRandomServer() throws IOException {
+    public synchronized GetServersMessageResponse.ResponseData getTopServer() throws IOException {
         return serversCache.get("server", ignore -> {
-            var request = new GetServersMessageRequest().setPage(0).setSize(10);
+            var request = new GetServersMessageRequest().setPage(0).setSize(1);
             var response = MindustryToolPlugin.apiGateway.getServers(request);
             var servers = response.getServers();
-            return servers.get((int) Math.round(Math.random() * 100) % servers.size());
+            return servers.get(0);
         });
     }
 
@@ -409,7 +409,7 @@ public class EventHandler {
                 }
 
                 if (Config.IS_HUB) {
-                    var serverData = getRandomServer();
+                    var serverData = getTopServer();
                     var options = List.of(//
                             HudUtils.option((p, state) -> {
                                 HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);

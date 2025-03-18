@@ -194,7 +194,6 @@ public class HttpServer {
 
         thread.setDaemon(true);
         thread.start();
-
     }
 
     private StatsMessageResponse getStats() {

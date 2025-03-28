@@ -3,15 +3,22 @@ package mindustrytool;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import arc.*;
+import arc.files.Fi;
+import arc.struct.Seq;
 import arc.util.*;
 import arc.util.CommandHandler.Command;
 import arc.util.CommandHandler.CommandResponse;
 import arc.util.CommandHandler.ResponseType;
 import mindustry.Vars;
+import mindustry.core.GameState.State;
 import mindustry.core.Version;
+import mindustry.game.EventType.Trigger;
+import mindustry.io.SaveIO;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.mod.*;
 import mindustry.net.Administration.Config;
@@ -37,6 +44,9 @@ public class MindustryToolPlugin extends Plugin {
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
     public static final PrintStream standardOutputStream = System.out;
+
+    private final Interval autosaveCount = new Interval();
+    private static DateTimeFormatter autosaveDate = DateTimeFormatter.ofPattern("MM-dd-yyyy_HH-mm-ss");
 
     @Override
     public void init() {
@@ -67,6 +77,22 @@ public class MindustryToolPlugin extends Plugin {
         VPNUtils.init();
         Effects.init();
 
+        Core.app.post(() -> {
+            // try to load auto-update save if possible
+            Fi fi = Vars.saveDirectory.child("autosavebe." + Vars.saveExtension);
+
+            if (fi.exists()) {
+                try {
+                    SaveIO.load(fi);
+                    Log.info("Auto-save loaded.");
+                    Vars.state.set(State.playing);
+                    Vars.netServer.openServer();
+                } catch (Throwable e) {
+                    Log.err(e);
+                }
+            }
+        });
+
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         if (Version.build == -1) {
@@ -74,6 +100,41 @@ public class MindustryToolPlugin extends Plugin {
             Log.warn(
                     "&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
         }
+
+        Events.run(Trigger.update, () -> {
+            if (Vars.state.isPlaying() && Config.autosave.bool()) {
+                if (autosaveCount.get(Config.autosaveSpacing.num() * 60)) {
+                    int max = Config.autosaveAmount.num();
+
+                    // use map file name to make sure it can be saved
+                    String mapName = (Vars.state.map.file == null ? "unknown"
+                            : Vars.state.map.file.nameWithoutExtension())
+                            .replace(" ", "_");
+                    String date = autosaveDate.format(LocalDateTime.now());
+
+                    Seq<Fi> autosaves = Vars.saveDirectory.findAll(f -> f.name().startsWith("auto_"));
+                    autosaves.sort(f -> -f.lastModified());
+
+                    // delete older saves
+                    if (autosaves.size >= max) {
+                        for (int i = max - 1; i < autosaves.size; i++) {
+                            autosaves.get(i).delete();
+                        }
+                    }
+
+                    String fileName = "auto_" + mapName + "_" + date + "." + Vars.saveExtension;
+                    Fi file = Vars.saveDirectory.child(fileName);
+                    Log.info("Autosaving...");
+
+                    try {
+                        SaveIO.save(file);
+                        Log.info("Autosave completed.");
+                    } catch (Throwable e) {
+                        Log.err("Autosave failed.", e);
+                    }
+                }
+            }
+        });
 
         Log.info("MindustryToolPlugin initialized.");
     }

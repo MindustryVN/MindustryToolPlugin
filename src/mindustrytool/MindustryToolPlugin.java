@@ -77,21 +77,23 @@ public class MindustryToolPlugin extends Plugin {
         VPNUtils.init();
         Effects.init();
 
-        Core.app.post(() -> {
-            // try to load auto-update save if possible
-            Fi fi = Vars.saveDirectory.child("autosavebe." + Vars.saveExtension);
+        if (Config.autoUpdate.bool()) {
+            Core.app.post(() -> {
+                // try to load auto-update save if possible
+                Fi fi = Vars.saveDirectory.child("autosavebe." + Vars.saveExtension);
 
-            if (fi.exists()) {
-                try {
-                    SaveIO.load(fi);
-                    Log.info("Auto-save loaded.");
-                    Vars.state.set(State.playing);
-                    Vars.netServer.openServer();
-                } catch (Throwable e) {
-                    Log.err(e);
+                if (fi.exists()) {
+                    try {
+                        SaveIO.load(fi);
+                        Log.info("Auto-save loaded.");
+                        Vars.state.set(State.playing);
+                        Vars.netServer.openServer();
+                    } catch (Throwable e) {
+                        Log.err(e);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 

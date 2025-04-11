@@ -145,7 +145,7 @@ public class EventHandler {
         Events.run(EventType.Trigger.update, this::onUpdate);
 
         if (Config.IS_HUB) {
-            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> setupCustomServerDiscovery());
+            setupCustomServerDiscovery();
         }
     }
 
@@ -201,7 +201,6 @@ public class EventHandler {
             var server = (Server) serverField.get(provider);
 
             server.setDiscoveryHandler((address, handler) -> {
-
                 String name = mindustry.net.Administration.Config.serverName.string();
                 String description = mindustry.net.Administration.Config.desc.string();
                 String map = Vars.state.map.name();

@@ -109,6 +109,8 @@ public class EventHandler {
     }
 
     public void init() {
+        System.out.println("Setup event handler");
+
         try {
             lastMode = Gamemode.valueOf(Core.settings.getString("lastServerMode", "survival"));
         } catch (Exception e) { // handle enum parse exception
@@ -153,6 +155,8 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
         }
+
+        System.out.println("Setup event handler done");
     }
 
     private void onBuildSelectEvent(BuildSelectEvent event) {

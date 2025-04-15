@@ -57,48 +57,57 @@ public class Effects {
     }
 
     public static void init() {
-        for (java.lang.reflect.Field f : mindustry.content.Fx.class.getDeclaredFields()) {
-            try {
-                if (f.get(null) instanceof Effect)
-                    effects.add(new Effects((Effect) f.get(null), f.getName()));
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+        System.out.println("Setup effects");
+
+        try {
+            for (java.lang.reflect.Field f : mindustry.content.Fx.class.getDeclaredFields()) {
+                try {
+                    if (f.get(null) instanceof Effect)
+                        effects.add(new Effects((Effect) f.get(null), f.getName()));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                }
             }
+
+            if (Core.settings.has("removedEffects")) {
+                try {
+                    for (String line : Core.settings.getString("removedEffects").split(" \\| ")) {
+                        Effects effect = getByName(line);
+                        if (effect != null)
+                            effect.disabled = true;
+                    }
+
+                } catch (Exception e) {
+                    saveSettings();
+                }
+            } else
+                saveSettings();
+
+            if (Core.settings.has("adminEffects")) {
+                try {
+                    for (String line : Core.settings.getString("adminEffects").split(" \\| ")) {
+                        Effects effect = getByName(line);
+                        if (effect != null)
+                            effect.forAdmin = true;
+                    }
+
+                } catch (Exception e) {
+                    saveSettings();
+                }
+            } else
+                saveSettings();
+
+            Timer.schedule(() -> {
+                Session.each(d -> d.hasEffect,
+                        d -> Call.effect(d.effect.effect, d.player.x, d.player.y, 10, arc.graphics.Color.green));
+            }, 0, 0.064f);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        if (Core.settings.has("removedEffects")) {
-            try {
-                for (String line : Core.settings.getString("removedEffects").split(" \\| ")) {
-                    Effects effect = getByName(line);
-                    if (effect != null)
-                        effect.disabled = true;
-                }
+        System.out.println("Setup effects done");
 
-            } catch (Exception e) {
-                saveSettings();
-            }
-        } else
-            saveSettings();
-
-        if (Core.settings.has("adminEffects")) {
-            try {
-                for (String line : Core.settings.getString("adminEffects").split(" \\| ")) {
-                    Effects effect = getByName(line);
-                    if (effect != null)
-                        effect.forAdmin = true;
-                }
-
-            } catch (Exception e) {
-                saveSettings();
-            }
-        } else
-            saveSettings();
-
-        Timer.schedule(() -> {
-            Session.each(d -> d.hasEffect,
-                    d -> Call.effect(d.effect.effect, d.player.x, d.player.y, 10, arc.graphics.Color.green));
-        }, 0, 0.064f);
     }
 
     public static void saveSettings() {

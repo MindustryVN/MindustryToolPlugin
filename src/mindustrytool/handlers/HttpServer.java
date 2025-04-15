@@ -35,6 +35,8 @@ public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
 
     public void init() {
+        System.out.println("Setup http server");
+
         var thread = new Thread(() -> {
 
             var app = Javalin.create(config -> {
@@ -189,11 +191,17 @@ public class HttpServer {
                 context.result("Ok");
             });
 
+            System.out.println("Start http server");
             app.start(9999);
+            System.out.println("Http server started");
+
         }, "HttpServer");
 
         thread.setDaemon(true);
         thread.start();
+
+        System.out.println("Setup http server done");
+
     }
 
     private StatsMessageResponse getStats() {

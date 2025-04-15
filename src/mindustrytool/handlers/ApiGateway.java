@@ -26,6 +26,8 @@ public class ApiGateway {
     private List<BuildLog> buildLogs = new ArrayList<>();
 
     public void init() {
+        System.out.println("Setup api gateway");
+
         Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> {
             if (buildLogs.size() > 0) {
                 var logs = new ArrayList<>(buildLogs);
@@ -43,6 +45,9 @@ public class ApiGateway {
             }
 
         }, 0, 10, TimeUnit.SECONDS);
+
+        System.out.println("Setup api gateway done");
+
     }
 
     private final HttpClient httpClient = HttpClient.newBuilder()//

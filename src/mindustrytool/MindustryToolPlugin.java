@@ -78,7 +78,8 @@ public class MindustryToolPlugin extends Plugin {
         VPNUtils.init();
         Effects.init();
 
-        if (Config.autoUpdate.bool()) {
+        if (Config.autosave.bool()) {
+            System.out.println("Auto save is on");
             Core.app.post(() -> {
                 // try to load auto-update save if possible
                 Fi fi = Vars.saveDirectory.child("autosavebe." + Vars.saveExtension);
@@ -96,7 +97,11 @@ public class MindustryToolPlugin extends Plugin {
             });
         }
 
+        System.out.println("Register server commands");
+
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
+
+        System.out.println("Register server commands done");
 
         if (Version.build == -1) {
             Log.warn("&lyYour server is running a custom build, which means that client checking is disabled.");
@@ -104,7 +109,10 @@ public class MindustryToolPlugin extends Plugin {
                     "&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
         }
 
+        System.out.println("Setup auto save");
+
         Events.run(Trigger.update, () -> {
+
             if (Vars.state.isPlaying() && Config.autosave.bool()) {
                 if (autosaveCount.get(Config.autosaveSpacing.num() * 60)) {
                     int max = Config.autosaveAmount.num();
@@ -194,6 +202,7 @@ public class MindustryToolPlugin extends Plugin {
     }
 
     private void initOutputStream() {
+        System.out.println("Setup logger");
         var custom = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
@@ -220,5 +229,6 @@ public class MindustryToolPlugin extends Plugin {
         };
 
         System.setOut(new PrintStream(custom));
+        System.out.println("Setup logger done");
     }
 }

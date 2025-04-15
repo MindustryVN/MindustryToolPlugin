@@ -37,168 +37,161 @@ public class HttpServer {
     public void init() {
         System.out.println("Setup http server");
 
-        var thread = new Thread(() -> {
+        var app = Javalin.create(config -> {
+            config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                mapper//
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
+                        .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
+                        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-            var app = Javalin.create(config -> {
-                config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
-                    mapper//
-                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
-                            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
-                            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            }));
+        });
 
-                }));
-            });
+        app.get("stats", context -> {
+            context.json(getStats());
+        });
 
-            app.get("stats", context -> {
-                context.json(getStats());
-            });
+        app.get("detail-stats", context -> {
+            context.json(detailStats());
+        });
 
-            app.get("detail-stats", context -> {
-                context.json(detailStats());
-            });
+        app.get("ok", (context) -> {
+            context.result("Ok");
+        });
 
-            app.get("ok", (context) -> {
-                context.result("Ok");
-            });
+        app.get("hosting", (context) -> {
+            context.json(Vars.state.isPlaying());
+        });
 
-            app.get("hosting", (context) -> {
-                context.json(Vars.state.isPlaying());
-            });
+        app.post("discord", context -> {
+            String message = context.body();
 
-            app.post("discord", context -> {
-                String message = context.body();
+            Call.sendMessage(message);
 
-                Call.sendMessage(message);
+            context.result("Ok");
+        });
 
-                context.result("Ok");
-            });
+        app.post("host", context -> {
+            StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
 
-            app.post("host", context -> {
-                StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
+            String mapName = request.getMapName();
+            String gameMode = request.getMode();
 
-                String mapName = request.getMapName();
-                String gameMode = request.getMode();
+            if (Vars.state.isGame()) {
+                throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
+            }
 
-                if (Vars.state.isGame()) {
-                    throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
-                }
+            Gamemode preset = Gamemode.survival;
 
-                Gamemode preset = Gamemode.survival;
-
-                if (gameMode != null) {
-                    try {
-                        preset = Gamemode.valueOf(gameMode);
-                    } catch (IllegalArgumentException e) {
-                        Log.err("No gamemode '@' found.", gameMode);
-                        return;
-                    }
-                }
-
-                Map result;
+            if (gameMode != null) {
                 try {
-                    if (mapName == null) {
-                        var maps = Vars.customMapDirectory.list();
-
-                        if (maps.length == 0) {
-                            Log.err("No custom maps found.");
-                            return;
-                        }
-                        result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
-                    } else {
-                        result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Cannot read map file: " + mapName);
-                }
-                if (result == null) {
-                    Log.err("No map with name '@' found.", mapName);
+                    preset = Gamemode.valueOf(gameMode);
+                } catch (IllegalArgumentException e) {
+                    Log.err("No gamemode '@' found.", gameMode);
                     return;
                 }
+            }
 
-                Log.info("Loading map...");
+            Map result;
+            try {
+                if (mapName == null) {
+                    var maps = Vars.customMapDirectory.list();
 
-                Vars.logic.reset();
-                MindustryToolPlugin.eventHandler.lastMode = preset;
-                Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
-
-                try {
-                    Vars.world.loadMap(result, result.applyRules(preset));
-                    Vars.state.rules = result.applyRules(preset);
-                    Vars.logic.play();
-
-                    Log.info("Map loaded.");
-
-                    Vars.netServer.openServer();
-
-                } catch (MapException e) {
-                    Log.err("@: @", e.map.plainName(), e.getMessage());
-                }
-                context.result("Ok");
-            });
-
-            app.post("set-player", context -> {
-                SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
-
-                String uuid = request.getUuid();
-                boolean isAdmin = request.isAdmin();
-
-                PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-                Player player = Groups.player.find(p -> p.getInfo() == target);
-
-                if (target != null) {
-                    if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id, player == null ? target.adminUsid : player.usid());
-                    } else {
-                        Vars.netServer.admins.unAdminPlayer(target.id);
+                    if (maps.length == 0) {
+                        Log.err("No custom maps found.");
+                        return;
                     }
-                    if (player != null)
-                        player.admin = isAdmin;
+                    result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
                 } else {
-                    Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+                    result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
                 }
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot read map file: " + mapName);
+            }
+            if (result == null) {
+                Log.err("No map with name '@' found.", mapName);
+                return;
+            }
 
-                if (player != null) {
-                    HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                    MindustryToolPlugin.eventHandler.addPlayer(request, player);
+            Log.info("Loading map...");
+
+            Vars.logic.reset();
+            MindustryToolPlugin.eventHandler.lastMode = preset;
+            Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+
+            try {
+                Vars.world.loadMap(result, result.applyRules(preset));
+                Vars.state.rules = result.applyRules(preset);
+                Vars.logic.play();
+
+                Log.info("Map loaded.");
+
+                Vars.netServer.openServer();
+
+            } catch (MapException e) {
+                Log.err("@: @", e.map.plainName(), e.getMessage());
+            }
+            context.result("Ok");
+        });
+
+        app.post("set-player", context -> {
+            SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
+
+            String uuid = request.getUuid();
+            boolean isAdmin = request.isAdmin();
+
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+            Player player = Groups.player.find(p -> p.getInfo() == target);
+
+            if (target != null) {
+                if (isAdmin) {
+                    Vars.netServer.admins.adminPlayer(target.id, player == null ? target.adminUsid : player.usid());
+                } else {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
                 }
-                context.result("Ok");
-            });
+                if (player != null)
+                    player.admin = isAdmin;
+            } else {
+                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+            }
 
-            app.get("players", context -> {
-                var players = new ArrayList<Player>();
-                Groups.player.forEach(players::add);
+            if (player != null) {
+                HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                MindustryToolPlugin.eventHandler.addPlayer(request, player);
+            }
+            context.result("Ok");
+        });
 
-                context.json(players.stream()//
-                        .map(player -> new PlayerDto()//
-                                .setName(player.coloredName())//
-                                .setUuid(player.uuid())//
-                                .setLocale(player.locale())//
-                                .setTeam(new Team()//
-                                        .setColor(player.team().color.toString())//
-                                        .setName(player.team().name)))
-                        .collect(Collectors.toList()));
-            });
+        app.get("players", context -> {
+            var players = new ArrayList<Player>();
+            Groups.player.forEach(players::add);
 
-            app.post("command", context -> {
-                String[] commands = context.bodyAsClass(String[].class);
-                if (commands != null) {
-                    for (var command : commands) {
-                        Log.info("Execute: " + command);
-                        ServerCommandHandler.getHandler().handleMessage(command);
-                    }
+            context.json(players.stream()//
+                    .map(player -> new PlayerDto()//
+                            .setName(player.coloredName())//
+                            .setUuid(player.uuid())//
+                            .setLocale(player.locale())//
+                            .setTeam(new Team()//
+                                    .setColor(player.team().color.toString())//
+                                    .setName(player.team().name)))
+                    .collect(Collectors.toList()));
+        });
+
+        app.post("command", context -> {
+            String[] commands = context.bodyAsClass(String[].class);
+            if (commands != null) {
+                for (var command : commands) {
+                    Log.info("Execute: " + command);
+                    ServerCommandHandler.getHandler().handleMessage(command);
                 }
+            }
 
-                context.result("Ok");
-            });
+            context.result("Ok");
+        });
 
-            System.out.println("Start http server");
-            app.start(9999);
-            System.out.println("Http server started");
-
-        }, "HttpServer");
-
-        thread.setDaemon(true);
-        thread.start();
+        System.out.println("Start http server");
+        app.start(9999);
+        System.out.println("Http server started");
 
         System.out.println("Setup http server done");
 

@@ -195,6 +195,7 @@ public class MindustryToolPlugin extends Plugin {
             } catch (Exception e) {
                 try {
                     standardOutputStream.write(message.getBytes());
+                    standardOutputStream.write(e.getMessage().getBytes());
                 } catch (IOException e1) {
                 }
             }

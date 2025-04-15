@@ -27,6 +27,8 @@ import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.entities.Effect;
 import mindustry.game.EventType;
+import mindustry.game.EventType.BlockBuildEndEvent;
+import mindustry.game.EventType.BuildSelectEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
@@ -45,7 +47,9 @@ import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.BuildLog;
 import mindustrytool.messages.request.GetServersMessageRequest;
+import mindustrytool.messages.request.PlayerDto;
 import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
@@ -143,10 +147,80 @@ public class EventHandler {
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.run(EventType.Trigger.update, this::onUpdate);
+        Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
+        Events.on(BuildSelectEvent.class, this::onBuildSelectEvent);
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
         }
+    }
+
+    private void onBuildSelectEvent(BuildSelectEvent event) {
+        if (event.builder == null || !event.builder.isPlayer()) {
+            return;
+        }
+
+        if (event.tile == null || event.tile.build == null) {
+            return;
+        }
+
+        var player = event.builder.getPlayer();
+        var playerName = player.plainName();
+        var locale = player.locale();
+        var team = new Team()//
+                .setColor(player.team().color.toString())
+                .setName(player.team().name);
+
+        var building = event.tile.build;
+
+        var buildLog = new BuildLog()//
+                .setPlayer(new PlayerDto()//
+                        .setLocale(locale)//
+                        .setName(playerName)
+                        .setTeam(team)
+                        .setUuid(player.uuid()))
+                .setBuilding(new BuildLog.BuildingDto()//
+                        .setX(building.x())
+                        .setY(building.y())
+                        .setLastAccess(building.lastAccessed())
+                        .setName(building.getDisplayName()))
+                .setMessage(event.breaking ? "Start breaking" : "Start building");
+
+        MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
+    }
+
+    private void onBuildBlockEnd(BlockBuildEndEvent event) {
+        if (event.unit == null || !event.unit.isPlayer()) {
+            return;
+        }
+
+        if (event.tile == null || event.tile.build == null) {
+            return;
+        }
+
+        var player = event.unit.getPlayer();
+        var playerName = player.plainName();
+        var locale = player.locale();
+        var team = new Team()//
+                .setColor(player.team().color.toString())
+                .setName(player.team().name);
+
+        var building = event.tile.build;
+
+        var buildLog = new BuildLog()//
+                .setPlayer(new PlayerDto()//
+                        .setLocale(locale)//
+                        .setName(playerName)
+                        .setTeam(team)
+                        .setUuid(player.uuid()))
+                .setBuilding(new BuildLog.BuildingDto()//
+                        .setX(building.x())
+                        .setY(building.y())
+                        .setLastAccess(building.lastAccessed())
+                        .setName(building.getDisplayName()))
+                .setMessage(event.breaking ? "Breaking" : "Building");
+
+        MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
     }
 
     private void setName(Player player, String name, int level) {

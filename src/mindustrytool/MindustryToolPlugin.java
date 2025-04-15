@@ -72,6 +72,7 @@ public class MindustryToolPlugin extends Plugin {
 
         httpServer.init();
         eventHandler.init();
+        apiGateway.init();
 
         HudUtils.init();
         VPNUtils.init();

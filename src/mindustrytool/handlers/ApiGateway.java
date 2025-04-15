@@ -7,16 +7,43 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
+import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.BuildLog;
 import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 
 public class ApiGateway {
+
+    private List<BuildLog> buildLogs = new ArrayList<>();
+
+    public void init() {
+        Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> {
+            if (buildLogs.size() > 0) {
+                var logs = new ArrayList<>(buildLogs);
+                buildLogs.clear();
+                var request = setHeaders(HttpRequest.newBuilder(path("build-log")))//
+                        .header("Content-Type", "application/json")//
+                        .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(logs)))//
+                        .build();
+
+                httpClient.sendAsync(request, BodyHandlers.ofString()).exceptionally(ex -> {
+                    ex.printStackTrace();
+                    return null;
+                });
+
+            }
+
+        }, 0, 10, TimeUnit.SECONDS);
+    }
 
     private final HttpClient httpClient = HttpClient.newBuilder()//
             .connectTimeout(Duration.ofSeconds(2))//
@@ -82,6 +109,10 @@ public class ApiGateway {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendBuildLog(BuildLog buildLog) {
+        buildLogs.add(buildLog);
     }
 
     public String host(String targetServerId) {

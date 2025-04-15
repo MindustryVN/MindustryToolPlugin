@@ -187,7 +187,8 @@ public class EventHandler {
                         .setX(building.x())
                         .setY(building.y())
                         .setLastAccess(building.lastAccessed())
-                        .setName(building.getDisplayName()))
+                        .setName(building.block() != null ? building.block().name
+                                : "Unknow"))
                 .setMessage(event.breaking ? "Start breaking" : "Start building");
 
         MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
@@ -221,7 +222,7 @@ public class EventHandler {
                         .setX(building.x())
                         .setY(building.y())
                         .setLastAccess(building.lastAccessed())
-                        .setName(building.getDisplayName()))
+                        .setName(building.block() != null ? building.block().name : "Unknow"))
                 .setMessage(event.breaking ? "Breaking" : "Building");
 
         MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);

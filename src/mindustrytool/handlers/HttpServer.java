@@ -78,7 +78,7 @@ public class HttpServer {
             String gameMode = request.getMode();
             String commands = request.getCommands();
 
-            if (commands != null) {
+            if (commands != null && !commands.isBlank()) {
                 String[] commandsArray = commands.split("\n");
                 for (var command : commandsArray) {
                     Log.info("Execute: " + command);

@@ -84,6 +84,7 @@ public class HttpServer {
                     Log.info("Execute: " + command);
                     ServerCommandHandler.getHandler().handleMessage(command);
                 }
+                return;
             }
 
             if (Vars.state.isGame()) {

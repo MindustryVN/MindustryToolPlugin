@@ -76,6 +76,15 @@ public class HttpServer {
 
             String mapName = request.getMapName();
             String gameMode = request.getMode();
+            String commands = request.getCommands();
+
+            if (commands != null) {
+                String[] commandsArray = commands.split("\n");
+                for (var command : commandsArray) {
+                    Log.info("Execute: " + command);
+                    ServerCommandHandler.getHandler().handleMessage(command);
+                }
+            }
 
             if (Vars.state.isGame()) {
                 throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");

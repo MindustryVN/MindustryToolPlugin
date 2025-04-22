@@ -73,74 +73,7 @@ public class HttpServer {
 
         app.post("host", context -> {
             StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
-
-            String mapName = request.getMapName();
-            String gameMode = request.getMode();
-            String commands = request.getCommands();
-
-            if (commands != null && !commands.isBlank()) {
-                String[] commandsArray = commands.split("\n");
-                for (var command : commandsArray) {
-                    Log.info("Execute: " + command);
-                    ServerCommandHandler.getHandler().handleMessage(command);
-                }
-                return;
-            }
-
-            if (Vars.state.isGame()) {
-                throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
-            }
-
-            Gamemode preset = Gamemode.survival;
-
-            if (gameMode != null) {
-                try {
-                    preset = Gamemode.valueOf(gameMode);
-                } catch (IllegalArgumentException e) {
-                    Log.err("No gamemode '@' found.", gameMode);
-                    return;
-                }
-            }
-
-            Map result;
-            try {
-                if (mapName == null) {
-                    var maps = Vars.customMapDirectory.list();
-
-                    if (maps.length == 0) {
-                        Log.err("No custom maps found.");
-                        return;
-                    }
-                    result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
-                } else {
-                    result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot read map file: " + mapName);
-            }
-            if (result == null) {
-                Log.err("No map with name '@' found.", mapName);
-                return;
-            }
-
-            Log.info("Loading map...");
-
-            Vars.logic.reset();
-            MindustryToolPlugin.eventHandler.lastMode = preset;
-            Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
-
-            try {
-                Vars.world.loadMap(result, result.applyRules(preset));
-                Vars.state.rules = result.applyRules(preset);
-                Vars.logic.play();
-
-                Log.info("Map loaded.");
-
-                Vars.netServer.openServer();
-
-            } catch (MapException e) {
-                Log.err("@: @", e.map.plainName(), e.getMessage());
-            }
+            host(request);
             context.result("Ok");
         });
 
@@ -205,6 +138,76 @@ public class HttpServer {
 
         System.out.println("Setup http server done");
 
+    }
+
+    private void host(StartServerMessageRequest request) {
+        String mapName = request.getMapName();
+        String gameMode = request.getMode();
+        String commands = request.getCommands();
+
+        if (commands != null && !commands.isBlank()) {
+            String[] commandsArray = commands.split("\n");
+            for (var command : commandsArray) {
+                Log.info("Execute: " + command);
+                ServerCommandHandler.getHandler().handleMessage(command);
+            }
+            return;
+        }
+
+        if (Vars.state.isGame()) {
+            throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
+        }
+
+        Gamemode preset = Gamemode.survival;
+
+        if (gameMode != null) {
+            try {
+                preset = Gamemode.valueOf(gameMode);
+            } catch (IllegalArgumentException e) {
+                Log.err("No gamemode '@' found.", gameMode);
+                return;
+            }
+        }
+
+        Map result;
+        try {
+            if (mapName == null) {
+                var maps = Vars.customMapDirectory.list();
+
+                if (maps.length == 0) {
+                    Log.err("No custom maps found.");
+                    return;
+                }
+                result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
+            } else {
+                result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot read map file: " + mapName);
+        }
+        if (result == null) {
+            Log.err("No map with name '@' found.", mapName);
+            return;
+        }
+
+        Log.info("Loading map...");
+
+        Vars.logic.reset();
+        MindustryToolPlugin.eventHandler.lastMode = preset;
+        Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+
+        try {
+            Vars.world.loadMap(result, result.applyRules(preset));
+            Vars.state.rules = result.applyRules(preset);
+            Vars.logic.play();
+
+            Log.info("Map loaded.");
+
+            Vars.netServer.openServer();
+
+        } catch (MapException e) {
+            Log.err("@: @", e.map.plainName(), e.getMessage());
+        }
     }
 
     private StatsMessageResponse getStats() {

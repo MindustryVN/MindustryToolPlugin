@@ -160,86 +160,100 @@ public class EventHandler {
     }
 
     private void onBuildSelectEvent(BuildSelectEvent event) {
-        if (event.builder == null || !event.builder.isPlayer()) {
-            return;
+        try {
+
+            if (event.builder == null || !event.builder.isPlayer()) {
+                return;
+            }
+
+            if (event.tile == null || event.tile.build == null) {
+                return;
+            }
+
+            var player = event.builder.getPlayer();
+            var playerName = player.plainName();
+            var locale = player.locale();
+            var team = new Team()//
+                    .setColor(player.team().color.toString())
+                    .setName(player.team().name);
+
+            var building = event.tile.build;
+
+            var buildLog = new BuildLog()//
+                    .setPlayer(new PlayerDto()//
+                            .setLocale(locale)//
+                            .setName(playerName)
+                            .setTeam(team)
+                            .setUuid(player.uuid()))
+                    .setBuilding(new BuildLog.BuildingDto()//
+                            .setX(building.x())
+                            .setY(building.y())
+                            .setLastAccess(building.lastAccessed())
+                            .setName(building.block() != null ? building.block().name
+                                    : "Unknow"))
+                    .setMessage(event.breaking ? "Start breaking" : "Start building");
+
+            MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (event.tile == null || event.tile.build == null) {
-            return;
-        }
-
-        var player = event.builder.getPlayer();
-        var playerName = player.plainName();
-        var locale = player.locale();
-        var team = new Team()//
-                .setColor(player.team().color.toString())
-                .setName(player.team().name);
-
-        var building = event.tile.build;
-
-        var buildLog = new BuildLog()//
-                .setPlayer(new PlayerDto()//
-                        .setLocale(locale)//
-                        .setName(playerName)
-                        .setTeam(team)
-                        .setUuid(player.uuid()))
-                .setBuilding(new BuildLog.BuildingDto()//
-                        .setX(building.x())
-                        .setY(building.y())
-                        .setLastAccess(building.lastAccessed())
-                        .setName(building.block() != null ? building.block().name
-                                : "Unknow"))
-                .setMessage(event.breaking ? "Start breaking" : "Start building");
-
-        MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
     }
 
     private void onBuildBlockEnd(BlockBuildEndEvent event) {
-        if (event.unit == null || !event.unit.isPlayer()) {
-            return;
+        try {
+
+            if (event.unit == null || !event.unit.isPlayer()) {
+                return;
+            }
+
+            if (event.tile == null || event.tile.build == null) {
+                return;
+            }
+
+            var player = event.unit.getPlayer();
+            var playerName = player.plainName();
+            var locale = player.locale();
+            var team = new Team()//
+                    .setColor(player.team().color.toString())
+                    .setName(player.team().name);
+
+            var building = event.tile.build;
+
+            var buildLog = new BuildLog()//
+                    .setPlayer(new PlayerDto()//
+                            .setLocale(locale)//
+                            .setName(playerName)
+                            .setTeam(team)
+                            .setUuid(player.uuid()))
+                    .setBuilding(new BuildLog.BuildingDto()//
+                            .setX(building.x())
+                            .setY(building.y())
+                            .setLastAccess(building.lastAccessed())
+                            .setName(building.block() != null ? building.block().name : "Unknow"))
+                    .setMessage(event.breaking ? "Breaking" : "Building");
+
+            MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (event.tile == null || event.tile.build == null) {
-            return;
-        }
-
-        var player = event.unit.getPlayer();
-        var playerName = player.plainName();
-        var locale = player.locale();
-        var team = new Team()//
-                .setColor(player.team().color.toString())
-                .setName(player.team().name);
-
-        var building = event.tile.build;
-
-        var buildLog = new BuildLog()//
-                .setPlayer(new PlayerDto()//
-                        .setLocale(locale)//
-                        .setName(playerName)
-                        .setTeam(team)
-                        .setUuid(player.uuid()))
-                .setBuilding(new BuildLog.BuildingDto()//
-                        .setX(building.x())
-                        .setY(building.y())
-                        .setLastAccess(building.lastAccessed())
-                        .setName(building.block() != null ? building.block().name : "Unknow"))
-                .setMessage(event.breaking ? "Breaking" : "Building");
-
-        MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
     }
 
     private void setName(Player player, String name, int level) {
-        var icon = getIconBaseOnLevel(level);
-        var newName = "[white]%s [%s] %s".formatted(icon, level, name);
+        try {
+            var icon = getIconBaseOnLevel(level);
+            var newName = "[white]%s [%s] %s".formatted(icon, level, name);
 
-        if (!newName.equals(player.name)) {
-            var hasLevelInName = player.name.matches("\\[\\d+\\]");
+            if (!newName.equals(player.name)) {
+                var hasLevelInName = player.name.matches("\\[\\d+\\]");
 
-            player.name(newName);
+                player.name(newName);
 
-            if (hasLevelInName) {
-                player.sendMessage("You have leveled up to level %s".formatted(level));
+                if (hasLevelInName) {
+                    player.sendMessage("You have leveled up to level %s".formatted(level));
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -255,17 +269,22 @@ public class EventHandler {
 
     private void onPlayerConnect(PlayerConnect event) {
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            var player = event.player;
+            try {
+                var player = event.player;
 
-            for (int i = 0; i < player.name().length(); i++) {
-                char ch = player.name().charAt(i);
-                if (ch <= '\u001f') {
-                    player.kick("Invalid name");
+                for (int i = 0; i < player.name().length(); i++) {
+                    char ch = player.name().charAt(i);
+                    if (ch <= '\u001f') {
+                        player.kick("Invalid name");
+                    }
                 }
-            }
 
-            if (VPNUtils.isBot(player)) {
-                player.kick("Your IP has been banned");
+                if (VPNUtils.isBot(player)) {
+                    player.kick("Your IP has been banned");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -352,67 +371,71 @@ public class EventHandler {
     }
 
     public void onPlayerChat(PlayerChatEvent event) {
-        Player player = event.player;
-        String message = event.message;
+        try {
 
-        // Filter all commands
-        if (message.startsWith("/")) {
-            return;
-        }
+            Player player = event.player;
+            String message = event.message;
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            String chat = Strings.format("[@] => @", player.plainName(), message);
-
-            try {
-                MindustryToolPlugin.apiGateway.sendChatMessage(chat);
-            } catch (Exception e) {
-                Log.err(e);
+            // Filter all commands
+            if (message.startsWith("/")) {
+                return;
             }
-        });
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            Groups.player.each(p -> {
-                if (p.id != player.id) {
-                    var locale = p.locale();
-                    try {
-                        String translatedMessage = translationCache.get(locale + message,
-                                key -> MindustryToolPlugin.apiGateway.translate(message, locale));
-                        p.sendMessage("[white]Translation: " + translatedMessage, player);
-                    } catch (Exception e) {
-                        Log.err(e);
-                    }
+            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                String chat = Strings.format("[@] => @", player.plainName(), message);
+
+                try {
+                    MindustryToolPlugin.apiGateway.sendChatMessage(chat);
+                } catch (Exception e) {
+                    Log.err(e);
                 }
             });
-        });
+
+            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                Groups.player.each(p -> {
+                    if (p.id != player.id) {
+                        var locale = p.locale();
+                        try {
+                            String translatedMessage = translationCache.get(locale + message,
+                                    key -> MindustryToolPlugin.apiGateway.translate(message, locale));
+                            p.sendMessage("[white]Translation: " + translatedMessage, player);
+                        } catch (Exception e) {
+                            Log.err(e);
+                        }
+                    }
+                });
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void onPlayerLeave(PlayerLeave event) {
+
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-
-            Timer.schedule(() -> {
-                if (!Vars.state.isPaused() && Groups.player.size() == 0) {
-                    Vars.state.set(State.paused);
-                }
-            }, 10);
-
-            Player player = event.player;
-
-            Session.remove(player);
-
-            MindustryToolPlugin.voteHandler.removeVote(player);
-
-            String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ leaved the server, current players: @", playerName,
-                    Groups.player.size() - 1);
-
-            playerMeta.remove(event.player.uuid());
-
             try {
+                Timer.schedule(() -> {
+                    if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                        Vars.state.set(State.paused);
+                    }
+                }, 10);
+
+                Player player = event.player;
+
+                Session.remove(player);
+
+                MindustryToolPlugin.voteHandler.removeVote(player);
+
+                String playerName = event.player != null ? event.player.plainName() : "Unknown";
+                String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                        Groups.player.size() - 1);
+
+                playerMeta.remove(event.player.uuid());
+
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {
-                Log.err(e);
+                e.printStackTrace();
             }
-
         });
     }
 
@@ -427,35 +450,35 @@ public class EventHandler {
 
     public void onPlayerJoin(PlayerJoin event) {
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-
-            if (Vars.state.isPaused()) {
-                Vars.state.set(State.playing);
-            }
-
-            var player = event.player;
-
-            Session.put(player);
-
-            PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
-
-            if (target != null) {
-                Vars.netServer.admins.unAdminPlayer(target.id);
-            }
-
-            String playerName = player != null ? player.plainName() : "Unknown";
-            String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
-
-            var team = player.team();
-            var request = new PlayerMessageRequest()//
-                    .setName(player.coloredName())//
-                    .setIp(player.ip())//
-                    .setLocale(player.locale())//
-                    .setUuid(player.uuid())//
-                    .setTeam(new Team()//
-                            .setName(team.name)//
-                            .setColor(team.color.toString()));
-
             try {
+                if (Vars.state.isPaused()) {
+                    Vars.state.set(State.playing);
+                }
+
+                var player = event.player;
+
+                Session.put(player);
+
+                PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
+
+                if (target != null) {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
+                }
+
+                String playerName = player != null ? player.plainName() : "Unknown";
+                String chat = Strings.format("@ joined the server, current players: @", playerName,
+                        Groups.player.size());
+
+                var team = player.team();
+                var request = new PlayerMessageRequest()//
+                        .setName(player.coloredName())//
+                        .setIp(player.ip())//
+                        .setLocale(player.locale())//
+                        .setUuid(player.uuid())//
+                        .setTeam(new Team()//
+                                .setName(team.name)//
+                                .setColor(team.color.toString()));
+
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
 
                 var playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
@@ -499,10 +522,10 @@ public class EventHandler {
                     HudUtils.showFollowDisplay(playert, HudUtils.SERVER_REDIRECT, "Redirect",
                             "Do you want to go to server: " + serverData.getName(), null, options);
                 }
-            } catch (Exception e) {
-                Log.err(e);
-            }
 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 
@@ -516,47 +539,49 @@ public class EventHandler {
     }
 
     public void onGameOver(GameOverEvent event) {
-        if (inGameOverWait) {
-            return;
-        }
-
-        if (Vars.state.rules.waves) {
-            Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave, Groups.player.size(),
-                    Strings.capitalize(Vars.state.map.plainName()));
-        } else {
-            Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
-                    Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-        }
-
-        // set the next map to be played
-        Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
-        if (map != null) {
-            Call.infoMessage(
-                    (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
-                            : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
-                            + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
-                            + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
-                            + " seconds.");
-
-            Vars.state.gameOver = true;
-            Call.updateGameOver(event.winner);
-
-            Log.info("Selected next map to be @.", map.plainName());
-
-            play(() -> Vars.world.loadMap(map, map.applyRules(lastMode)));
-        } else {
-            Vars.netServer.kickAll(KickReason.gameover);
-            Vars.state.set(State.menu);
-            Vars.net.closeServer();
-        }
-
-        String message = Vars.state.rules.waves
-                ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
-                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
-                : Strings.format("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
-                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-
         try {
+            if (inGameOverWait) {
+                return;
+            }
+
+            if (Vars.state.rules.waves) {
+                Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
+                        Groups.player.size(),
+                        Strings.capitalize(Vars.state.map.plainName()));
+            } else {
+                Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
+                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+            }
+
+            // set the next map to be played
+            Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
+            if (map != null) {
+                Call.infoMessage(
+                        (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
+                                : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
+                                + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
+                                + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
+                                + " seconds.");
+
+                Vars.state.gameOver = true;
+                Call.updateGameOver(event.winner);
+
+                Log.info("Selected next map to be @.", map.plainName());
+
+                play(() -> Vars.world.loadMap(map, map.applyRules(lastMode)));
+            } else {
+                Vars.netServer.kickAll(KickReason.gameover);
+                Vars.state.set(State.menu);
+                Vars.net.closeServer();
+            }
+
+            String message = Vars.state.rules.waves
+                    ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
+                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
+                    : Strings.format("Game over! Team @ is victorious with @ players online on map @.",
+                            event.winner.name,
+                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+
             MindustryToolPlugin.apiGateway.sendChatMessage(message);
         } catch (Exception e) {
             Log.err(e);

@@ -79,7 +79,7 @@ public class HttpServer {
 
         app.get("hosting", (context) -> {
             try {
-                context.json(Vars.state.isPlaying());
+                context.json(Vars.state.isGame());
             } catch (Exception e) {
                 e.printStackTrace();
                 context.status(500);

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import arc.Events;
@@ -31,11 +32,15 @@ public class HudUtils {
     private static final List<Player> leaved = new ArrayList<Player>();
     private static final List<Player> markForRemove = new ArrayList<Player>();
 
-    public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, MenuData>> menus = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String, LinkedList<MenuData>> menus = new ConcurrentHashMap<>();
 
     @Data
     @AllArgsConstructor
     public static class MenuData {
+        int id;
+        String title;
+        String description;
+        String[][] optionTexts;
         List<PlayerPressCallback> callbacks;
         Object state;
     }
@@ -94,26 +99,30 @@ public class HudUtils {
                 .flatMap(option -> option.stream().map(l -> l.callback))//
                 .toList();
 
-        Call.menu(player.con, id, title, description, optionTexts);
-        ConcurrentHashMap<String, MenuData> userMenu = menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>());
+        var userMenu = menus.computeIfAbsent(player.uuid(), k -> new LinkedList<>());
 
-        userMenu.put(player.uuid(), new MenuData(callbacks, state));
+        if (userMenu.isEmpty()) {
+            Call.menu(player.con, id, title, description, optionTexts);
+        }
+
+        userMenu.addLast(new MenuData(id, title, description, optionTexts, callbacks, state));
     }
 
     public static void onMenuOptionChoose(MenuOptionChooseEvent event) {
-        var menu = menus.get(event.menuId);
+        var menu = menus.get(event.player.uuid());
 
         if (menu == null) {
             return;
         }
 
-        var data = menu.get(event.player.uuid());
+        var data = menu.stream().filter(m -> m.getId() == event.menuId).findFirst();
 
-        if (data == null) {
+        if (data.isEmpty()) {
             Log.info("No menu data found for player: " + event.player.uuid());
             return;
         }
-        var callbacks = data.getCallbacks();
+
+        var callbacks = data.get().getCallbacks();
 
         if (callbacks == null || event.option <= -1 || event.option >= callbacks.size()) {
             return;
@@ -126,23 +135,19 @@ public class HudUtils {
         }
 
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            callback.accept(event.player, data.state);
+            callback.accept(event.player, data.get().state);
         });
     }
 
     public static void cleanUpCallback() {
         markForRemove.forEach(player -> {
-            menus.values().forEach(menu -> {
-                menu.remove(player.uuid());
-            });
+            menus.remove(player.uuid());
         });
 
         markForRemove.clear();
 
         leaved.forEach(player -> {
-            menus.values().forEach(menu -> {
-                markForRemove.add(player);
-            });
+            markForRemove.add(player);
         });
 
         leaved.clear();
@@ -150,5 +155,21 @@ public class HudUtils {
 
     public static void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(player.con, id);
+
+        var menu = menus.get(player.uuid());
+
+        if (menu == null) {
+            return;
+        }
+
+        menu.removeFirst();
+
+        var first = menu.getFirst();
+
+        if (first == null) {
+            return;
+        }
+
+        Call.menu(player.con, id, first.title, first.description, first.optionTexts);
     }
 }

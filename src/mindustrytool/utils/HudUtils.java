@@ -66,7 +66,8 @@ public class HudUtils {
                 options.stream().map(option -> List.of(option)).toList());
     }
 
-    public static synchronized void showFollowDisplays(Player player, int id, String title, String description, Object state,
+    public static synchronized void showFollowDisplays(Player player, int id, String title, String description,
+            Object state,
             List<List<Option>> options) {
 
         String[][] optionTexts = new String[options.size()][];
@@ -126,8 +127,6 @@ public class HudUtils {
         }
 
         menu.removeIf(data -> data.id == id);
-
-        menu.removeFirst();
 
         var first = menu.getFirst();
 

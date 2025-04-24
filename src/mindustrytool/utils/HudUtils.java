@@ -135,10 +135,6 @@ public class HudUtils {
 
         var first = menu.getFirst();
 
-        if (first == null) {
-            return;
-        }
-
         Call.menu(player.con, id, first.title, first.description, first.optionTexts);
     }
 }

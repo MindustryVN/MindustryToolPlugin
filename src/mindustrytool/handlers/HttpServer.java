@@ -195,7 +195,7 @@ public class HttpServer {
 
     }
 
-    private void host(StartServerMessageRequest request) {
+    private synchronized void host(StartServerMessageRequest request) {
         String mapName = request.getMapName();
         String gameMode = request.getMode();
         String commands = request.getCommands();

@@ -606,8 +606,8 @@ public class EventHandler {
         options.add(
                 HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
         options.add(HudUtils.option((p, state) -> {
-            HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
             sendServerList(player, 0);
+            HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
         }, "[red]Close"));
 
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
@@ -666,12 +666,12 @@ public class EventHandler {
             });
 
             options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
-                HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                 sendServerList(player, (int) state - 1);
+                HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
             }, "[orange]Previous") : HudUtils.option(invalid, "First page"),
                     servers.size() == size ? HudUtils.option((p, state) -> {
-                        HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                         sendServerList(player, (int) state + 1);
+                        HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                     }, "[lime]Next") : HudUtils.option(invalid, "No more")));
 
             options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),

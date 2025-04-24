@@ -59,13 +59,17 @@ public class ClientCommandHandler {
                 return;
             }
             if (MindustryToolPlugin.voteHandler.isVoted(player, mapId)) {
-                Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]" + maps.get(mapId).name());
+                Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
+                        + maps.get(mapId).name());
                 MindustryToolPlugin.voteHandler.removeVote(player, mapId);
                 return;
             }
             MindustryToolPlugin.voteHandler.vote(player, mapId);
-            Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]" + maps.get(mapId).name());
-            Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]" + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/" + MindustryToolPlugin.voteHandler.getRequire());
+            Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
+                    + maps.get(mapId).name());
+            Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
+                    + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/"
+                    + MindustryToolPlugin.voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
             MindustryToolPlugin.voteHandler.check(mapId);
         });
@@ -178,13 +182,18 @@ public class ClientCommandHandler {
 
             session.votedVNW = true;
             int cur = Session.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
-            Call.sendMessage(player.name + "[orange] has voted to " + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray](" + (req - cur) + " votes missing)");
+            Call.sendMessage(player.name + "[orange] has voted to "
+                    + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray]("
+                    + (req - cur) + " votes missing)");
 
             if (!isPreparingForNewWave)
                 Timer.schedule(new Task() {
                     @Override
                     public void run() {
-                        Call.sendMessage("[scarlet]Vote for " + (waveVoted == 1 ? "sending a new wave" : "skipping [scarlet]" + waveVoted + "[] waves") + " failed! []Not enough votes.");
+                        Call.sendMessage("[scarlet]Vote for "
+                                + (waveVoted == 1 ? "sending a new wave"
+                                        : "skipping [scarlet]" + waveVoted + "[] waves")
+                                + " failed! []Not enough votes.");
                         waveVoted = 0;
                         cancel();
                     }
@@ -199,7 +208,9 @@ public class ClientCommandHandler {
             if (cur < req)
                 return;
 
-            Call.sendMessage("[green]Vote for " + (waveVoted == 1 ? "sending a new wave" : "skiping [scarlet]" + waveVoted + "[] waves") + " is Passed. New Wave will be Spawned.");
+            Call.sendMessage("[green]Vote for "
+                    + (waveVoted == 1 ? "sending a new wave" : "skiping [scarlet]" + waveVoted + "[] waves")
+                    + " is Passed. New Wave will be Spawned.");
 
             if (waveVoted > 0) {
                 while (waveVoted-- > 0) {
@@ -227,20 +238,25 @@ public class ClientCommandHandler {
                     return;
                 }
 
-                int page = arg.length == 2 ? Strings.parseInt(arg[1]) : 1, lines = 12, pages = Mathf.ceil(effects.size / lines);
+                int page = arg.length == 2 ? Strings.parseInt(arg[1]) : 1, lines = 12,
+                        pages = Mathf.ceil(effects.size / lines);
                 if (effects.size % lines != 0)
                     pages++;
 
                 if (page > pages || page < 0) {
-                    player.sendMessage("[scarlet]'page' must be a number between[orange] 1[] and[orange] " + pages + "[scarlet].");
+                    player.sendMessage(
+                            "[scarlet]'page' must be a number between[orange] 1[] and[orange] " + pages + "[scarlet].");
                     return;
                 }
 
-                player.sendMessage("\n[orange]---- [gold]Effects list [lightgray]" + page + "[gray]/[lightgray]" + pages + "[orange] ----");
+                player.sendMessage("\n[orange]---- [gold]Effects list [lightgray]" + page + "[gray]/[lightgray]" + pages
+                        + "[orange] ----");
                 for (int i = (page - 1) * lines; i < lines * page; i++) {
                     try {
                         e = effects.get(i);
-                        builder.append("  [orange]- [lightgray]ID:[white] " + e.id + "[orange] | [lightgray]Name:[white] " + e.name + (e.forAdmin ? "[orange] | [scarlet]Admin" : "") + "\n");
+                        builder.append(
+                                "  [orange]- [lightgray]ID:[white] " + e.id + "[orange] | [lightgray]Name:[white] "
+                                        + e.name + (e.forAdmin ? "[orange] | [scarlet]Admin" : "") + "\n");
                     } catch (Exception err) {
                         break;
                     }
@@ -265,7 +281,8 @@ public class ClientCommandHandler {
                     target.effect = effects.random();
 
                     player.sendMessage("Randomised effect ...");
-                    player.sendMessage("[green]Start particles effect [accent]" + target.effect.id + "[scarlet] - []" + target.effect.name);
+                    player.sendMessage("[green]Start particles effect [accent]" + target.effect.id + "[scarlet] - []"
+                            + target.effect.name);
 
                 }
 
@@ -303,7 +320,8 @@ public class ClientCommandHandler {
                                 target.hasEffect = true;
                                 target.effect = e;
 
-                                player.sendMessage("[green]Start particles effect [accent]" + e.id + "[scarlet] - []" + e.name + "[] for [accent]" + player.name);
+                                player.sendMessage("[green]Start particles effect [accent]" + e.id + "[scarlet] - []"
+                                        + e.name + "[] for [accent]" + player.name);
                             }
                         }
                     }
@@ -372,7 +390,8 @@ public class ClientCommandHandler {
             try {
                 var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
-                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow".formatted(player.coloredName(), name));
+                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
+                        .formatted(player.coloredName(), name));
 
                 String host = "";
                 int port = 6567;
@@ -415,18 +434,28 @@ public class ClientCommandHandler {
                     sendRedirectServerList(p, (int) s);
                 };
 
-                List<List<HudUtils.Option>> options = new ArrayList<>(List.of(List.of(HudUtils.option(invalid, "[#FFD700]Server name"), HudUtils.option(invalid, "[#FFD700]Players playing")), List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"), HudUtils.option(invalid, "[#FFA500]Map Playing")), List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")), List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
+                List<List<HudUtils.Option>> options = new ArrayList<>(List.of(
+                        List.of(HudUtils.option(invalid, "[#FFD700]Server name"),
+                                HudUtils.option(invalid, "[#FFD700]Players playing")),
+                        List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"),
+                                HudUtils.option(invalid, "[#FFA500]Map Playing")),
+                        List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")),
+                        List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
 
                 servers.forEach(server -> {
                     PlayerPressCallback valid = (p, s) -> //
                     onServerChoose(p, server.getId().toString(), server.getName());
 
                     options.add(List.of(HudUtils.option(invalid, "-----------------")));
-                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())), HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
-                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())), HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
+                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())),
+                            HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
+                            HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(
+                                    server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {
-                        options.add(List.of(HudUtils.option(valid, "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
+                        options.add(List.of(HudUtils.option(valid,
+                                "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
                     }
 
                     if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
@@ -438,18 +467,19 @@ public class ClientCommandHandler {
                 options.add(List.of(//
                         page > 0//
                                 ? HudUtils.option((p, state) -> {
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                                     sendRedirectServerList(player, (int) state - 1);
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                                 }, "[yellow]Previous")
                                 : HudUtils.option(invalid, "First page"), //
                         servers.size() == size//
                                 ? HudUtils.option((p, state) -> {
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                                     sendRedirectServerList(player, (int) state + 1);
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                                 }, "[green]Next")
                                 : HudUtils.option(invalid, "No more")));
 
-                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close")));
+                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
+                        "[red]Close")));
 
                 HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
             } catch (Exception e) {

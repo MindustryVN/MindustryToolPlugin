@@ -619,71 +619,69 @@ public class EventHandler {
     }
 
     public void sendServerList(Player player, int page) {
-        Utils.executeExpectError(() -> {
-            try {
-                var size = 8;
-                var request = new GetServersMessageRequest().setPage(page).setSize(size);
+        try {
+            var size = 8;
+            var request = new GetServersMessageRequest().setPage(page).setSize(size);
 
-                var response = MindustryToolPlugin.apiGateway.getServers(request);
-                var servers = response.getServers();
+            var response = MindustryToolPlugin.apiGateway.getServers(request);
+            var servers = response.getServers();
 
-                PlayerPressCallback invalid = (p, s) -> {
-                    sendServerList(p, (int) s);
-                    Call.infoToast(p.con, "Please don't click there", 10f);
-                };
+            PlayerPressCallback invalid = (p, s) -> {
+                sendServerList(p, (int) s);
+                Call.infoToast(p.con, "Please don't click there", 10f);
+            };
 
-                List<List<HudUtils.Option>> options = new ArrayList<>();
+            List<List<HudUtils.Option>> options = new ArrayList<>();
 
-                servers.stream().sorted(Comparator.comparing(ResponseData::getPlayers).reversed()).forEach(server -> {
-                    PlayerPressCallback valid = (p, s) -> onServerChoose(p, server.getId().toString(),
-                            server.getName());
+            servers.stream().sorted(Comparator.comparing(ResponseData::getPlayers).reversed()).forEach(server -> {
+                PlayerPressCallback valid = (p, s) -> onServerChoose(p, server.getId().toString(),
+                        server.getName());
 
-                    var mods = server.getMods();
-                    mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+                var mods = server.getMods();
+                mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
-                    if (server.getMapName() == null) {
-                        options.add(List.of(HudUtils.option(valid, "[yellow]%s".formatted(server.getName())),
-                                HudUtils.option(valid, "[scarlet]Server offline.")));
-                    } else {
-                        options.add(List.of(HudUtils.option(valid, server.getName()),
-                                HudUtils.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
+                if (server.getMapName() == null) {
+                    options.add(List.of(HudUtils.option(valid, "[yellow]%s".formatted(server.getName())),
+                            HudUtils.option(valid, "[scarlet]Server offline.")));
+                } else {
+                    options.add(List.of(HudUtils.option(valid, server.getName()),
+                            HudUtils.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
 
-                        options.add(List.of(
-                                HudUtils.option(valid,
-                                        "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
-                                HudUtils.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
-                    }
+                    options.add(List.of(
+                            HudUtils.option(valid,
+                                    "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
+                            HudUtils.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
+                }
 
-                    if (server.getMods() != null && !server.getMods().isEmpty()) {
-                        options.add(List
-                                .of(HudUtils.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
-                    }
+                if (server.getMods() != null && !server.getMods().isEmpty()) {
+                    options.add(List
+                            .of(HudUtils.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
+                }
 
-                    if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
-                        options.add(List.of(HudUtils.option(valid, "[grey]%s".formatted(server.getDescription()))));
-                    }
+                if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
+                    options.add(List.of(HudUtils.option(valid, "[grey]%s".formatted(server.getDescription()))));
+                }
 
-                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
-                });
+                options.add(List.of(HudUtils.option(invalid, "-----------------")));
+            });
 
-                options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
-                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
-                    sendServerList(player, (int) state - 1);
-                }, "[orange]Previous") : HudUtils.option(invalid, "First page"),
-                        servers.size() == size ? HudUtils.option((p, state) -> {
-                            HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
-                            sendServerList(player, (int) state + 1);
-                        }, "[lime]Next") : HudUtils.option(invalid, "No more")));
+            options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
+                HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                sendServerList(player, (int) state - 1);
+            }, "[orange]Previous") : HudUtils.option(invalid, "First page"),
+                    servers.size() == size ? HudUtils.option((p, state) -> {
+                        HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                        sendServerList(player, (int) state + 1);
+                    }, "[lime]Next") : HudUtils.option(invalid, "No more")));
 
-                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
-                        "[scarlet]Close")));
+            options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
+                    "[scarlet]Close")));
 
-                HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "List of all servers",
-                        Config.CHOOSE_SERVER_MESSAGE, Integer.valueOf(page), options);
-            } catch (Exception e) {
-                Log.err(e);
-            }
-        });
+            HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "List of all servers",
+                    Config.CHOOSE_SERVER_MESSAGE, Integer.valueOf(page), options);
+        } catch (Exception e) {
+            Log.err(e);
+        }
     }
 
     public void onServerChoose(Player player, String id, String name) {

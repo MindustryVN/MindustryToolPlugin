@@ -88,6 +88,7 @@ public class HudUtils {
             Call.menu(player.con, id, title, description, optionTexts);
         }
 
+        userMenu.removeIf(m -> m.id == id);
         userMenu.addLast(new MenuData(id, title, description, optionTexts, callbacks, state));
     }
 

@@ -459,6 +459,20 @@ public class EventHandler {
 
                 Session.put(player);
 
+                if (Config.IS_HUB) {
+                    var serverData = getTopServer();
+                    var options = List.of(//
+                            HudUtils.option((p, state) -> {
+                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                            }, "[red]No"),
+                            HudUtils.option((p, state) -> {
+                                onServerChoose(player, serverData.id.toString(), serverData.name);
+                            }, "[green]Yes"));
+
+                    HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
+                            "Do you want to go to server: " + serverData.getName(), null, options);
+                }
+
                 PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
 
                 if (target != null) {
@@ -507,20 +521,6 @@ public class EventHandler {
                     }
                     if (playert != null)
                         playert.admin = isAdmin;
-                }
-
-                if (Config.IS_HUB) {
-                    var serverData = getTopServer();
-                    var options = List.of(//
-                            HudUtils.option((p, state) -> {
-                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
-                            }, "[red]No"),
-                            HudUtils.option((p, state) -> {
-                                onServerChoose(player, serverData.id.toString(), serverData.name);
-                            }, "[green]Yes"));
-
-                    HudUtils.showFollowDisplay(playert, HudUtils.SERVER_REDIRECT, "Redirect",
-                            "Do you want to go to server: " + serverData.getName(), null, options);
                 }
 
             } catch (Exception e) {

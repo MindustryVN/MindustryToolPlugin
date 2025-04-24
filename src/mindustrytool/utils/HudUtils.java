@@ -5,10 +5,6 @@ import mindustry.gen.Player;
 import mindustrytool.Config;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import mindustry.game.EventType.MenuOptionChooseEvent;
-import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 
 public class HudUtils {
@@ -27,10 +22,6 @@ public class HudUtils {
     public static final int SERVERS_UI = 2;
     public static final int LOGIN_UI = 3;
     public static final int SERVER_REDIRECT = 4;
-
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private static final List<Player> leaved = new ArrayList<Player>();
-    private static final List<Player> markForRemove = new ArrayList<Player>();
 
     public static final ConcurrentHashMap<String, LinkedList<MenuData>> menus = new ConcurrentHashMap<>();
 
@@ -58,20 +49,12 @@ public class HudUtils {
     }
 
     public static void init() {
-
-        executor.scheduleAtFixedRate(HudUtils::cleanUpCallback, 0, 10, TimeUnit.MINUTES);
-
         Events.on(PlayerLeave.class, HudUtils::onPlayerLeave);
-        Events.on(PlayerJoin.class, HudUtils::onPlayerJoin);
         Events.on(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
     }
 
-    private static void onPlayerJoin(PlayerJoin event) {
-        markForRemove.removeIf(p -> p.uuid().equals(event.player.uuid()));
-    }
-
     private static void onPlayerLeave(PlayerLeave event) {
-        leaved.add(event.player);
+        menus.remove(event.player.uuid());
     }
 
     public static Option option(PlayerPressCallback callback, String text) {
@@ -137,20 +120,6 @@ public class HudUtils {
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             callback.accept(event.player, data.get().state);
         });
-    }
-
-    public static void cleanUpCallback() {
-        markForRemove.forEach(player -> {
-            menus.remove(player.uuid());
-        });
-
-        markForRemove.clear();
-
-        leaved.forEach(player -> {
-            markForRemove.add(player);
-        });
-
-        leaved.clear();
     }
 
     public static void closeFollowDisplay(Player player, int id) {

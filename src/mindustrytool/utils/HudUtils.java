@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import arc.Events;
-import arc.util.Log;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +66,7 @@ public class HudUtils {
                 options.stream().map(option -> List.of(option)).toList());
     }
 
-    public static void showFollowDisplays(Player player, int id, String title, String description, Object state,
+    public static synchronized void showFollowDisplays(Player player, int id, String title, String description, Object state,
             List<List<Option>> options) {
 
         String[][] optionTexts = new String[options.size()][];
@@ -94,18 +93,13 @@ public class HudUtils {
     public static void onMenuOptionChoose(MenuOptionChooseEvent event) {
         var menu = menus.get(event.player.uuid());
 
-        if (menu == null) {
+        if (menu == null || menu.isEmpty()) {
             return;
         }
 
-        var data = menu.stream().filter(m -> m.getId() == event.menuId).findFirst();
+        var data = menu.getFirst();
 
-        if (data.isEmpty()) {
-            Log.info("No menu data found for player: " + event.player.uuid());
-            return;
-        }
-
-        var callbacks = data.get().getCallbacks();
+        var callbacks = data.getCallbacks();
 
         if (callbacks == null || event.option <= -1 || event.option >= callbacks.size()) {
             return;
@@ -118,11 +112,11 @@ public class HudUtils {
         }
 
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            callback.accept(event.player, data.get().state);
+            callback.accept(event.player, data.state);
         });
     }
 
-    public static void closeFollowDisplay(Player player, int id) {
+    public static synchronized void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(player.con, id);
 
         var menu = menus.get(player.uuid());

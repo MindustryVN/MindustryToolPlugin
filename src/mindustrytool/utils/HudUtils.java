@@ -129,6 +129,10 @@ public class HudUtils {
 
         menu.removeIf(data -> data.id == id);
 
+        if (menu.isEmpty()) {
+            return;
+        }
+
         var first = menu.getFirst();
 
         if (first == null) {

@@ -84,11 +84,12 @@ public class HudUtils {
 
         var userMenu = menus.computeIfAbsent(player.uuid(), k -> new LinkedList<>());
 
+        userMenu.removeIf(m -> m.id == id);
+
         if (userMenu.isEmpty()) {
             Call.menu(player.con, id, title, description, optionTexts);
         }
 
-        userMenu.removeIf(m -> m.id == id);
         userMenu.addLast(new MenuData(id, title, description, optionTexts, callbacks, state));
     }
 

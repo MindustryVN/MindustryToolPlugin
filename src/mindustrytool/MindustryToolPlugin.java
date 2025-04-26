@@ -208,19 +208,18 @@ public class MindustryToolPlugin extends Plugin {
 
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
-                String message = new String(b, off, len);
-                standardOutputStream.println(message);
-                sendToConsole(message);
+                try {
+                    String message = new String(b, off, len);
+                    standardOutputStream.println(message);
+                    sendToConsole(message);
+                } catch (Exception e) {
+                    standardOutputStream.println(e.getMessage());
+                }
             }
 
             @Override
             public void flush() throws IOException {
                 standardOutputStream.flush();
-            }
-
-            @Override
-            public void close() throws IOException {
-                standardOutputStream.close();
             }
         };
 

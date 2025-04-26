@@ -667,11 +667,9 @@ public class EventHandler {
 
             options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
                 sendServerList(player, (int) state - 1);
-                HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
             }, "[orange]Previous") : HudUtils.option(invalid, "First page"),
                     servers.size() == size ? HudUtils.option((p, state) -> {
                         sendServerList(player, (int) state + 1);
-                        HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
                     }, "[lime]Next") : HudUtils.option(invalid, "No more")));
 
             options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),

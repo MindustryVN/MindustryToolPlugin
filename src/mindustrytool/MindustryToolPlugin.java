@@ -193,11 +193,8 @@ public class MindustryToolPlugin extends Plugin {
             try {
                 apiGateway.sendConsoleMessage(message);
             } catch (Exception e) {
-                try {
-                    standardOutputStream.write(message.getBytes());
-                    standardOutputStream.write(e.getMessage().getBytes());
-                } catch (IOException e1) {
-                }
+                standardOutputStream.println(message);
+                standardOutputStream.println(e.getMessage());
             }
         });
     }
@@ -207,14 +204,12 @@ public class MindustryToolPlugin extends Plugin {
         var custom = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-                standardOutputStream.write(b);
-                sendToConsole(String.valueOf((char) b));
             }
 
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
-                standardOutputStream.write(b, off, len);
                 String message = new String(b, off, len);
+                standardOutputStream.println(message);
                 sendToConsole(message);
             }
 

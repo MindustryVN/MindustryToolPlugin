@@ -37,159 +37,165 @@ public class HttpServer {
     public void init() {
         System.out.println("Setup http server");
 
-        var app = Javalin.create(config -> {
-            config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
-                mapper//
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
-                        .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
-                        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        var thread = new Thread(() -> {
 
-            }));
-        });
+            var app = Javalin.create(config -> {
+                config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                    mapper//
+                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
+                            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
+                            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        app.get("stats", context -> {
-            try {
-                context.json(getStats());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+                }));
+            });
 
-        app.get("detail-stats", context -> {
-            try {
-                context.json(detailStats());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+            app.get("stats", context -> {
+                try {
+                    context.json(getStats());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-        app.get("ok", (context) -> {
-            try {
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+            app.get("detail-stats", context -> {
+                try {
+                    context.json(detailStats());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-        app.get("hosting", (context) -> {
-            try {
-                context.json(Vars.state.isGame());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+            app.get("ok", (context) -> {
+                try {
+                    context.result("Ok");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-        app.post("discord", context -> {
-            try {
-                String message = context.body();
+            app.get("hosting", (context) -> {
+                try {
+                    context.json(Vars.state.isGame());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-                Call.sendMessage(message);
+            app.post("discord", context -> {
+                try {
+                    String message = context.body();
 
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+                    Call.sendMessage(message);
 
-        app.post("host", context -> {
-            try {
-                StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
-                host(request);
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+                    context.result("Ok");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-        app.post("set-player", context -> {
-            try {
-                SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
+            app.post("host", context -> {
+                try {
+                    StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
+                    host(request);
+                    context.result("Ok");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
 
-                String uuid = request.getUuid();
-                boolean isAdmin = request.isAdmin();
+            app.post("set-player", context -> {
+                try {
+                    SetPlayerMessageRequest request = context.bodyAsClass(SetPlayerMessageRequest.class);
 
-                PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-                Player player = Groups.player.find(p -> p.getInfo() == target);
+                    String uuid = request.getUuid();
+                    boolean isAdmin = request.isAdmin();
 
-                if (target != null) {
-                    if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id, player == null ? target.adminUsid : player.usid());
+                    PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+                    Player player = Groups.player.find(p -> p.getInfo() == target);
+
+                    if (target != null) {
+                        if (isAdmin) {
+                            Vars.netServer.admins.adminPlayer(target.id,
+                                    player == null ? target.adminUsid : player.usid());
+                        } else {
+                            Vars.netServer.admins.unAdminPlayer(target.id);
+                        }
+                        if (player != null)
+                            player.admin = isAdmin;
                     } else {
-                        Vars.netServer.admins.unAdminPlayer(target.id);
+                        Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
                     }
-                    if (player != null)
-                        player.admin = isAdmin;
-                } else {
-                    Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
-                }
 
-                if (player != null) {
-                    HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                    MindustryToolPlugin.eventHandler.addPlayer(request, player);
-                }
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-
-        });
-
-        app.get("players", context -> {
-            try {
-                var players = new ArrayList<Player>();
-                Groups.player.forEach(players::add);
-
-                context.json(players.stream()//
-                        .map(player -> new PlayerDto()//
-                                .setName(player.coloredName())//
-                                .setUuid(player.uuid())//
-                                .setLocale(player.locale())//
-                                .setTeam(new Team()//
-                                        .setColor(player.team().color.toString())//
-                                        .setName(player.team().name)))
-                        .collect(Collectors.toList()));
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
-
-        app.post("command", context -> {
-            try {
-                String[] commands = context.bodyAsClass(String[].class);
-                if (commands != null) {
-                    for (var command : commands) {
-                        Log.info("Execute: " + command);
-                        ServerCommandHandler.getHandler().handleMessage(command);
+                    if (player != null) {
+                        HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                        MindustryToolPlugin.eventHandler.addPlayer(request, player);
                     }
+                    context.result("Ok");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
                 }
 
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.status(500);
-                context.result(e.getMessage());
-            }
-        });
+            });
 
-        System.out.println("Start http server");
-        app.start(9999);
-        System.out.println("Http server started");
+            app.get("players", context -> {
+                try {
+                    var players = new ArrayList<Player>();
+                    Groups.player.forEach(players::add);
+
+                    context.json(players.stream()//
+                            .map(player -> new PlayerDto()//
+                                    .setName(player.coloredName())//
+                                    .setUuid(player.uuid())//
+                                    .setLocale(player.locale())//
+                                    .setTeam(new Team()//
+                                            .setColor(player.team().color.toString())//
+                                            .setName(player.team().name)))
+                            .collect(Collectors.toList()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
+
+            app.post("command", context -> {
+                try {
+                    String[] commands = context.bodyAsClass(String[].class);
+                    if (commands != null) {
+                        for (var command : commands) {
+                            Log.info("Execute: " + command);
+                            ServerCommandHandler.getHandler().handleMessage(command);
+                        }
+                    }
+
+                    context.result("Ok");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
+
+            System.out.println("Start http server");
+            app.start(9999);
+            System.out.println("Http server started");
+        });
+        thread.setDaemon(true);
+        thread.start();
 
         System.out.println("Setup http server done");
 

@@ -33,6 +33,18 @@ import io.javalin.json.JavalinJackson;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
+    private static HttpServer instance;
+
+    private HttpServer() {
+
+    }
+
+    public static HttpServer create() {
+        if (instance == null) {
+            instance = new HttpServer();
+        }
+        return instance;
+    }
 
     public void init() {
         System.out.println("Setup http server");

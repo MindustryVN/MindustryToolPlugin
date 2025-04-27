@@ -759,6 +759,11 @@ public class EventHandler {
         var name = playerData.getName();
         var isLoggedIn = playerData.getLoginLink() == null;
 
+        if (uuid == null) {
+            Log.warn("Player with null uuid: " + playerData);
+            return;
+        }
+
         playerMeta.put(uuid, new PlayerMetaData()//
                 .setExp(exp)//
                 .setPlayer(player)//

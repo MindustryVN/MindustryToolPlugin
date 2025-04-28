@@ -29,6 +29,7 @@ import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
 
 import io.javalin.Javalin;
+import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
 
 public class HttpServer {
@@ -63,9 +64,11 @@ public class HttpServer {
 
             app.get("stats", context -> {
                 try {
+                    context.contentType(ContentType.APPLICATION_JSON);
                     context.json(getStats());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -73,9 +76,11 @@ public class HttpServer {
 
             app.get("detail-stats", context -> {
                 try {
+                    context.contentType(ContentType.APPLICATION_JSON);
                     context.json(detailStats());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -83,9 +88,11 @@ public class HttpServer {
 
             app.get("ok", (context) -> {
                 try {
+                    context.contentType(ContentType.APPLICATION_JSON);
                     context.result("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -93,9 +100,11 @@ public class HttpServer {
 
             app.get("hosting", (context) -> {
                 try {
+                    context.contentType(ContentType.APPLICATION_JSON);
                     context.json(Vars.state.isGame());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -106,10 +115,11 @@ public class HttpServer {
                     String message = context.body();
 
                     Call.sendMessage(message);
-
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.result("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -119,9 +129,11 @@ public class HttpServer {
                 try {
                     StartServerMessageRequest request = context.bodyAsClass(StartServerMessageRequest.class);
                     host(request);
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.result("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -154,9 +166,11 @@ public class HttpServer {
                         HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
                         MindustryToolPlugin.eventHandler.addPlayer(request, player);
                     }
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.result("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -167,6 +181,8 @@ public class HttpServer {
                 try {
                     var players = new ArrayList<Player>();
                     Groups.player.forEach(players::add);
+
+                    context.contentType(ContentType.APPLICATION_JSON);
 
                     context.json(players.stream()//
                             .map(player -> new PlayerDto()//
@@ -179,6 +195,7 @@ public class HttpServer {
                             .collect(Collectors.toList()));
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }
@@ -193,10 +210,11 @@ public class HttpServer {
                             ServerCommandHandler.getHandler().handleMessage(command);
                         }
                     }
-
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.result("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
                     context.status(500);
                     context.result(e.getMessage());
                 }

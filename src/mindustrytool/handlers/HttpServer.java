@@ -89,7 +89,7 @@ public class HttpServer {
             app.get("ok", (context) -> {
                 try {
                     context.contentType(ContentType.APPLICATION_JSON);
-                    context.result("Ok");
+                    context.json("Ok");
                 } catch (Exception e) {
                     e.printStackTrace();
                     context.contentType(ContentType.TEXT_PLAIN);

@@ -50,7 +50,7 @@ public class HttpServer {
     private void init() {
         System.out.println("Setup http server");
 
-        var thread = new Thread(() -> {
+        try {
 
             var app = Javalin.create(config -> {
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
@@ -223,12 +223,10 @@ public class HttpServer {
             System.out.println("Start http server");
             app.start(9999);
             System.out.println("Http server started");
-        });
-        thread.setDaemon(true);
-        thread.start();
-
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("Setup http server done");
-
     }
 
     private synchronized void host(StartServerMessageRequest request) {

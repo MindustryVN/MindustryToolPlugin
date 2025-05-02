@@ -37,7 +37,7 @@ public class HttpServer {
     private static HttpServer instance;
 
     private HttpServer() {
-
+        init();
     }
 
     public static HttpServer create() {
@@ -47,7 +47,7 @@ public class HttpServer {
         return instance;
     }
 
-    public void init() {
+    private void init() {
         System.out.println("Setup http server");
 
         var thread = new Thread(() -> {

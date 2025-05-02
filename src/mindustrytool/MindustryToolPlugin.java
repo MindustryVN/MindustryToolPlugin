@@ -39,7 +39,7 @@ public class MindustryToolPlugin extends Plugin {
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
     public static final ApiGateway apiGateway = new ApiGateway();
-    private static final HttpServer httpServer = HttpServer.create();
+    public static final HttpServer httpServer = HttpServer.create();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
@@ -70,7 +70,6 @@ public class MindustryToolPlugin extends Plugin {
 
         Timer.schedule(() -> System.gc(), 0, 60);
 
-        httpServer.init();
         eventHandler.init();
         apiGateway.init();
 

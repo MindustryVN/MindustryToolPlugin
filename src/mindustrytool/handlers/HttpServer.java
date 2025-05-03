@@ -34,25 +34,16 @@ import io.javalin.json.JavalinJackson;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
-    private static HttpServer instance;
+    private static Javalin app;
 
-    private HttpServer() {
-        init();
-    }
-
-    public static HttpServer create() {
-        if (instance == null) {
-            instance = new HttpServer();
-        }
-        return instance;
-    }
-
-    private void init() {
+    public void init() {
         System.out.println("Setup http server");
-
         try {
+            if (app != null) {
+                app.stop();
+            }
 
-            var app = Javalin.create(config -> {
+            app = Javalin.create(config -> {
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                     mapper//
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//

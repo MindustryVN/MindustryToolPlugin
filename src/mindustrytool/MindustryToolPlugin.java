@@ -39,7 +39,7 @@ public class MindustryToolPlugin extends Plugin {
     public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
     public static final ApiGateway apiGateway = new ApiGateway();
-    public static final HttpServer httpServer = HttpServer.create();
+    public static final HttpServer httpServer = new HttpServer();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
@@ -72,6 +72,7 @@ public class MindustryToolPlugin extends Plugin {
 
         eventHandler.init();
         apiGateway.init();
+        httpServer.init();
 
         HudUtils.init();
         VPNUtils.init();

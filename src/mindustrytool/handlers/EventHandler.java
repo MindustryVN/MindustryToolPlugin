@@ -28,7 +28,6 @@ import mindustry.core.Version;
 import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildEndEvent;
-import mindustry.game.EventType.BuildSelectEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
@@ -150,53 +149,12 @@ public class EventHandler {
         Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.run(EventType.Trigger.update, this::onUpdate);
         Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
-        Events.on(BuildSelectEvent.class, this::onBuildSelectEvent);
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
         }
 
         System.out.println("Setup event handler done");
-    }
-
-    private void onBuildSelectEvent(BuildSelectEvent event) {
-        try {
-
-            if (event.builder == null || !event.builder.isPlayer()) {
-                return;
-            }
-
-            if (event.tile == null || event.tile.build == null) {
-                return;
-            }
-
-            var player = event.builder.getPlayer();
-            var playerName = player.plainName();
-            var locale = player.locale();
-            var team = new Team()//
-                    .setColor(player.team().color.toString())
-                    .setName(player.team().name);
-
-            var building = event.tile.build;
-
-            var buildLog = new BuildLog()//
-                    .setPlayer(new PlayerDto()//
-                            .setLocale(locale)//
-                            .setName(playerName)
-                            .setTeam(team)
-                            .setUuid(player.uuid()))
-                    .setBuilding(new BuildLog.BuildingDto()//
-                            .setX(building.x())
-                            .setY(building.y())
-                            .setLastAccess(building.lastAccessed())
-                            .setName(building.block() != null ? building.block().name
-                                    : "Unknow"))
-                    .setMessage(event.breaking ? "Start breaking" : "Start building");
-
-            MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void onBuildBlockEnd(BlockBuildEndEvent event) {

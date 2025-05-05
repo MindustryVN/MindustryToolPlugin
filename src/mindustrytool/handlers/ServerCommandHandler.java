@@ -269,7 +269,11 @@ public class ServerCommandHandler {
 
             if (target != null) {
                 Call.sendMessage("[scarlet]" + target.name() + "[scarlet] has been kicked by the server.");
-                target.kick(reason.isBlank() ? Kick.reason : reason);
+                if (!reason.isBlank()) {
+                    target.kick(KickReason.kick);
+                } else {
+                    target.kick(reason);
+                }
                 Log.info("It is done.");
             } else {
                 Log.info("Nobody with that uuid could be found: " + uuid);

@@ -268,12 +268,12 @@ public class ServerCommandHandler {
             Player target = Groups.player.find(p -> p.uuid().equals(arg[0]));
 
             if (target != null) {
-                Call.sendMessage("[scarlet]" + target.name() + "[scarlet] has been kicked by the server.");
-                if (!reason.isBlank()) {
+                if (reason.isBlank()) {
                     target.kick(KickReason.kick);
                 } else {
                     target.kick(reason);
                 }
+                Call.sendMessage("[scarlet]" + target.name() + "[scarlet] has been kicked by the server.");
                 Log.info("It is done.");
             } else {
                 Log.info("Nobody with that uuid could be found: " + uuid);

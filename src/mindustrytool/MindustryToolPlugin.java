@@ -148,6 +148,10 @@ public class MindustryToolPlugin extends Plugin {
         });
 
         Log.info("MindustryToolPlugin initialized.");
+
+        if (!Vars.state.isGame()) {
+            apiGateway.host(SERVER_ID.toString());
+        }
     }
 
     public void handleCommandString(String line) {

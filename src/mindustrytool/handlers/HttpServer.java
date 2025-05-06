@@ -221,6 +221,10 @@ public class HttpServer {
     }
 
     private synchronized void host(StartServerMessageRequest request) {
+        if (Vars.state.isGame()) {
+            throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
+        }
+
         String mapName = request.getMapName();
         String gameMode = request.getMode();
         String commands = request.getCommands();
@@ -232,10 +236,6 @@ public class HttpServer {
                 ServerCommandHandler.getHandler().handleMessage(command);
             }
             return;
-        }
-
-        if (Vars.state.isGame()) {
-            throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
         }
 
         Gamemode preset = Gamemode.survival;

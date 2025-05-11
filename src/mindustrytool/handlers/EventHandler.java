@@ -389,7 +389,7 @@ public class EventHandler {
                         Groups.player.size() - 1);
 
                 playerMeta.remove(event.player.uuid());
-
+                
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {
                 e.printStackTrace();

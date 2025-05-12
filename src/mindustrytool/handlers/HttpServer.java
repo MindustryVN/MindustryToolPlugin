@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import arc.Core;
 import arc.files.Fi;
+import arc.struct.Seq;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.game.Gamemode;
@@ -24,7 +25,9 @@ import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.PlayerDto;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.request.StartServerMessageRequest;
+import mindustrytool.messages.response.ServerCommandDto;
 import mindustrytool.messages.response.StatsMessageResponse;
+import mindustrytool.messages.response.ServerCommandDto.CommandParamDto;
 import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
 
@@ -192,7 +195,33 @@ public class HttpServer {
                 }
             });
 
-            app.post("command", context -> {
+            app.get("commands", context -> {
+                try {
+                    var commands = ServerCommandHandler.getHandler()//
+                            .getCommandList()
+                            .map(command -> new ServerCommandDto()
+                                    .setText(command.text)
+                                    .setDescription(command.description)
+                                    .setParamText(command.paramText)
+                                    .setParams(new Seq<>(command.params)
+                                            .map(param -> new CommandParamDto()//
+                                                    .setName(param.name)//
+                                                    .setOptional(param.optional)
+                                                    .setVariadic(param.variadic))//
+                                            .list()))
+                            .list();
+
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(commands);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
+
+            app.post("commands", context -> {
                 try {
                     String[] commands = context.bodyAsClass(String[].class);
                     if (commands != null) {

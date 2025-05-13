@@ -655,6 +655,10 @@ public class EventHandler {
                 String host = "";
                 int port = 6567;
 
+                Log.info("Redirecting " + player.name + " to " + host + ":" + port);
+
+                Call.connect(player.con, host, port);
+
                 var colon = data.lastIndexOf(":");
 
                 if (colon > 0) {

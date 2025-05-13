@@ -427,8 +427,10 @@ public class EventHandler {
                                 onServerChoose(player, serverData.id.toString(), serverData.name);
                             }, "[green]Yes"));
 
-                    HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
-                            "Do you want to go to server: " + serverData.getName(), null, options);
+                    if (!serverData.getId().equals(MindustryToolPlugin.SERVER_ID)) {
+                        HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
+                                "Do you want to go to server: " + serverData.getName(), null, options);
+                    }
                 }
 
                 PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
@@ -661,14 +663,14 @@ public class EventHandler {
 
                 if (colon > 0) {
                     host = data.substring(0, colon);
-                    port = Integer.parseInt(data.substring(colon + 1));
+                    port = Integer.parseInt(data.substring(colon + 1).trim());
                 } else {
                     host = data;
                 }
 
                 Log.info("Redirecting " + player.name + " to " + host + ":" + port);
 
-                Call.connect(player.con, host, port);
+                Call.connect(player.con, host.trim(), port);
             } catch (Exception e) {
                 player.sendMessage("Error: Can not load server");
             }

@@ -153,8 +153,13 @@ public class ApiGateway {
                 .build();
 
         try {
-            var result = httpClient.send(req, BodyHandlers.ofString()).body();
-            return result;
+            var result = httpClient.send(req, BodyHandlers.ofString());
+
+            if (result.statusCode() != 200) {
+                throw new RuntimeException("Can not translate: " + result.body());
+            }
+
+            return result.body();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

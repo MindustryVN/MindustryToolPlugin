@@ -251,7 +251,8 @@ public class HttpServer {
 
     private synchronized void host(StartServerMessageRequest request) {
         if (Vars.state.isGame()) {
-            throw new IllegalStateException("Already hosting. Type 'stop' to stop hosting first.");
+            Log.info("Already hosting. Type 'stop' to stop hosting first.");
+            return;
         }
 
         String mapName = request.getMapName();

@@ -389,7 +389,7 @@ public class EventHandler {
                         Groups.player.size() - 1);
 
                 playerMeta.remove(event.player.uuid());
-                
+
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -646,6 +646,7 @@ public class EventHandler {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
+                Log.info("Send host command to server %s:%S".formatted(name, id));
                 var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"

@@ -420,15 +420,16 @@ public class EventHandler {
 
                 if (Config.IS_HUB) {
                     var serverData = getTopServer();
-                    var options = List.of(//
-                            HudUtils.option((p, state) -> {
-                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
-                            }, "[red]No"),
-                            HudUtils.option((p, state) -> {
-                                onServerChoose(player, serverData.id.toString(), serverData.name);
-                            }, "[green]Yes"));
 
                     if (!serverData.getId().equals(MindustryToolPlugin.SERVER_ID)) {
+                        var options = List.of(//
+                                HudUtils.option((p, state) -> {
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                                }, "[red]No"),
+                                HudUtils.option((p, state) -> {
+                                    onServerChoose(p, serverData.id.toString(), serverData.name);
+                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                                }, "[green]Yes"));
                         HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
                                 "Do you want to go to server: " + serverData.getName(), null, options);
                     }

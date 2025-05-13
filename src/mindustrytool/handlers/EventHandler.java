@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -670,7 +671,7 @@ public class EventHandler {
 
                 Log.info("Redirecting " + player.name + " to " + host + ":" + port);
 
-                Call.connect(player.con, host.trim(), port);
+                Call.connect(player.con, InetAddress.getByName(host.trim()).getHostAddress(), port);
             } catch (Exception e) {
                 player.sendMessage("Error: Can not load server");
             }

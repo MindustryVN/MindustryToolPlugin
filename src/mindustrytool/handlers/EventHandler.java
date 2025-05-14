@@ -671,8 +671,6 @@ public class EventHandler {
                 String host = "";
                 int port = 6567;
 
-                Call.connect(player.con, host, port);
-
                 var colon = data.lastIndexOf(":");
 
                 if (colon > 0) {

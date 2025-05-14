@@ -76,6 +76,19 @@ public class ApiGateway {
         }
     }
 
+    public void sendPlayerLeave(PlayerMessageRequest payload) {
+        var request = setHeaders(HttpRequest.newBuilder(path("players/leave")))//
+                .header("Content-Type", "application/json")//
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
+                .build();
+
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public int getTotalPlayer() {
         var request = setHeaders(HttpRequest.newBuilder(path("total-player")))//
                 .GET()//

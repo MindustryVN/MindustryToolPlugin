@@ -374,6 +374,26 @@ public class EventHandler {
     public void onPlayerLeave(PlayerLeave event) {
 
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+
+            try {
+                var player = event.player;
+                var team = player.team();
+                var request = new PlayerMessageRequest()//
+                        .setName(player.coloredName())//
+                        .setIp(player.ip())//
+                        .setLocale(player.locale())//
+                        .setUuid(player.uuid())//
+                        .setTeam(new Team()//
+                                .setName(team.name)//
+                                .setColor(team.color.toString()));
+
+                MindustryToolPlugin.apiGateway.sendPlayerLeave(request);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             try {
                 Timer.schedule(() -> {
                     if (!Vars.state.isPaused() && Groups.player.size() == 0) {

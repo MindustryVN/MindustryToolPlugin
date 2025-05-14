@@ -269,10 +269,12 @@ public class EventHandler {
                 if (Config.IS_HUB) {
                     try {
                         var serverData = getTopServer();
-                        name = serverData.name;
-                        description = serverData.description;
-                        map = serverData.mapName == null ? "" : serverData.mapName;
-                        players = (int) serverData.players;
+                        if (serverData != null) {
+                            name += "->" + serverData.name;
+                            description += "->" + serverData.description;
+                            map = serverData.mapName == null ? "" : serverData.mapName;
+                            players = (int) serverData.players;
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -399,12 +401,22 @@ public class EventHandler {
     }
 
     public synchronized GetServersMessageResponse.ResponseData getTopServer() throws IOException {
-        return serversCache.get("server", ignore -> {
-            var request = new GetServersMessageRequest().setPage(0).setSize(1);
-            var response = MindustryToolPlugin.apiGateway.getServers(request);
-            var servers = response.getServers();
-            return servers.get(0);
-        });
+        try {
+            return serversCache.get("server", ignore -> {
+                var request = new GetServersMessageRequest().setPage(0).setSize(1);
+                var response = MindustryToolPlugin.apiGateway.getServers(request);
+                var servers = response.getServers();
+
+                if (servers.isEmpty()) {
+                    return null;
+                }
+
+                return servers.get(0);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void onPlayerJoin(PlayerJoin event) {
@@ -421,7 +433,7 @@ public class EventHandler {
                 if (Config.IS_HUB) {
                     var serverData = getTopServer();
 
-                    if (!serverData.getId().equals(MindustryToolPlugin.SERVER_ID)) {
+                    if (serverData != null && !serverData.getId().equals(MindustryToolPlugin.SERVER_ID)) {
                         var options = List.of(//
                                 HudUtils.option((p, state) -> {
                                     HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);

@@ -47,14 +47,13 @@ import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
-import mindustrytool.messages.request.BuildLog;
-import mindustrytool.messages.request.GetServersMessageRequest;
-import mindustrytool.messages.request.PlayerDto;
-import mindustrytool.messages.request.PlayerMessageRequest;
-import mindustrytool.messages.request.SetPlayerMessageRequest;
-import mindustrytool.messages.response.GetServersMessageResponse;
-import mindustrytool.messages.response.GetServersMessageResponse.ResponseData;
-import mindustrytool.type.Team;
+import mindustrytool.type.BuildLogDto;
+import mindustrytool.type.MindustryPlayerDto;
+import mindustrytool.type.PaginationRequest;
+import mindustrytool.type.PlayerDto;
+import mindustrytool.type.ServerDto;
+import mindustrytool.type.TeamDto;
+import mindustrytool.type.ServerDto.ResponseData;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
@@ -85,7 +84,7 @@ public class EventHandler {
             .maximumSize(1000)
             .build();
 
-    private static final Cache<String, GetServersMessageResponse.ResponseData> serversCache = Caffeine.newBuilder()
+    private static final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
             .maximumSize(1000)
             .build();
@@ -172,19 +171,19 @@ public class EventHandler {
             var player = event.unit.getPlayer();
             var playerName = player.plainName();
             var locale = player.locale();
-            var team = new Team()//
+            var team = new TeamDto()//
                     .setColor(player.team().color.toString())
                     .setName(player.team().name);
 
             var building = event.tile.build;
 
-            var buildLog = new BuildLog()//
+            var buildLog = new BuildLogDto()//
                     .setPlayer(new PlayerDto()//
                             .setLocale(locale)//
                             .setName(playerName)
                             .setTeam(team)
                             .setUuid(player.uuid()))
-                    .setBuilding(new BuildLog.BuildingDto()//
+                    .setBuilding(new BuildLogDto.BuildingDto()//
                             .setX(building.x())
                             .setY(building.y())
                             .setLastAccess(building.lastAccessed())
@@ -378,12 +377,12 @@ public class EventHandler {
             try {
                 var player = event.player;
                 var team = player.team();
-                var request = new PlayerMessageRequest()//
+                var request = new PlayerDto()//
                         .setName(player.coloredName())//
                         .setIp(player.ip())//
                         .setLocale(player.locale())//
                         .setUuid(player.uuid())//
-                        .setTeam(new Team()//
+                        .setTeam(new TeamDto()//
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
@@ -420,10 +419,10 @@ public class EventHandler {
         });
     }
 
-    public synchronized GetServersMessageResponse.ResponseData getTopServer() throws IOException {
+    public synchronized ServerDto.ResponseData getTopServer() throws IOException {
         try {
             return serversCache.get("server", ignore -> {
-                var request = new GetServersMessageRequest().setPage(0).setSize(1);
+                var request = new PaginationRequest().setPage(0).setSize(1);
                 var response = MindustryToolPlugin.apiGateway.getServers(request);
                 var servers = response.getServers();
 
@@ -478,12 +477,12 @@ public class EventHandler {
                         Groups.player.size());
 
                 var team = player.team();
-                var request = new PlayerMessageRequest()//
+                var request = new PlayerDto()//
                         .setName(player.coloredName())//
                         .setIp(player.ip())//
                         .setLocale(player.locale())//
                         .setUuid(player.uuid())//
-                        .setTeam(new Team()//
+                        .setTeam(new TeamDto()//
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
@@ -615,7 +614,7 @@ public class EventHandler {
     public void sendServerList(Player player, int page) {
         try {
             var size = 8;
-            var request = new GetServersMessageRequest().setPage(page).setSize(size);
+            var request = new PaginationRequest().setPage(page).setSize(size);
 
             var response = MindustryToolPlugin.apiGateway.getServers(request);
             var servers = response.getServers();
@@ -748,7 +747,7 @@ public class EventHandler {
         }
     }
 
-    public void addPlayer(SetPlayerMessageRequest playerData, Player player) {
+    public void addPlayer(MindustryPlayerDto playerData, Player player) {
         var uuid = playerData.getUuid();
         var exp = playerData.getExp();
         var name = playerData.getName();

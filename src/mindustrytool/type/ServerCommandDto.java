@@ -1,4 +1,4 @@
-package mindustrytool.messages.response;
+package mindustrytool.type;
 
 import java.util.List;
 

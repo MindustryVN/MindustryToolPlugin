@@ -17,10 +17,10 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.MindustryToolPlugin;
-import mindustrytool.messages.request.GetServersMessageRequest;
-import mindustrytool.messages.request.PlayerMessageRequest;
-import mindustrytool.messages.request.SetPlayerMessageRequest;
-import mindustrytool.type.Team;
+import mindustrytool.type.MindustryPlayerDto;
+import mindustrytool.type.PaginationRequest;
+import mindustrytool.type.PlayerDto;
+import mindustrytool.type.TeamDto;
 import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.HudUtils.PlayerPressCallback;
@@ -127,15 +127,15 @@ public class ClientCommandHandler {
         handler.<Player>register("login", "", "Login", (args, player) -> {
             try {
                 var team = player.team();
-                var request = new PlayerMessageRequest()//
+                var request = new PlayerDto()//
                         .setName(player.coloredName())//
                         .setIp(player.ip())//
                         .setUuid(player.uuid())//
-                        .setTeam(new Team()//
+                        .setTeam(new TeamDto()//
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                SetPlayerMessageRequest playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
+                MindustryPlayerDto playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
 
@@ -422,7 +422,7 @@ public class ClientCommandHandler {
         Utils.executeExpectError(() -> {
             try {
                 var size = 8;
-                var request = new GetServersMessageRequest()//
+                var request = new PaginationRequest()//
                         .setPage(page)//
                         .setSize(size);
 

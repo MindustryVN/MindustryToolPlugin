@@ -1,11 +1,11 @@
-package mindustrytool.messages.request;
+package mindustrytool.type;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class SetPlayerMessageRequest {
+public class MindustryPlayerDto {
     String uuid;
     boolean admin;
     String name;

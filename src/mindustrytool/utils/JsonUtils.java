@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import mindustrytool.messages.NotMessageException;
+import mindustrytool.type.NotMessageException;
 
 public class JsonUtils {
     public static final ObjectMapper objectMapper = new ObjectMapper()

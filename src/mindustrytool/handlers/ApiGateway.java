@@ -15,15 +15,15 @@ import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
-import mindustrytool.messages.request.BuildLog;
-import mindustrytool.messages.request.GetServersMessageRequest;
-import mindustrytool.messages.request.PlayerMessageRequest;
-import mindustrytool.messages.request.SetPlayerMessageRequest;
-import mindustrytool.messages.response.GetServersMessageResponse;
+import mindustrytool.type.BuildLogDto;
+import mindustrytool.type.MindustryPlayerDto;
+import mindustrytool.type.PaginationRequest;
+import mindustrytool.type.PlayerDto;
+import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    private List<BuildLog> buildLogs = new ArrayList<>();
+    private List<BuildLogDto> buildLogs = new ArrayList<>();
 
     public void init() {
         System.out.println("Setup api gateway");
@@ -62,7 +62,7 @@ public class ApiGateway {
         return URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
     }
 
-    public SetPlayerMessageRequest setPlayer(PlayerMessageRequest payload) {
+    public MindustryPlayerDto setPlayer(PlayerDto payload) {
         var request = setHeaders(HttpRequest.newBuilder(path("players")))//
                 .header("Content-Type", "application/json")//
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
@@ -70,13 +70,13 @@ public class ApiGateway {
 
         try {
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
-            return JsonUtils.readJsonAsClass(result, SetPlayerMessageRequest.class);
+            return JsonUtils.readJsonAsClass(result, MindustryPlayerDto.class);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void sendPlayerLeave(PlayerMessageRequest payload) {
+    public void sendPlayerLeave(PlayerDto payload) {
         var request = setHeaders(HttpRequest.newBuilder(path("players/leave")))//
                 .header("Content-Type", "application/json")//
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
@@ -129,7 +129,7 @@ public class ApiGateway {
         }
     }
 
-    public void sendBuildLog(BuildLog buildLog) {
+    public void sendBuildLog(BuildLogDto buildLog) {
         buildLogs.add(buildLog);
     }
 
@@ -146,7 +146,7 @@ public class ApiGateway {
         }
     }
 
-    public GetServersMessageResponse getServers(GetServersMessageRequest request) {
+    public ServerDto getServers(PaginationRequest request) {
         var req = setHeaders(
                 HttpRequest.newBuilder(path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
                 .GET()//
@@ -154,7 +154,7 @@ public class ApiGateway {
 
         try {
             var result = httpClient.send(req, BodyHandlers.ofString()).body();
-            return JsonUtils.readJsonAsClass(result, GetServersMessageResponse.class);
+            return JsonUtils.readJsonAsClass(result, ServerDto.class);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

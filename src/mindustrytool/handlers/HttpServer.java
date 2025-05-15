@@ -99,6 +99,11 @@ public class HttpServer {
                 }
             });
 
+            app.get("plugin-version", context -> {
+                context.contentType(ContentType.APPLICATION_JSON);
+                context.json("0.0.1");
+            });
+
             app.get("hosting", (context) -> {
                 try {
                     context.contentType(ContentType.APPLICATION_JSON);

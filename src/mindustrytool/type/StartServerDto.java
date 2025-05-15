@@ -8,5 +8,5 @@ import lombok.experimental.Accessors;
 public class StartServerDto {
     String mapName;
     String mode;
-    String commands;
+    String hostCommand;
 }

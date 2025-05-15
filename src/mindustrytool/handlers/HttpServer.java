@@ -340,7 +340,7 @@ public class HttpServer {
 
         String mapName = request.getMapName();
         String gameMode = request.getMode();
-        String commands = request.getCommands();
+        String commands = request.getHostCommand();
 
         if (commands != null && !commands.isBlank()) {
             String[] commandsArray = commands.split("\n");

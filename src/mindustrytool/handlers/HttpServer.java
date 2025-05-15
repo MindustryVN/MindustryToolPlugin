@@ -26,6 +26,7 @@ import mindustry.maps.MapException;
 import mindustry.mod.Mods.ModLoadException;
 import mindustry.mod.Mods.ModMeta;
 import mindustry.net.Administration.PlayerInfo;
+import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.type.MapDto;
 import mindustrytool.type.MindustryPlayerDto;
@@ -102,7 +103,7 @@ public class HttpServer {
 
             app.get("plugin-version", context -> {
                 context.contentType(ContentType.APPLICATION_JSON);
-                context.json("0.0.1");
+                context.json(Config.PLUGIN_VERSION);
             });
 
             app.get("hosting", (context) -> {

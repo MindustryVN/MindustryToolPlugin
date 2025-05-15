@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class Config {
 
         public static Boolean isLoaded = false;
+        public static final String PLUGIN_VERSION = "0.0.1";
 
         public static final String HUB = System.getenv("IS_HUB");
         public static final boolean IS_HUB = HUB != null && HUB.equals("true");

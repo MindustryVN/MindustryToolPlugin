@@ -35,6 +35,7 @@ import mindustrytool.type.ServerCommandDto;
 import mindustrytool.type.StartServerDto;
 import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
+import mindustrytool.type.ModDto.ModMetaDto;
 import mindustrytool.type.ServerCommandDto.CommandParamDto;
 import mindustrytool.utils.HudUtils;
 
@@ -328,7 +329,23 @@ public class HttpServer {
                 throw new ModLoadException("Invalid file: No mod.json found.");
             }
 
-            return new ModDto().setFilename(zip.name()).setName(meta.name).setMeta(meta);
+            return new ModDto()//
+                    .setFilename(zip.name())//
+                    .setName(meta.name)
+                    .setMeta(new ModMetaDto()//
+                            .setAuthor(meta.author)//
+                            .setDependencies(meta.dependencies.list())
+                            .setDescription(meta.description)
+                            .setDisplayName(meta.displayName)
+                            .setHidden(meta.hidden)
+                            .setInternalName(meta.internalName)
+                            .setJava(meta.java)
+                            .setMain(meta.main)
+                            .setMinGameVersion(meta.minGameVersion)
+                            .setName(meta.name)
+                            .setRepo(meta.repo)
+                            .setSubtitle(meta.subtitle)
+                            .setVersion(meta.version));
         } catch (Exception e) {
             // delete root zip file so it can be closed on windows
             if (rootZip != null)

@@ -4,18 +4,17 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mindustry.mod.Mods.ModMeta;
 
 @Data
 @Accessors(chain = true)
 public class ModDto {
     private String name;
     private String filename;
-    private ModMeta meta;
+    private ModMetaDto meta;
 
     @Data
     @Accessors(chain = true)
-    public class ModMetaDto {
+    public static class ModMetaDto {
         private String name;
         private String internalName;
         private String minGameVersion = "0";

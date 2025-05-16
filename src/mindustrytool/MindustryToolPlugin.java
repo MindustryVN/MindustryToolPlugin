@@ -150,7 +150,11 @@ public class MindustryToolPlugin extends Plugin {
         Log.info("MindustryToolPlugin initialized.");
 
         if (!Vars.state.isGame()) {
-            apiGateway.host(SERVER_ID.toString());
+            try {
+                apiGateway.host(SERVER_ID.toString());
+            } catch (Exception e) {
+                Log.err(e);
+            }
         }
     }
 

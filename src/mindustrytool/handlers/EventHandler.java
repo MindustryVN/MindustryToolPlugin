@@ -13,7 +13,6 @@ import java.util.List;
 
 import arc.Core;
 import arc.Events;
-import arc.graphics.Color;
 import arc.net.Server;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -26,7 +25,6 @@ import lombok.experimental.Accessors;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
-import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.GameOverEvent;
@@ -78,25 +76,6 @@ public class EventHandler {
     public Gamemode lastMode;
     public boolean inGameOverWait;
 
-    public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
-    private static final Cache<String, String> translationCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(10))
-            .maximumSize(1000)
-            .build();
-
-    private static final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(1))
-            .maximumSize(1000)
-            .build();
-
-    private final List<String> icons = List.of(//
-            "", "", "", "", "", "", "", "", "", "", //
-            "", "", "", "", "", "", "", "", "", "", //
-            "", "", "", "", "", "", "", "", "", "", //
-            "", "", "", "", "", "", "", "", "", "", //
-            "", "", "", "", "", "", "", "", "", ""//
-    );
-
     @Data
     @Accessors(chain = true)
     public static class PlayerMetaData {
@@ -106,6 +85,25 @@ public class EventHandler {
         boolean isLoggedIn;
         Instant createdAt = Instant.now();
     }
+
+    public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
+    private static final Cache<String, String> translationCache = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofMinutes(2))
+            .maximumSize(1000)
+            .build();
+
+    private static final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(1))
+            .maximumSize(1000)
+            .build();
+
+    private static final List<String> icons = List.of(//
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", ""//
+    );
 
     public void init() {
         System.out.println("Setup event handler");
@@ -147,7 +145,6 @@ public class EventHandler {
         Events.on(PlayerChatEvent.class, this::onPlayerChat);
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.on(PlayerConnect.class, this::onPlayerConnect);
-        Events.run(EventType.Trigger.update, this::onUpdate);
         Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
 
         if (Config.IS_HUB) {
@@ -317,14 +314,6 @@ public class EventHandler {
         buffer.put(bytes);
     }
 
-    public void onUpdate() {
-        Groups.player.each(p -> {
-            if (p.unit().moving()) {
-                var effect = Effect.all.get((int) Math.random() % Effect.all.size);
-                Call.effect(effect, p.x, p.y, 0, Color.white);
-            }
-        });
-    }
 
     public void onServerLoad(ServerLoadEvent event) {
         Config.isLoaded = true;
@@ -394,15 +383,11 @@ public class EventHandler {
 
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             try {
-                Timer.schedule(() -> {
-                    if (!Vars.state.isPaused() && Groups.player.size() == 0) {
-                        Vars.state.set(State.paused);
-                    }
-                }, 10);
 
                 Player player = event.player;
 
                 Session.remove(player);
+                playerMeta.remove(event.player.uuid());
 
                 MindustryToolPlugin.voteHandler.removeVote(player);
 
@@ -410,7 +395,11 @@ public class EventHandler {
                 String chat = Strings.format("@ leaved the server, current players: @", playerName,
                         Groups.player.size() - 1);
 
-                playerMeta.remove(event.player.uuid());
+                Timer.schedule(() -> {
+                    if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                        Vars.state.set(State.paused);
+                    }
+                }, 10);
 
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {

@@ -8,9 +8,11 @@ import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.Config;
@@ -23,15 +25,24 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    private List<BuildLogDto> buildLogs = new ArrayList<>();
+    private static final HttpClient httpClient = HttpClient.newBuilder()//
+            .connectTimeout(Duration.ofSeconds(2))//
+            .build();
+
+    private final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);
 
     public void init() {
         System.out.println("Setup api gateway");
 
-        Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> {
+        Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
+
+                Log.info("Sending build logs to server manager: " + buildLogs.size());
+
                 var logs = new ArrayList<>(buildLogs);
+
                 buildLogs.clear();
+
                 var request = setHeaders(HttpRequest.newBuilder(path("build-log")))//
                         .header("Content-Type", "application/json")//
                         .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(logs)))//
@@ -41,7 +52,6 @@ public class ApiGateway {
                     ex.printStackTrace();
                     return null;
                 });
-
             }
 
         }, 0, 10, TimeUnit.SECONDS);
@@ -49,10 +59,6 @@ public class ApiGateway {
         System.out.println("Setup api gateway done");
 
     }
-
-    private final HttpClient httpClient = HttpClient.newBuilder()//
-            .connectTimeout(Duration.ofSeconds(2))//
-            .build();
 
     private Builder setHeaders(Builder builder) {
         return builder.header("X-SERVER-ID", MindustryToolPlugin.SERVER_ID.toString());
@@ -130,7 +136,9 @@ public class ApiGateway {
     }
 
     public void sendBuildLog(BuildLogDto buildLog) {
-        buildLogs.add(buildLog);
+        if (!buildLogs.offer(buildLog)) {
+            Log.warn("Build log queue is full. Dropping log.");
+        }
     }
 
     public String host(String targetServerId) {

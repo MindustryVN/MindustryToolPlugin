@@ -4,7 +4,10 @@ import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustrytool.Config;
 
-import java.util.concurrent.ConcurrentHashMap;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,7 +25,10 @@ public class HudUtils {
     public static final int LOGIN_UI = 3;
     public static final int SERVER_REDIRECT = 4;
 
-    public static final ConcurrentHashMap<String, LinkedList<MenuData>> menus = new ConcurrentHashMap<>();
+    public static final Cache<String, LinkedList<MenuData>> menus = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofMinutes(10))
+            .maximumSize(10000)
+            .build();
 
     @Data
     @AllArgsConstructor
@@ -53,7 +59,7 @@ public class HudUtils {
     }
 
     private static void onPlayerLeave(PlayerLeave event) {
-        menus.remove(event.player.uuid());
+        menus.invalidate(event.player.uuid());
     }
 
     public static Option option(PlayerPressCallback callback, String text) {
@@ -82,7 +88,7 @@ public class HudUtils {
                 .flatMap(option -> option.stream().map(l -> l.callback))//
                 .toList();
 
-        var userMenu = menus.computeIfAbsent(player.uuid(), k -> new LinkedList<>());
+        var userMenu = menus.get(player.uuid(), k -> new LinkedList<>());
 
         userMenu.removeIf(m -> m.id == id);
 
@@ -94,7 +100,7 @@ public class HudUtils {
     }
 
     public static void onMenuOptionChoose(MenuOptionChooseEvent event) {
-        var menu = menus.get(event.player.uuid());
+        var menu = menus.getIfPresent(event.player.uuid());
 
         if (menu == null || menu.isEmpty()) {
             return;
@@ -122,7 +128,7 @@ public class HudUtils {
     public static synchronized void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(player.con, id);
 
-        var menu = menus.get(player.uuid());
+        var menu = menus.getIfPresent(player.uuid());
 
         if (menu == null) {
             return;

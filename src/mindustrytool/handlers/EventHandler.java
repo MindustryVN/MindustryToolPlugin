@@ -269,8 +269,8 @@ public class EventHandler {
                     try {
                         var serverData = getTopServer();
                         if (serverData != null) {
-                            name += "->" + serverData.name;
-                            description += "->" + serverData.description;
+                            name += " -> " + serverData.name;
+                            description += " -> " + serverData.description;
                             map = serverData.mapName == null ? "" : serverData.mapName;
                             players = (int) serverData.players;
                         }

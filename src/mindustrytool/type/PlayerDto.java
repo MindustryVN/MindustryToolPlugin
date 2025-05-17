@@ -1,5 +1,7 @@
 package mindustrytool.type;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -11,5 +13,7 @@ public class PlayerDto {
     private String locale;
     private String ip;
     private TeamDto team;
+    
+    @JsonProperty("isAdmin")
     private boolean isAdmin;
 }

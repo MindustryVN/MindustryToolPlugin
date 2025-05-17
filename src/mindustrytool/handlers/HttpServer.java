@@ -20,6 +20,7 @@ import mindustry.maps.Map;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.type.PlayerInfoDto;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PlayerDto;
 import mindustrytool.type.ServerCommandDto;
@@ -192,6 +193,58 @@ public class HttpServer {
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))
                             .collect(Collectors.toList()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
+
+            app.post("player-infos", context -> {
+                var pageString = context.queryParam("page");
+                var sizeString = context.queryParam("size");
+                var isBannedString = context.queryParam("banned");
+
+                int page = pageString != null ? Integer.parseInt(pageString) : 0;
+                int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
+                boolean isBanned = isBannedString!= null? Boolean.parseBoolean(isBannedString) : false;
+
+                int offset = page * size;
+                try {
+                    Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
+                    var result = bans.list()//
+                            .stream()//
+                            .filter(info -> info.banned == isBanned)//
+                            .skip(offset)//
+                            .limit(size)//
+                            .map(ban -> new PlayerInfoDto()
+                                    .setId(ban.id)
+                                    .setLastName(ban.lastName)
+                                    .setLastIP(ban.lastIP)
+                                    .setIps(ban.ips.list())
+                                    .setNames(ban.names.list())
+                                    .setAdminUsid(ban.adminUsid)
+                                    .setTimesKicked(ban.timesKicked)
+                                    .setTimesJoined(ban.timesJoined)
+                                    .setBanned(ban.banned)
+                                    .setAdmin(ban.admin)
+                                    .setLastKicked(ban.lastKicked))
+                            .toList();
+
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(result);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    context.contentType(ContentType.TEXT_PLAIN);
+                    context.status(500);
+                    context.result(e.getMessage());
+                }
+            });
+            app.post("kicks", context -> {
+                try {
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(Vars.netServer.admins.kickedIPs);
                 } catch (Exception e) {
                     e.printStackTrace();
                     context.contentType(ContentType.TEXT_PLAIN);

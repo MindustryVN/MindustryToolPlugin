@@ -16,4 +16,5 @@ public class PlayerDto {
     
     @JsonProperty("isAdmin")
     private boolean isAdmin;
+    private Long joinedAt;
 }

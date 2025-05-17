@@ -1,5 +1,6 @@
 package mindustrytool.utils;
 
+import java.time.Instant;
 import java.util.Locale;
 
 import arc.func.Boolf;
@@ -12,6 +13,7 @@ public class Session {
 
     public final Player player;
     public final Locale locale;
+    public final Long joinedAt = Instant.now().toEpochMilli();
 
     public mindustry.game.Team spectate = null;
     public Effects effect = Effects.getByName("none");

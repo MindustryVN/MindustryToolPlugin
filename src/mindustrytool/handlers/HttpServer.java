@@ -28,6 +28,7 @@ import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerCommandDto.CommandParamDto;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -180,13 +181,13 @@ public class HttpServer {
                     Groups.player.forEach(players::add);
 
                     context.contentType(ContentType.APPLICATION_JSON);
-
                     context.json(players.stream()//
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
                                     .setLocale(player.locale())//
                                     .setAdmin(player.admin)//
+                                    .setJoinedAt(Session.get(player).joinedAt)
                                     .setTeam(new TeamDto()//
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))

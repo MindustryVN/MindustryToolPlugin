@@ -314,7 +314,6 @@ public class EventHandler {
         buffer.put(bytes);
     }
 
-
     public void onServerLoad(ServerLoadEvent event) {
         Config.isLoaded = true;
     }
@@ -398,6 +397,7 @@ public class EventHandler {
                 Timer.schedule(() -> {
                     if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                         Vars.state.set(State.paused);
+                        MindustryToolPlugin.apiGateway.sendConsoleMessage("No player: paused");
                     }
                 }, 10);
 
@@ -432,6 +432,7 @@ public class EventHandler {
             try {
                 if (Vars.state.isPaused()) {
                     Vars.state.set(State.playing);
+                    MindustryToolPlugin.apiGateway.sendConsoleMessage("Player join: unpaused");
                 }
 
                 var player = event.player;

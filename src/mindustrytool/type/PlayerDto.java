@@ -11,4 +11,5 @@ public class PlayerDto {
     private String locale;
     private String ip;
     private TeamDto team;
+    private boolean isAdmin;
 }

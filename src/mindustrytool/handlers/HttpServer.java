@@ -186,6 +186,7 @@ public class HttpServer {
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
                                     .setLocale(player.locale())//
+                                    .setAdmin(player.admin)//
                                     .setTeam(new TeamDto()//
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))

@@ -15,4 +15,5 @@ public class StatsDto {
     public byte[] mapData;
     public List<String> mods;
     public String status;
+    public int kicks;
 }

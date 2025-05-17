@@ -208,7 +208,7 @@ public class HttpServer {
 
                 int page = pageString != null ? Integer.parseInt(pageString) : 0;
                 int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
-                boolean isBanned = isBannedString!= null? Boolean.parseBoolean(isBannedString) : false;
+                boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : false;
 
                 int offset = page * size;
                 try {
@@ -335,9 +335,14 @@ public class HttpServer {
         List<String> mods = Vars.mods.list().map(mod -> mod.name).list();
         int players = Groups.player.size();
 
-        return new StatsDto().setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
-                .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(players).setMapName(mapName)
-                .setMods(mods).setStatus(Vars.state.isGame() ? "HOST" : "UP");
+        return new StatsDto()//
+                .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
+                .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
+                .setPlayers(players)//
+                .setMapName(mapName)
+                .setMods(mods)//
+                .setKicks(Vars.netServer.admins.kickedIPs.size)//
+                .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 
     public StatsDto detailStats() {

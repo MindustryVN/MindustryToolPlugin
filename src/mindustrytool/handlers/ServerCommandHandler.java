@@ -18,14 +18,12 @@ import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.game.EventType.GameOverEvent;
-import mindustry.game.Gamemode;
 import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.io.JsonIO;
 import mindustry.maps.Map;
-import mindustry.maps.MapException;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Administration.Config;
@@ -33,6 +31,7 @@ import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.utils.Utils;
 
 public class ServerCommandHandler {
 
@@ -80,52 +79,9 @@ public class ServerCommandHandler {
 
         handler.register("host", "[mapname] [mode]",
                 "Open the server. Will default to survival and a random map if not specified.", arg -> {
-                    if (Vars.state.isGame()) {
-                        Log.err("Already hosting. Type 'stop' to stop hosting first.");
-                        return;
-                    }
-                    Gamemode preset = Gamemode.survival;
-
-                    if (arg.length > 1) {
-                        try {
-                            preset = Gamemode.valueOf(arg[1]);
-                        } catch (IllegalArgumentException event) {
-                            Log.err("No gamemode '@' found.", arg[1]);
-                            return;
-                        }
-                    }
-
-                    Map result;
-                    if (arg.length > 0) {
-                        result = Vars.maps.all().find(map -> map.plainName().replace('_', ' ')
-                                .equalsIgnoreCase(Strings.stripColors(arg[0]).replace('_', ' ')));
-
-                        if (result == null) {
-                            Log.err("No map with name '@' found.", arg[0]);
-                            return;
-                        }
-                    } else {
-                        result = Vars.maps.getShuffleMode().next(preset, Vars.state.map);
-                        Log.info("Randomized next map to be @.", result.plainName());
-                    }
-
-                    Log.info("Loading map...");
-
-                    Vars.logic.reset();
-                    MindustryToolPlugin.eventHandler.lastMode = preset;
-                    Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
-
-                    try {
-                        Vars.world.loadMap(result, result.applyRules(MindustryToolPlugin.eventHandler.lastMode));
-                        Vars.state.rules = result.applyRules(preset);
-                        Vars.logic.play();
-
-                        Log.info("Map loaded.");
-
-                        Vars.netServer.openServer();
-                    } catch (MapException event) {
-                        Log.err("@: @", event.map.plainName(), event.getMessage());
-                    }
+                    String mapName = arg.length > 0 ? arg[0] : null;
+                    String mode = arg.length > 1 ? arg[1] : null;
+                    Utils.host(mapName, mode);
                 });
 
         handler.register("maps", "[all/custom/default]",

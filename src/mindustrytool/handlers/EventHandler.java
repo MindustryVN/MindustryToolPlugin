@@ -735,6 +735,8 @@ public class EventHandler {
         } else {
             reload.run();
         }
+
+        System.gc();
     }
 
     public void addPlayer(MindustryPlayerDto playerData, Player player) {

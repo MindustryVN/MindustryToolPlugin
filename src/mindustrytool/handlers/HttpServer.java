@@ -1,6 +1,5 @@
 package mindustrytool.handlers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,13 +12,11 @@ import arc.files.Fi;
 import arc.struct.Seq;
 import arc.util.Log;
 import mindustry.Vars;
-import mindustry.game.Gamemode;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.io.MapIO;
 import mindustry.maps.Map;
-import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
@@ -31,7 +28,7 @@ import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerCommandDto.CommandParamDto;
 import mindustrytool.utils.HudUtils;
-
+import mindustrytool.utils.Utils;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
@@ -255,7 +252,6 @@ public class HttpServer {
         System.out.println("Setup http server done");
     }
 
-
     private synchronized void host(StartServerDto request) {
         if (Vars.state.isGame()) {
             Log.info("Already hosting. Type 'stop' to stop hosting first.");
@@ -275,56 +271,7 @@ public class HttpServer {
             return;
         }
 
-        Gamemode preset = Gamemode.survival;
-
-        if (gameMode != null) {
-            try {
-                preset = Gamemode.valueOf(gameMode);
-            } catch (IllegalArgumentException e) {
-                Log.err("No gamemode '@' found.", gameMode);
-                return;
-            }
-        }
-
-        Map result;
-        try {
-            if (mapName == null) {
-                var maps = Vars.customMapDirectory.list();
-
-                if (maps.length == 0) {
-                    Log.err("No custom maps found.");
-                    return;
-                }
-                result = MapIO.createMap(Vars.customMapDirectory.list()[0], true);
-            } else {
-                result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot read map file: " + mapName);
-        }
-        if (result == null) {
-            Log.err("No map with name '@' found.", mapName);
-            return;
-        }
-
-        Log.info("Loading map...");
-
-        Vars.logic.reset();
-        MindustryToolPlugin.eventHandler.lastMode = preset;
-        Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
-
-        try {
-            Vars.world.loadMap(result, result.applyRules(preset));
-            Vars.state.rules = result.applyRules(preset);
-            Vars.logic.play();
-
-            Log.info("Map loaded.");
-
-            Vars.netServer.openServer();
-
-        } catch (MapException e) {
-            Log.err("@: @", e.map.plainName(), e.getMessage());
-        }
+        Utils.host(mapName, gameMode);
     }
 
     private StatsDto getStats() {

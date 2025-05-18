@@ -568,6 +568,7 @@ public class EventHandler {
             MindustryToolPlugin.apiGateway.sendChatMessage(message);
         } catch (Exception e) {
             Log.err(e);
+            MindustryToolPlugin.apiGateway.sendConsoleMessage(e.getMessage());
         }
 
     }

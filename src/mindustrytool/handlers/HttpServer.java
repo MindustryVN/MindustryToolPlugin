@@ -186,6 +186,7 @@ public class HttpServer {
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
+                                    .setIp(player.ip())
                                     .setLocale(player.locale())//
                                     .setAdmin(player.admin)//
                                     .setJoinedAt(Session.get(player).joinedAt)

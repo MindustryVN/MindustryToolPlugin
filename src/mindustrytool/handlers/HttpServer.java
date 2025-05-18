@@ -201,7 +201,7 @@ public class HttpServer {
                 }
             });
 
-            app.post("player-infos", context -> {
+            app.get("player-infos", context -> {
                 var pageString = context.queryParam("page");
                 var sizeString = context.queryParam("size");
                 var isBannedString = context.queryParam("banned");
@@ -241,7 +241,7 @@ public class HttpServer {
                     context.result(e.getMessage());
                 }
             });
-            app.post("kicks", context -> {
+            app.get("kicks", context -> {
                 try {
                     context.contentType(ContentType.APPLICATION_JSON);
                     context.json(Vars.netServer.admins.kickedIPs);

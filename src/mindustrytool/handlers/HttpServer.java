@@ -208,14 +208,14 @@ public class HttpServer {
 
                 int page = pageString != null ? Integer.parseInt(pageString) : 0;
                 int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
-                boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : false;
+                Boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : null;
 
                 int offset = page * size;
                 try {
                     Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
                     var result = bans.list()//
                             .stream()//
-                            .filter(info -> info.banned == isBanned)//
+                            .filter(info -> isBanned == null ? true : info.banned == isBanned)//
                             .skip(offset)//
                             .limit(size)//
                             .map(ban -> new PlayerInfoDto()

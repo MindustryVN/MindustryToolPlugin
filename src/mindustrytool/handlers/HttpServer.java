@@ -1,6 +1,7 @@
 package mindustrytool.handlers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -247,8 +248,13 @@ public class HttpServer {
             });
             app.get("kicks", context -> {
                 try {
+                    var result = new HashMap<>();
+                    for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                        result.put(entry.key, entry.value);
+                    }
                     context.contentType(ContentType.APPLICATION_JSON);
-                    context.json(Vars.netServer.admins.kickedIPs);
+
+                    context.json(result);
                 } catch (Exception e) {
                     e.printStackTrace();
                     context.contentType(ContentType.TEXT_PLAIN);

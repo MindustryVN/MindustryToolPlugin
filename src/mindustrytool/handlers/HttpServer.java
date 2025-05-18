@@ -12,6 +12,7 @@ import arc.Core;
 import arc.files.Fi;
 import arc.struct.Seq;
 import arc.util.Log;
+import arc.util.Time;
 import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -250,7 +251,9 @@ public class HttpServer {
                 try {
                     var result = new HashMap<>();
                     for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                        result.put(entry.key, entry.value);
+                        if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                            result.put(entry.key, entry.value);
+                        }
                     }
                     context.contentType(ContentType.APPLICATION_JSON);
 

@@ -34,6 +34,7 @@ import mindustrytool.utils.Utils;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
+import io.javalin.plugin.bundled.RouteOverviewPlugin;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
@@ -54,6 +55,8 @@ public class HttpServer {
                             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
                 }));
+
+                config.registerPlugin(new RouteOverviewPlugin());
             });
 
             app.get("stats", context -> {

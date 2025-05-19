@@ -37,8 +37,6 @@ public class ApiGateway {
         Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
 
-                Log.info("Sending build logs to server manager: " + buildLogs.size());
-
                 var logs = new ArrayList<>(buildLogs);
 
                 buildLogs.clear();

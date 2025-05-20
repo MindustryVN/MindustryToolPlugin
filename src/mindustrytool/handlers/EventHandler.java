@@ -723,6 +723,7 @@ public class EventHandler {
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
                 Vars.net.closeServer();
+                MindustryToolPlugin.apiGateway.sendConsoleMessage(e.getMessage());
             }
         };
 

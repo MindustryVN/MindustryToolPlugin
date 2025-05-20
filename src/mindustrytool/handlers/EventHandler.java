@@ -190,7 +190,7 @@ public class EventHandler {
                                             + "[white]Map: %s\n".formatted(server.getMapName())//
                                             + "[white]Mode: %s\n".formatted(server.getMode())//
                                             + "[white]Description: %s\n".formatted(server.getDescription())//
-                                            + "[white]Mods: %s\n".formatted(mods)//
+                                            + "[white]Mods: %s".formatted(mods)//
                             ;
 
                             Call.label(message, 200000, placeX, placeY);

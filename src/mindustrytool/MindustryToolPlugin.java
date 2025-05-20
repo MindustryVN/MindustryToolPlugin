@@ -29,9 +29,7 @@ import mindustrytool.handlers.HttpServer;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
-import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.VPNUtils;
 
 public class MindustryToolPlugin extends Plugin {
     public static final RtvVoteHandler voteHandler = new RtvVoteHandler();
@@ -58,7 +56,7 @@ public class MindustryToolPlugin extends Plugin {
                 "{reactorExplosions: false, logicUnitBuild: false}");
 
         // update log level
-        Config.debug.set(Config.debug.bool());
+        Config.debug.set(true);
         Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f, 60));
         Vars.customMapDirectory.mkdirs();
 
@@ -69,15 +67,11 @@ public class MindustryToolPlugin extends Plugin {
             Vars.maps.setShuffleMode(ShuffleMode.all);
         }
 
-        Timer.schedule(() -> System.gc(), 0, 60);
-
         eventHandler.init();
         apiGateway.init();
         httpServer.init();
 
         HudUtils.init();
-        VPNUtils.init();
-        Effects.init();
 
         if (Config.autosave.bool()) {
             System.out.println("Auto save is on");
@@ -209,14 +203,12 @@ public class MindustryToolPlugin extends Plugin {
     }
 
     private void sendToConsole(String message) {
-        mindustrytool.Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            try {
-                apiGateway.sendConsoleMessage(message);
-            } catch (Exception e) {
-                standardOutputStream.println(message);
-                standardOutputStream.println(e.getMessage());
-            }
-        });
+        try {
+            apiGateway.sendConsoleMessage(message);
+        } catch (Exception e) {
+            standardOutputStream.println(message);
+            standardOutputStream.println(e.getMessage());
+        }
     }
 
     private void initOutputStream() {

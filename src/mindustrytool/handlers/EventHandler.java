@@ -55,7 +55,6 @@ import mindustrytool.type.ServerDto.ResponseData;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
-import mindustrytool.utils.VPNUtils;
 import mindustrytool.utils.HudUtils.Option;
 import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
@@ -232,10 +231,6 @@ public class EventHandler {
                     if (ch <= '\u001f') {
                         player.kick("Invalid name");
                     }
-                }
-
-                if (VPNUtils.isBot(player)) {
-                    player.kick("Your IP has been banned");
                 }
 
             } catch (Exception e) {

@@ -16,7 +16,6 @@ public class Session {
     public final Long joinedAt = Instant.now().toEpochMilli();
 
     public mindustry.game.Team spectate = null;
-    public Effects effect = Effects.getByName("none");
     public mindustry.gen.Unit lastUnit;
     public String tag = "", noColorTag = "", rainbowedName = "";
     public int hue = 0;
@@ -46,7 +45,6 @@ public class Session {
         this.player.unit().health = this.player.unit().maxHealth;
         this.lastUnit = newData.lastUnit;
         this.spectate = newData.spectate;
-        this.effect = newData.effect;
         this.hue = newData.hue;
         this.votedVNW = newData.votedVNW;
         this.votedRTV = newData.votedRTV;

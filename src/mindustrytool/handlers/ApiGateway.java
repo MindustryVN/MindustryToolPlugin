@@ -46,10 +46,12 @@ public class ApiGateway {
                         .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(logs)))//
                         .build();
 
-                httpClient.sendAsync(request, BodyHandlers.ofString()).exceptionally(ex -> {
-                    ex.printStackTrace();
-                    return null;
+                httpClient.sendAsync(request, BodyHandlers.ofString()).whenComplete((_result, error) -> {
+                    if (error != null) {
+                        Log.err("Can not send console message: " + error.getMessage());
+                    }
                 });
+
             }
 
         }, 0, 10, TimeUnit.SECONDS);
@@ -86,11 +88,13 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
                 .build();
 
-        try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        httpClient.sendAsync(request, BodyHandlers.ofString())
+                .whenComplete((_result, error) -> {
+                    if (error != null) {
+                        Log.err("Can not send console message: " + error.getMessage());
+                    }
+                });
+
     }
 
     public int getTotalPlayer() {
@@ -113,11 +117,13 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        httpClient.sendAsync(request, BodyHandlers.ofString())
+                .whenComplete((_result, error) -> {
+                    if (error != null) {
+                        Log.err("Can not send console message: " + error.getMessage());
+                    }
+                });
+
     }
 
     public void sendConsoleMessage(String chat) {
@@ -126,11 +132,12 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        httpClient.sendAsync(request, BodyHandlers.ofString())
+                .whenComplete((_result, error) -> {
+                    if (error != null) {
+                        Log.err("Can not send console message: " + error.getMessage());
+                    }
+                });
     }
 
     public void sendBuildLog(BuildLogDto buildLog) {

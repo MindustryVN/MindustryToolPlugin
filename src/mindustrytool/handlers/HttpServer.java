@@ -367,6 +367,7 @@ public class HttpServer {
             Fi file = Fi.tempFile(TEMP_SAVE_NAME);
             file.writePng(pix);
             mapData = file.readBytes();
+            file.delete();
             pix.dispose();
         }
 

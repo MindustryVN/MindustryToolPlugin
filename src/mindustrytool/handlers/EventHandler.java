@@ -241,7 +241,7 @@ public class EventHandler {
                                                 + "[white]Map: %s\n".formatted(server.getMapName())//
                                                 + "[white]Mode: %s\n".formatted(server.getMode())//
                                                 + "[white]Description: %s\n".formatted(server.getDescription())//
-                                                + "[white]Mods: %s".formatted(mods);
+                                                + (mods.isEmpty() ? "" : "[white]Mods: %s".formatted(mods));
 
                                 Tile tile = Vars.world.tile(coreX, coreY);
 

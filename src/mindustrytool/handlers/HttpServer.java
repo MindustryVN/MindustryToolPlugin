@@ -40,16 +40,12 @@ import io.javalin.plugin.bundled.RouteOverviewPlugin;
 
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
-    private static Javalin app;
 
     public void init() {
         System.out.println("Setup http server");
         try {
-            if (app != null) {
-                app.stop();
-            }
 
-            app = Javalin.create(config -> {
+            var app = Javalin.create(config -> {
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                     mapper//
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//

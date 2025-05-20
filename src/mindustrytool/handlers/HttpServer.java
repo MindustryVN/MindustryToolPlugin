@@ -345,7 +345,10 @@ public class HttpServer {
     private StatsDto getStats() {
         Map map = Vars.state.map;
         String mapName = map != null ? map.name() : "";
-        List<String> mods = Vars.mods.list().map(mod -> mod.name).list();
+        List<String> mods = Vars.mods == null //
+                ? List.of()
+                : Vars.mods.list().map(mod -> mod.name).list();
+
         int players = Groups.player.size();
 
         return new StatsDto()//

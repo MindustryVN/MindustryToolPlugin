@@ -29,6 +29,6 @@ public class ServerDto {
         public long totalRam;
         public long players;
         public String mapName;
-        private List<String> mods;
+        private List<String> mods = new ArrayList<>();
     }
 }

@@ -37,7 +37,6 @@ import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.Gamemode;
 import mindustry.game.Team;
-import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -79,6 +78,14 @@ public class EventHandler {
 
     public Gamemode lastMode;
     public boolean inGameOverWait;
+
+    private List<ResponseData> servers = new ArrayList<>();
+
+    int page = 0;
+    int gap = 50;
+    int rows = 4;
+    int size = 40;
+    int columns = size / rows;
 
     @Data
     @Accessors(chain = true)
@@ -157,68 +164,74 @@ public class EventHandler {
         }
 
         Timer.schedule(() -> {
-            var map = Vars.state.map;
-
-            if (map != null) {
-                int page = 0;
-                int gap = 50;
-                int rows = 4;
-                var size = 40;
-                int columns = size / rows;
+            try {
                 var request = new PaginationRequest().setPage(page).setSize(size);
 
                 var response = MindustryToolPlugin.apiGateway.getServers(request);
-                var servers = response.getServers();
+                servers = response.getServers();
 
-                for (int x = 0; x < columns; x++) {
-                    for (int y = 0; y < rows; y++) {
-                        var index = x + y * columns;
-                        int coreX = (x - columns / 2) * gap + map.width / 2;
-                        int coreY = (y - rows / 2) * gap + map.height / 2;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 0, 30);
 
-                        if (index < servers.size()) {
-                            int offsetX = (x - columns / 2) * gap * 8;
-                            int offsetY = (y - rows / 2) * gap * 8;
+        Timer.schedule(() -> {
+            try {
+                var map = Vars.state.map;
 
-                            int messageX = map.width / 2 * 8 + offsetX;
-                            int messageY = map.height / 2 * 8 + offsetY;
+                if (map != null) {
 
-                            var server = servers.get(index);
+                    for (int x = 0; x < columns; x++) {
+                        for (int y = 0; y < rows; y++) {
+                            var index = x + y * columns;
+                            int coreX = (x - columns / 2) * gap + map.width / 2;
+                            int coreY = (y - rows / 2) * gap + map.height / 2;
 
-                            var serverStatus = server.getStatus().equals("HOST") ? "[green]"
-                                    : "[red]" + server.getStatus();
+                            if (servers != null && index < servers.size()) {
+                                var server = servers.get(index);
 
-                            var mods = server.getMods();
-                            mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+                                int offsetX = (x - columns / 2) * gap * 8;
+                                int offsetY = (y - rows / 2) * gap * 8;
 
-                            String message = //
-                                    "%s\n\n".formatted(server.getName()) //
-                                            + "[white]Status: %s\n".formatted(serverStatus)//
-                                            + "[white]Players: %s\n".formatted(server.getPlayers())//
-                                            + "[white]Map: %s\n".formatted(server.getMapName())//
-                                            + "[white]Mode: %s\n".formatted(server.getMode())//
-                                            + "[white]Description: %s\n".formatted(server.getDescription())//
-                                            + "[white]Mods: %s".formatted(mods);
+                                int messageX = map.width / 2 * 8 + offsetX;
+                                int messageY = map.height / 2 * 8 + offsetY;
 
-                            Tile tile = Vars.world.tile(coreX, coreY);
+                                var serverStatus = server.getStatus().equals("HOST") ? "[green]" + server.getStatus()
+                                        : "[red]" + server.getStatus();
 
-                            if (tile != null) {
-                                if (tile.build == null || !(tile.block() instanceof CoreBlock))
-                                    tile.setBlock(Blocks.coreShard, Team.sharded, 0);
-                            }
+                                var mods = server.getMods();
+                                mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
-                            Call.label(message, 200000, messageX, messageY);
-                        } else {
-                            Tile tile = Vars.world.tile(coreX, coreY);
-                            if (tile != null && tile.build != null) {
-                                tile.build.kill();
+                                String message = //
+                                        "%s\n\n".formatted(server.getName()) //
+                                                + "[white]Status: %s\n".formatted(serverStatus)//
+                                                + "[white]Players: %s\n".formatted(server.getPlayers())//
+                                                + "[white]Map: %s\n".formatted(server.getMapName())//
+                                                + "[white]Mode: %s\n".formatted(server.getMode())//
+                                                + "[white]Description: %s\n".formatted(server.getDescription())//
+                                                + "[white]Mods: %s".formatted(mods);
+
+                                Tile tile = Vars.world.tile(coreX, coreY);
+
+                                if (tile != null) {
+                                    if (tile.build == null || !(tile.block() instanceof CoreBlock))
+                                        tile.setBlock(Blocks.coreNucleus, Team.sharded, 0);
+                                }
+
+                                Call.label(message, 200000, messageX, messageY);
+                            } else {
+                                Tile tile = Vars.world.tile(coreX, coreY);
+                                if (tile != null && tile.build != null) {
+                                    tile.build.kill();
+                                }
                             }
                         }
                     }
                 }
-
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }, 0, 30);
+        }, 0, 1);
 
         System.out.println("Setup event handler done");
     }

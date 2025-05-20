@@ -152,16 +152,14 @@ public class MindustryToolPlugin extends Plugin {
             }
         }
 
-        Core.app.post(() -> {
-            try {
-                if (Groups.player.isEmpty()) {
-                    Vars.state.set(State.paused);
-                    apiGateway.sendConsoleMessage("No players online, server is paused.");
-                }
-            } catch (Exception e) {
-                Log.err(e);
+        try {
+            if (Groups.player.isEmpty()) {
+                Vars.state.set(State.paused);
+                apiGateway.sendConsoleMessage("No players online, server is paused.");
             }
-        });
+        } catch (Exception e) {
+            Log.err(e);
+        }
     }
 
     public void handleCommandString(String line) {

@@ -226,7 +226,7 @@ public class EventHandler {
                                 int offsetY = (y - rows / 2) * gap * 8;
 
                                 int messageX = map.width / 2 * 8 + offsetX;
-                                int messageY = map.height / 2 * 8 + offsetY;
+                                int messageY = map.height / 2 * 8 + offsetY + 25 * 8;
 
                                 var serverStatus = server.getStatus().equals("HOST") ? "[green]" + server.getStatus()
                                         : "[red]" + server.getStatus();
@@ -235,7 +235,7 @@ public class EventHandler {
                                 mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
                                 String message = //
-                                        "%s\n\n".formatted(server.getName()) //
+                                        "%s (Tap to join)\n\n".formatted(server.getName()) //
                                                 + "[white]Status: %s\n".formatted(serverStatus)//
                                                 + "[white]Players: %s\n".formatted(server.getPlayers())//
                                                 + "[white]Map: %s\n".formatted(server.getMapName())//

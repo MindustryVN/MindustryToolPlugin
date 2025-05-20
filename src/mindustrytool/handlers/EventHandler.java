@@ -23,6 +23,7 @@ import arc.util.serialization.JsonValue;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.game.EventType;
@@ -35,6 +36,8 @@ import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.Gamemode;
+import mindustry.game.Team;
+import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -63,6 +66,8 @@ import mindustry.net.Net;
 import mindustry.net.NetConnection;
 import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
+import mindustry.world.Tile;
+import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.Duration;
@@ -168,12 +173,15 @@ public class EventHandler {
                 for (int x = 0; x < columns; x++) {
                     for (int y = 0; y < rows; y++) {
                         var index = x + y * columns;
+                        int coreX = (x - columns / 2) * gap + map.width / 2;
+                        int coreY = (y - rows / 2) * gap + map.height / 2;
+
                         if (index < servers.size()) {
                             int offsetX = (x - columns / 2) * gap * 8;
                             int offsetY = (y - rows / 2) * gap * 8;
 
-                            int placeX = map.width / 2 * 8 + offsetX;
-                            int placeY = map.height / 2 * 8 + offsetY;
+                            int messageX = map.width / 2 * 8 + offsetX;
+                            int messageY = map.height / 2 * 8 + offsetY;
 
                             var server = servers.get(index);
 
@@ -190,10 +198,21 @@ public class EventHandler {
                                             + "[white]Map: %s\n".formatted(server.getMapName())//
                                             + "[white]Mode: %s\n".formatted(server.getMode())//
                                             + "[white]Description: %s\n".formatted(server.getDescription())//
-                                            + "[white]Mods: %s".formatted(mods)//
-                            ;
+                                            + "[white]Mods: %s".formatted(mods);
 
-                            Call.label(message, 200000, placeX, placeY);
+                            Tile tile = Vars.world.tile(coreX, coreY);
+
+                            if (tile != null) {
+                                if (tile.build == null || !(tile.block() instanceof CoreBlock))
+                                    tile.setBlock(Blocks.coreShard, Team.sharded, 0);
+                            }
+
+                            Call.label(message, 200000, messageX, messageY);
+                        } else {
+                            Tile tile = Vars.world.tile(coreX, coreY);
+                            if (tile != null && tile.build != null) {
+                                tile.build.kill();
+                            }
                         }
                     }
                 }

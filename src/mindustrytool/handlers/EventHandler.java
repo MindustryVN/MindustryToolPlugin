@@ -35,6 +35,7 @@ import mindustry.game.EventType.PlayerConnect;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
+import mindustry.game.EventType.TapEvent;
 import mindustry.game.Gamemode;
 import mindustry.game.Team;
 import mindustry.gen.Call;
@@ -80,12 +81,16 @@ public class EventHandler {
     public boolean inGameOverWait;
 
     private List<ResponseData> servers = new ArrayList<>();
+    private List<ServerCore> serverCores = new ArrayList<>();
 
     int page = 0;
     int gap = 50;
     int rows = 4;
     int size = 40;
     int columns = size / rows;
+
+    public static record ServerCore(ResponseData server, int x, int y) {
+    }
 
     @Data
     @Accessors(chain = true)
@@ -158,6 +163,31 @@ public class EventHandler {
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
+        Events.on(TapEvent.class, event -> {
+            if (event.tile == null) {
+                return;
+            }
+            var map = Vars.state.map;
+
+            if (map == null) {
+                return;
+            }
+
+            var tapSize = 4;
+
+            var tapX = event.tile.x;
+            var tapY = event.tile.y;
+
+            for (var core : serverCores) {
+                if (tapX >= core.x - tapSize //
+                        && tapX <= core.x + tapSize //
+                        && tapY >= core.y - tapSize
+                        && tapY <= core.y + tapSize//
+                ) {
+                    onServerChoose(event.player, core.server.id.toString(), core.server.name);
+                }
+            }
+        });
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
@@ -178,6 +208,8 @@ public class EventHandler {
         Timer.schedule(() -> {
             try {
                 var map = Vars.state.map;
+
+                serverCores.clear();
 
                 if (map != null) {
 
@@ -216,6 +248,7 @@ public class EventHandler {
                                 if (tile != null) {
                                     if (tile.build == null || !(tile.block() instanceof CoreBlock))
                                         tile.setBlock(Blocks.coreNucleus, Team.sharded, 0);
+                                    serverCores.add(new ServerCore(server, coreX, coreY));
                                 }
 
                                 Call.label(message, 200000, messageX, messageY);

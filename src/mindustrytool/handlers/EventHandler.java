@@ -235,7 +235,7 @@ public class EventHandler {
                                 mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
                                 String message = //
-                                        "%s (Tap to join)\n\n".formatted(server.getName()) //
+                                        "%s (Tap core to join)\n\n".formatted(server.getName()) //
                                                 + "[white]Status: %s\n".formatted(serverStatus)//
                                                 + "[white]Players: %s\n".formatted(server.getPlayers())//
                                                 + "[white]Map: %s\n".formatted(server.getMapName())//

@@ -156,7 +156,7 @@ public class EventHandler {
 
             if (map != null) {
                 int page = 0;
-                int gap = 40;
+                int gap = 25;
                 int rows = 4;
                 var size = 40;
                 int columns = size / rows;
@@ -184,13 +184,13 @@ public class EventHandler {
                             mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
 
                             String message = //
-                                    "%s\n".formatted(server.getName()) //
-                                            + "[white]Status: \n".formatted(serverStatus)//
-                                            + "[white]Players: \n".formatted(server.getPlayers())//
-                                            + "[white]Map: \n".formatted(server.getMapName())//
-                                            + "[white]Mode: \n".formatted(server.getMode())//
-                                            + "[white]Description: \n".formatted(server.getDescription())//
-                                            + "[white]Mods: \n".formatted(mods)//
+                                    "%s\n\n".formatted(server.getName()) //
+                                            + "[white]Status: %s\n".formatted(serverStatus)//
+                                            + "[white]Players: %s\n".formatted(server.getPlayers())//
+                                            + "[white]Map: %s\n".formatted(server.getMapName())//
+                                            + "[white]Mode: %s\n".formatted(server.getMode())//
+                                            + "[white]Description: %s\n".formatted(server.getDescription())//
+                                            + "[white]Mods: %s\n".formatted(mods)//
                             ;
 
                             Call.label(message, 200000, placeX, placeY);

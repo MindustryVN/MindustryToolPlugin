@@ -664,9 +664,10 @@ public class EventHandler {
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Utils.executeExpectError(() -> {
-            player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
+                player.sendMessage(
+                        "[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
                 var data = MindustryToolPlugin.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");

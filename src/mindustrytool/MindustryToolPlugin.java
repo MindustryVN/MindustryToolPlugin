@@ -18,7 +18,6 @@ import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.game.EventType.Trigger;
-import mindustry.gen.Groups;
 import mindustry.io.SaveIO;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.mod.*;
@@ -150,15 +149,6 @@ public class MindustryToolPlugin extends Plugin {
             } catch (Exception e) {
                 Log.err(e);
             }
-        }
-
-        try {
-            if (Groups.player.isEmpty()) {
-                Vars.state.set(State.paused);
-                apiGateway.sendConsoleMessage("No players online, server is paused.");
-            }
-        } catch (Exception e) {
-            Log.err(e);
         }
     }
 

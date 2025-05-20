@@ -163,109 +163,110 @@ public class EventHandler {
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
-        Events.on(TapEvent.class, event -> {
-            if (event.tile == null) {
-                return;
-            }
-            var map = Vars.state.map;
-
-            if (map == null) {
-                return;
-            }
-
-            var tapSize = 4;
-
-            var tapX = event.tile.x;
-            var tapY = event.tile.y;
-
-            for (var core : serverCores) {
-                if (tapX >= core.x - tapSize //
-                        && tapX <= core.x + tapSize //
-                        && tapY >= core.y - tapSize
-                        && tapY <= core.y + tapSize//
-                ) {
-                    onServerChoose(event.player, core.server.id.toString(), core.server.name);
-                }
-            }
-        });
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
-        }
 
-        Timer.schedule(() -> {
-            try {
-                var request = new PaginationRequest().setPage(page).setSize(size);
-
-                var response = MindustryToolPlugin.apiGateway.getServers(request);
-                servers = response.getServers();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 0, 30);
-
-        Timer.schedule(() -> {
-            try {
+            Events.on(TapEvent.class, event -> {
+                if (event.tile == null) {
+                    return;
+                }
                 var map = Vars.state.map;
 
-                serverCores.clear();
+                if (map == null) {
+                    return;
+                }
 
-                if (map != null) {
+                var tapSize = 4;
 
-                    for (int x = 0; x < columns; x++) {
-                        for (int y = 0; y < rows; y++) {
-                            var index = x + y * columns;
-                            int coreX = (x - columns / 2) * gap + map.width / 2;
-                            int coreY = (y - rows / 2) * gap + map.height / 2;
+                var tapX = event.tile.x;
+                var tapY = event.tile.y;
 
-                            if (servers != null && index < servers.size()) {
-                                var server = servers.get(index);
+                for (var core : serverCores) {
+                    if (tapX >= core.x - tapSize //
+                            && tapX <= core.x + tapSize //
+                            && tapY >= core.y - tapSize
+                            && tapY <= core.y + tapSize//
+                    ) {
+                        onServerChoose(event.player, core.server.id.toString(), core.server.name);
+                    }
+                }
+            });
 
-                                int offsetX = (x - columns / 2) * gap * 8;
-                                int offsetY = (y - rows / 2) * gap * 8;
+            Timer.schedule(() -> {
+                try {
+                    var request = new PaginationRequest().setPage(page).setSize(size);
 
-                                int messageX = map.width / 2 * 8 + offsetX;
-                                int messageY = map.height / 2 * 8 + offsetY + 25 * 8;
+                    var response = MindustryToolPlugin.apiGateway.getServers(request);
+                    servers = response.getServers();
 
-                                var serverStatus = server.getStatus().equals("HOST") ? "[green]" + server.getStatus()
-                                        : "[red]" + server.getStatus();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, 0, 30);
 
-                                var mods = server.getMods();
-                                mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+            Timer.schedule(() -> {
+                try {
+                    var map = Vars.state.map;
 
-                                String message = //
-                                        "%s (Tap core to join)\n\n".formatted(server.getName()) //
-                                                + "[white]Status: %s\n".formatted(serverStatus)//
-                                                + "[white]Players: %s\n".formatted(server.getPlayers())//
-                                                + "[white]Map: %s\n".formatted(server.getMapName())//
-                                                + "[white]Mode: %s\n".formatted(server.getMode())//
-                                                + "[white]Description: %s\n".formatted(server.getDescription())//
-                                                + (mods.isEmpty() ? "" : "[white]Mods: %s".formatted(mods));
+                    serverCores.clear();
 
-                                Tile tile = Vars.world.tile(coreX, coreY);
+                    if (map != null) {
 
-                                if (tile != null) {
-                                    if (tile.build == null || !(tile.block() instanceof CoreBlock))
-                                        tile.setBlock(Blocks.coreNucleus, Team.sharded, 0);
-                                    serverCores.add(new ServerCore(server, coreX, coreY));
-                                }
+                        for (int x = 0; x < columns; x++) {
+                            for (int y = 0; y < rows; y++) {
+                                var index = x + y * columns;
+                                int coreX = (x - columns / 2) * gap + map.width / 2;
+                                int coreY = (y - rows / 2) * gap + map.height / 2;
 
-                                Call.label(message, 1, messageX, messageY);
-                            } else {
-                                Tile tile = Vars.world.tile(coreX, coreY);
-                                if (tile != null && tile.build != null) {
-                                    tile.build.kill();
+                                if (servers != null && index < servers.size()) {
+                                    var server = servers.get(index);
+
+                                    int offsetX = (x - columns / 2) * gap * 8;
+                                    int offsetY = (y - rows / 2) * gap * 8;
+
+                                    int messageX = map.width / 2 * 8 + offsetX;
+                                    int messageY = map.height / 2 * 8 + offsetY + 25;
+
+                                    var serverStatus = server.getStatus().equals("HOST")
+                                            ? "[green]" + server.getStatus()
+                                            : "[red]" + server.getStatus();
+
+                                    var mods = server.getMods();
+                                    mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+
+                                    String message = //
+                                            "%s (Tap core to join)\n\n".formatted(server.getName()) //
+                                                    + "[white]Status: %s\n".formatted(serverStatus)//
+                                                    + "[white]Players: %s\n".formatted(server.getPlayers())//
+                                                    + "[white]Map: %s\n".formatted(server.getMapName())//
+                                                    + "[white]Mode: %s\n".formatted(server.getMode())//
+                                                    + "[white]Description: %s\n".formatted(server.getDescription())//
+                                                    + (mods.isEmpty() ? "" : "[white]Mods: %s".formatted(mods));
+
+                                    Tile tile = Vars.world.tile(coreX, coreY);
+
+                                    if (tile != null) {
+                                        if (tile.build == null || !(tile.block() instanceof CoreBlock))
+                                            tile.setBlock(Blocks.coreNucleus, Team.sharded, 0);
+                                        serverCores.add(new ServerCore(server, coreX, coreY));
+                                    }
+
+                                    Call.label(message, 1, messageX, messageY);
+                                } else {
+                                    Tile tile = Vars.world.tile(coreX, coreY);
+                                    if (tile != null && tile.build != null) {
+                                        tile.build.kill();
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 0, 1);
-
+            }, 0, 1);
+        }
         System.out.println("Setup event handler done");
     }
 

@@ -414,6 +414,10 @@ public class EventHandler {
                     return null;
                 }
 
+                if (servers.get(0).getId() == null) {
+                    return null;
+                }
+
                 return servers.get(0);
             });
         } catch (Exception e) {

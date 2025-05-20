@@ -130,6 +130,7 @@ public class EventHandler {
             Events.fire(new EventType.ConnectionEvent(con));
             Seq<NetConnection> connections = Seq.with(Vars.net.getConnections())
                     .select(other -> other.address.equals(con.address));
+
             if (connections.size > Config.MAX_IDENTICAL_IPS) {
                 Vars.netServer.admins.blacklistDos(con.address);
                 connections.each(NetConnection::close);
@@ -149,6 +150,56 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
         }
+
+        Timer.schedule(() -> {
+            var map = Vars.state.map;
+
+            if (map != null) {
+                int page = 0;
+                int gap = 40;
+                int rows = 4;
+                var size = 40;
+                int columns = size / rows;
+                var request = new PaginationRequest().setPage(page).setSize(size);
+
+                var response = MindustryToolPlugin.apiGateway.getServers(request);
+                var servers = response.getServers();
+
+                for (int x = 0; x < columns; x++) {
+                    for (int y = 0; y < rows; y++) {
+                        var index = x + y * columns;
+                        if (index < servers.size()) {
+                            int offsetX = (x - columns / 2) * gap * 8;
+                            int offsetY = (y - rows / 2) * gap * 8;
+
+                            int placeX = map.width / 2 * 8 + offsetX;
+                            int placeY = map.height / 2 * 8 + offsetY;
+
+                            var server = servers.get(index);
+
+                            var serverStatus = server.getStatus().equals("HOST") ? "[green]"
+                                    : "[red]" + server.getStatus();
+
+                            var mods = server.getMods();
+                            mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+
+                            String message = //
+                                    "%s\n".formatted(server.getName()) //
+                                            + "[white]Status: \n".formatted(serverStatus)//
+                                            + "[white]Players: \n".formatted(server.getPlayers())//
+                                            + "[white]Map: \n".formatted(server.getMapName())//
+                                            + "[white]Mode: \n".formatted(server.getMode())//
+                                            + "[white]Description: \n".formatted(server.getDescription())//
+                                            + "[white]Mods: \n".formatted(mods)//
+                            ;
+
+                            Call.label(message, 200000, placeX, placeY);
+                        }
+                    }
+                }
+
+            }
+        }, 0, 30);
 
         System.out.println("Setup event handler done");
     }
@@ -596,6 +647,7 @@ public class EventHandler {
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
 
         var map = Vars.state.map;
+
         if (map != null) {
             Call.label(Config.HUB_MESSAGE, 200000, map.width / 2 * 8, map.height / 2 * 8);
         }

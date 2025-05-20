@@ -156,7 +156,7 @@ public class EventHandler {
 
             if (map != null) {
                 int page = 0;
-                int gap = 25;
+                int gap = 50;
                 int rows = 4;
                 var size = 40;
                 int columns = size / rows;

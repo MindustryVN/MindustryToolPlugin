@@ -251,7 +251,7 @@ public class EventHandler {
                                     serverCores.add(new ServerCore(server, coreX, coreY));
                                 }
 
-                                Call.label(message, 200000, messageX, messageY);
+                                Call.label(message, 1, messageX, messageY);
                             } else {
                                 Tile tile = Vars.world.tile(coreX, coreY);
                                 if (tile != null && tile.build != null) {

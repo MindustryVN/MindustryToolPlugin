@@ -6,6 +6,14 @@ sourceCompatibility = JavaVersion.VERSION_16
 
 sourceSets.main.java.srcDirs = ["src"]
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/mindustrytool/resources'
+        }
+    }
+}
+
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 

@@ -595,14 +595,9 @@ public class EventHandler {
                 MindustryToolPlugin.apiGateway.sendChatMessage(chat);
 
                 var playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
+               
                 if (Config.IS_HUB) {
                     sendHub(event.player, playerData.getLoginLink());
-                } else {
-                    if (playerData.getLoginLink() != null) {
-                        player.sendMessage("[green]Logged in successfully");
-                    } else {
-                        player.sendMessage("You are not logged in, consider log in via MindustryTool using /login");
-                    }
                 }
 
                 var isAdmin = playerData.isAdmin();

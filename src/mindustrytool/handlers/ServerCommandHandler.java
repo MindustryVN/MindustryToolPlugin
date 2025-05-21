@@ -30,13 +30,13 @@ import mindustry.net.Administration.Config;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 import mindustrytool.utils.Utils;
 
 public class ServerCommandHandler {
 
     @Getter
-    private static CommandHandler handler = MindustryToolPlugin.handler;
+    private static CommandHandler handler = ServerController.handler;
 
     public void registerCommands(CommandHandler handler) {
 

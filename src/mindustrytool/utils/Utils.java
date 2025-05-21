@@ -8,7 +8,7 @@ import mindustry.game.Gamemode;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustrytool.Config;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 
 public class Utils {
 
@@ -53,11 +53,11 @@ public class Utils {
         Log.info("Loading map...");
 
         Vars.logic.reset();
-        MindustryToolPlugin.eventHandler.lastMode = preset;
-        Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+        ServerController.eventHandler.lastMode = preset;
+        Core.settings.put("lastServerMode", ServerController.eventHandler.lastMode.name());
 
         try {
-            Vars.world.loadMap(result, result.applyRules(MindustryToolPlugin.eventHandler.lastMode));
+            Vars.world.loadMap(result, result.applyRules(ServerController.eventHandler.lastMode));
             Vars.state.rules = result.applyRules(preset);
             Vars.logic.play();
 

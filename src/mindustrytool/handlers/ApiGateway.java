@@ -16,7 +16,7 @@ import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.Config;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
@@ -61,7 +61,7 @@ public class ApiGateway {
     }
 
     private Builder setHeaders(Builder builder) {
-        return builder.header("X-SERVER-ID", MindustryToolPlugin.SERVER_ID.toString());
+        return builder.header("X-SERVER-ID", ServerController.SERVER_ID.toString());
     }
 
     private URI path(String... path) {

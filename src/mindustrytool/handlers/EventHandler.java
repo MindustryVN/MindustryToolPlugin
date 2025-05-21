@@ -47,7 +47,7 @@ import mindustry.maps.MapException;
 import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
@@ -197,7 +197,7 @@ public class EventHandler {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
-                    var response = MindustryToolPlugin.apiGateway.getServers(request);
+                    var response = ServerController.apiGateway.getServers(request);
                     servers = response.getServers();
 
                 } catch (Exception e) {
@@ -303,7 +303,7 @@ public class EventHandler {
                             .setName(building.block() != null ? building.block().name : "Unknow"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
-            MindustryToolPlugin.apiGateway.sendBuildLog(buildLog);
+            ServerController.apiGateway.sendBuildLog(buildLog);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -445,7 +445,7 @@ public class EventHandler {
                 String chat = Strings.format("[@] => @", player.plainName(), message);
 
                 try {
-                    MindustryToolPlugin.apiGateway.sendChatMessage(chat);
+                    ServerController.apiGateway.sendChatMessage(chat);
                 } catch (Exception e) {
                     Log.err(e);
                 }
@@ -457,7 +457,7 @@ public class EventHandler {
                         var locale = p.locale();
                         try {
                             String translatedMessage = translationCache.get(locale + message,
-                                    key -> MindustryToolPlugin.apiGateway.translate(message, locale));
+                                    key -> ServerController.apiGateway.translate(message, locale));
                             p.sendMessage("[white][Translation] " + player.name() + "[]: " + translatedMessage);
                         } catch (Exception e) {
                             Log.err(e);
@@ -486,7 +486,7 @@ public class EventHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                MindustryToolPlugin.apiGateway.sendPlayerLeave(request);
+                ServerController.apiGateway.sendPlayerLeave(request);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -500,7 +500,7 @@ public class EventHandler {
                 Session.remove(player);
                 playerMeta.remove(event.player.uuid());
 
-                MindustryToolPlugin.voteHandler.removeVote(player);
+                ServerController.voteHandler.removeVote(player);
 
                 String playerName = event.player != null ? event.player.plainName() : "Unknown";
                 String chat = Strings.format("@ leaved the server, current players: @", playerName,
@@ -509,11 +509,11 @@ public class EventHandler {
                 Timer.schedule(() -> {
                     if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                         Vars.state.set(State.paused);
-                        MindustryToolPlugin.apiGateway.sendConsoleMessage("No player: paused");
+                        ServerController.apiGateway.sendConsoleMessage("No player: paused");
                     }
                 }, 10);
 
-                MindustryToolPlugin.apiGateway.sendChatMessage(chat);
+                ServerController.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -524,7 +524,7 @@ public class EventHandler {
         try {
             return serversCache.get("server", ignore -> {
                 var request = new PaginationRequest().setPage(0).setSize(1);
-                var response = MindustryToolPlugin.apiGateway.getServers(request);
+                var response = ServerController.apiGateway.getServers(request);
                 var servers = response.getServers();
 
                 if (servers.isEmpty()) {
@@ -548,7 +548,7 @@ public class EventHandler {
             try {
                 if (Vars.state.isPaused()) {
                     Vars.state.set(State.playing);
-                    MindustryToolPlugin.apiGateway.sendConsoleMessage("Player join: unpaused");
+                    ServerController.apiGateway.sendConsoleMessage("Player join: unpaused");
                 }
 
                 var player = event.player;
@@ -558,7 +558,7 @@ public class EventHandler {
                 if (Config.IS_HUB) {
                     var serverData = getTopServer();
 
-                    if (serverData != null && !serverData.getId().equals(MindustryToolPlugin.SERVER_ID)) {
+                    if (serverData != null && !serverData.getId().equals(ServerController.SERVER_ID)) {
                         var options = List.of(//
                                 HudUtils.option((p, state) -> {
                                     HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
@@ -592,9 +592,9 @@ public class EventHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                MindustryToolPlugin.apiGateway.sendChatMessage(chat);
+                ServerController.apiGateway.sendChatMessage(chat);
 
-                var playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
+                var playerData = ServerController.apiGateway.setPlayer(request);
                
                 if (Config.IS_HUB) {
                     sendHub(event.player, playerData.getLoginLink());
@@ -676,10 +676,10 @@ public class EventHandler {
                             event.winner.name,
                             Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
 
-            MindustryToolPlugin.apiGateway.sendChatMessage(message);
+            ServerController.apiGateway.sendChatMessage(message);
         } catch (Exception e) {
             Log.err(e);
-            MindustryToolPlugin.apiGateway.sendConsoleMessage(e.getMessage());
+            ServerController.apiGateway.sendConsoleMessage(e.getMessage());
         }
 
     }
@@ -719,7 +719,7 @@ public class EventHandler {
             var size = 8;
             var request = new PaginationRequest().setPage(page).setSize(size);
 
-            var response = MindustryToolPlugin.apiGateway.getServers(request);
+            var response = ServerController.apiGateway.getServers(request);
             var servers = response.getServers();
 
             PlayerPressCallback invalid = (p, s) -> {
@@ -786,7 +786,7 @@ public class EventHandler {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
-                var data = MindustryToolPlugin.apiGateway.host(id);
+                var data = ServerController.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));
@@ -841,7 +841,7 @@ public class EventHandler {
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
                 Vars.net.closeServer();
-                MindustryToolPlugin.apiGateway.sendConsoleMessage(e.getMessage());
+                ServerController.apiGateway.sendConsoleMessage(e.getMessage());
             }
         };
 

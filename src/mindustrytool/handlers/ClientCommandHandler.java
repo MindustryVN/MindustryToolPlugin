@@ -16,7 +16,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
 import mindustrytool.type.PlayerDto;
@@ -51,31 +51,31 @@ public class ClientCommandHandler {
                 return;
             }
 
-            Seq<Map> maps = MindustryToolPlugin.voteHandler.getMaps();
+            Seq<Map> maps = ServerController.voteHandler.getMaps();
 
             if (mapId < 0 || mapId > (maps.size - 1)) {
                 player.sendMessage("[red]Invalid map id");
                 return;
             }
-            if (MindustryToolPlugin.voteHandler.isVoted(player, mapId)) {
+            if (ServerController.voteHandler.isVoted(player, mapId)) {
                 Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
                         + maps.get(mapId).name());
-                MindustryToolPlugin.voteHandler.removeVote(player, mapId);
+                ServerController.voteHandler.removeVote(player, mapId);
                 return;
             }
-            MindustryToolPlugin.voteHandler.vote(player, mapId);
+            ServerController.voteHandler.vote(player, mapId);
             Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
                     + maps.get(mapId).name());
             Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
-                    + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/"
-                    + MindustryToolPlugin.voteHandler.getRequire());
+                    + ServerController.voteHandler.getVoteCount(mapId) + "/"
+                    + ServerController.voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
-            MindustryToolPlugin.voteHandler.check(mapId);
+            ServerController.voteHandler.check(mapId);
         });
 
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
-            Seq<Map> maps = MindustryToolPlugin.voteHandler.getMaps();
+            Seq<Map> maps = ServerController.voteHandler.getMaps();
             int page = 1;
             int maxPage = maps.size / MAPS_PER_PAGE + (maps.size % MAPS_PER_PAGE == 0 ? 0 : 1);
             if (args.length == 0) {
@@ -107,11 +107,11 @@ public class ClientCommandHandler {
         });
 
         handler.<Player>register("servers", "", "Display available servers", (args, player) -> {
-            MindustryToolPlugin.eventHandler.sendServerList(player, 0);
+            ServerController.eventHandler.sendServerList(player, 0);
         });
 
         handler.<Player>register("hub", "", "Display available servers", (args, player) -> {
-            MindustryToolPlugin.eventHandler.sendHub(player, null);
+            ServerController.eventHandler.sendHub(player, null);
         });
 
         handler.<Player>register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
@@ -134,7 +134,7 @@ public class ClientCommandHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                MindustryPlayerDto playerData = MindustryToolPlugin.apiGateway.setPlayer(request);
+                MindustryPlayerDto playerData = ServerController.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
 
@@ -251,7 +251,7 @@ public class ClientCommandHandler {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
-                var data = MindustryToolPlugin.apiGateway.host(id);
+                var data = ServerController.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));
@@ -289,7 +289,7 @@ public class ClientCommandHandler {
                         .setPage(page)//
                         .setSize(size);
 
-                var response = MindustryToolPlugin.apiGateway.getServers(request);
+                var response = ServerController.apiGateway.getServers(request);
                 var servers = response.getServers();
 
                 PlayerPressCallback invalid = (p, s) -> {

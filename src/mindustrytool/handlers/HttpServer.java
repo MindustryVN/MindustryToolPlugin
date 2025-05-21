@@ -21,7 +21,7 @@ import mindustry.io.MapIO;
 import mindustry.maps.Map;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.Config;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.ServerController;
 import mindustrytool.type.PlayerInfoDto;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PlayerDto;
@@ -164,7 +164,7 @@ public class HttpServer {
 
                     if (player != null) {
                         HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                        MindustryToolPlugin.eventHandler.addPlayer(request, player);
+                        ServerController.eventHandler.addPlayer(request, player);
                     }
                     context.contentType(ContentType.TEXT_PLAIN);
                     context.result("Ok");

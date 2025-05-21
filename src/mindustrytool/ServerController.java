@@ -20,7 +20,6 @@ import mindustry.core.Version;
 import mindustry.game.EventType.Trigger;
 import mindustry.io.SaveIO;
 import mindustry.maps.Maps.ShuffleMode;
-import mindustry.mod.*;
 import mindustry.net.Administration.Config;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
@@ -29,8 +28,10 @@ import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.utils.HudUtils;
+import mindustrytoolpluginloader.MindustryToolPlugin;
 
-public class MindustryToolPlugin extends Plugin {
+public class ServerController implements MindustryToolPlugin {
+
     public static final RtvVoteHandler voteHandler = new RtvVoteHandler();
     public static final EventHandler eventHandler = new EventHandler();
     public static final CommandHandler handler = new CommandHandler("");
@@ -55,7 +56,7 @@ public class MindustryToolPlugin extends Plugin {
                 "{reactorExplosions: false, logicUnitBuild: false}");
 
         // update log level
-        Config.debug.set(true);
+        Config.debug.set(false);
         Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f, 60));
         Vars.customMapDirectory.mkdirs();
 

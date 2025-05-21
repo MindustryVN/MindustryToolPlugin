@@ -353,7 +353,7 @@ public class HttpServer {
                 .setPlayers(players)//
                 .setMapName(mapName)
                 .setMods(mods)//
-                .setKicks(Vars.netServer.admins.kickedIPs.size)//
+                .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq().select(value -> Time.millis() - value < 0).size)//
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 

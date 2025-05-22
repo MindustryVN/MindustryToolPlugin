@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import org.pf4j.Extension;
+
 import arc.*;
 import arc.files.Fi;
 import arc.struct.Seq;
@@ -30,6 +32,7 @@ import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.utils.HudUtils;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
+@Extension
 public class ServerController implements MindustryToolPlugin {
 
     public static final RtvVoteHandler voteHandler = new RtvVoteHandler();

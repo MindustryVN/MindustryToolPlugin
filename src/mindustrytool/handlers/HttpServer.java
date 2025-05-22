@@ -41,11 +41,12 @@ import io.javalin.plugin.bundled.RouteOverviewPlugin;
 public class HttpServer {
     private static final String TEMP_SAVE_NAME = "TempSave";
 
+    private Javalin app;
+
     public void init() {
         System.out.println("Setup http server");
         try {
-
-            var app = Javalin.create(config -> {
+            app = Javalin.create(config -> {
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                     mapper//
                             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
@@ -371,5 +372,11 @@ public class HttpServer {
         }
 
         return getStats().setMapData(mapData);
+    }
+
+    public void unload() {
+        if (app!= null) {
+            app.stop();
+        }
     }
 }

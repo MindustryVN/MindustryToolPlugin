@@ -1,6 +1,6 @@
 package mindustrytool;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -16,7 +16,7 @@ public class Config {
 
         public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
 
-        public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newCachedThreadPool();
+        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = Executors.newCachedThreadPool();
 
         public static final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
                         .newSingleThreadScheduledExecutor();

@@ -102,18 +102,18 @@ public class EventHandler {
         Instant createdAt = Instant.now();
     }
 
-    public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
-    private static final Cache<String, String> translationCache = Caffeine.newBuilder()
+    public final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
+    private final Cache<String, String> translationCache = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(2))
             .maximumSize(1000)
             .build();
 
-    private static final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
+    private final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
             .maximumSize(1000)
             .build();
 
-    private static final List<String> icons = List.of(//
+    private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //

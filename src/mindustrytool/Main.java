@@ -13,7 +13,9 @@ public class Main extends Plugin {
         Config.BACKGROUND_TASK_EXECUTOR.shutdown();
         Config.BACKGROUND_SCHEDULER.shutdown();
         ServerController.eventHandler.unload();
+        ServerController.httpServer.unload();
         HudUtils.unload();
+
     }
 
 }

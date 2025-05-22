@@ -72,7 +72,7 @@ public class ClientCommandHandler {
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
             ServerController.voteHandler.check(mapId);
         });
-
+        
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
             Seq<Map> maps = ServerController.voteHandler.getMaps();

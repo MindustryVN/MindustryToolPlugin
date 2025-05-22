@@ -57,6 +57,11 @@ public class HudUtils {
         Events.on(PlayerLeave.class, HudUtils::onPlayerLeave);
         Events.on(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
     }
+    
+    public static void unload(){
+        Events.remove(PlayerLeave.class, HudUtils::onPlayerLeave);
+        Events.remove(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
+    }
 
     private static void onPlayerLeave(PlayerLeave event) {
         menus.invalidate(event.player.uuid());

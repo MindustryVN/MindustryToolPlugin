@@ -1,14 +1,11 @@
 package mindustrytool;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.pf4j.Extension;
 
 import arc.*;
 import arc.files.Fi;
-import arc.struct.Seq;
 import arc.util.*;
 import arc.util.CommandHandler.Command;
 import arc.util.CommandHandler.CommandResponse;
@@ -16,7 +13,6 @@ import arc.util.CommandHandler.ResponseType;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
-import mindustry.game.EventType.Trigger;
 import mindustry.io.SaveIO;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.net.Administration.Config;
@@ -41,9 +37,6 @@ public class ServerController implements MindustryToolPlugin {
     public static final HttpServer httpServer = new HttpServer();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
-
-    private final Interval autosaveCount = new Interval();
-    private final DateTimeFormatter autosaveDate = DateTimeFormatter.ofPattern("MM-dd-yyyy_HH-mm-ss");
 
     @Override
     public void init() {
@@ -100,42 +93,6 @@ public class ServerController implements MindustryToolPlugin {
         }
 
         System.out.println("Setup auto save");
-
-        Events.run(Trigger.update, () -> {
-
-            if (Vars.state.isPlaying() && Config.autosave.bool()) {
-                if (autosaveCount.get(Config.autosaveSpacing.num() * 60)) {
-                    int max = Config.autosaveAmount.num();
-
-                    // use map file name to make sure it can be saved
-                    String mapName = (Vars.state.map.file == null ? "unknown"
-                            : Vars.state.map.file.nameWithoutExtension())
-                            .replace(" ", "_");
-                    String date = autosaveDate.format(LocalDateTime.now());
-
-                    Seq<Fi> autosaves = Vars.saveDirectory.findAll(f -> f.name().startsWith("auto_"));
-                    autosaves.sort(f -> -f.lastModified());
-
-                    // delete older saves
-                    if (autosaves.size >= max) {
-                        for (int i = max - 1; i < autosaves.size; i++) {
-                            autosaves.get(i).delete();
-                        }
-                    }
-
-                    String fileName = "auto_" + mapName + "_" + date + "." + Vars.saveExtension;
-                    Fi file = Vars.saveDirectory.child(fileName);
-                    Log.info("Autosaving...");
-
-                    try {
-                        SaveIO.save(file);
-                        Log.info("Autosave completed.");
-                    } catch (Throwable e) {
-                        Log.err("Autosave failed.", e);
-                    }
-                }
-            }
-        });
 
         Log.info("MindustryToolPlugin initialized.");
 

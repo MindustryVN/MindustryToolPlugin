@@ -14,7 +14,6 @@ import java.util.List;
 import arc.Core;
 import arc.Events;
 import arc.net.Server;
-import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
@@ -26,7 +25,6 @@ import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
-import mindustry.game.EventType;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
@@ -63,8 +61,6 @@ import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
-import mindustry.net.NetConnection;
-import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
@@ -113,6 +109,8 @@ public class EventHandler {
             .maximumSize(1000)
             .build();
 
+    private Task updateServerTask, updateServerCore;
+
     private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
@@ -143,18 +141,6 @@ public class EventHandler {
             }
         }
 
-        Vars.net.handleServer(Packets.Connect.class, (con, packet) -> {
-            Events.fire(new EventType.ConnectionEvent(con));
-            Seq<NetConnection> connections = Seq.with(Vars.net.getConnections())
-                    .select(other -> other.address.equals(con.address));
-
-            if (connections.size > Config.MAX_IDENTICAL_IPS) {
-                Vars.netServer.admins.blacklistDos(con.address);
-                connections.each(NetConnection::close);
-                Log.info("@ blacklisted because of ip spam", con.address);
-            }
-        });
-
         Events.on(GameOverEvent.class, this::onGameOver);
         Events.on(PlayEvent.class, this::onPlay);
         Events.on(PlayerJoin.class, this::onPlayerJoin);
@@ -167,33 +153,9 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
 
-            Events.on(TapEvent.class, event -> {
-                if (event.tile == null) {
-                    return;
-                }
-                var map = Vars.state.map;
+            Events.on(TapEvent.class, this::handleTap);
 
-                if (map == null) {
-                    return;
-                }
-
-                var tapSize = 4;
-
-                var tapX = event.tile.x;
-                var tapY = event.tile.y;
-
-                for (var core : serverCores) {
-                    if (tapX >= core.x - tapSize //
-                            && tapX <= core.x + tapSize //
-                            && tapY >= core.y - tapSize
-                            && tapY <= core.y + tapSize//
-                    ) {
-                        onServerChoose(event.player, core.server.id.toString(), core.server.name);
-                    }
-                }
-            });
-
-            Timer.schedule(() -> {
+            updateServerTask = Timer.schedule(() -> {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
@@ -205,7 +167,7 @@ public class EventHandler {
                 }
             }, 0, 30);
 
-            Timer.schedule(() -> {
+            updateServerCore = Timer.schedule(() -> {
                 try {
                     var map = Vars.state.map;
 
@@ -280,6 +242,55 @@ public class EventHandler {
             }, 0, 1);
         }
         System.out.println("Setup event handler done");
+    }
+
+    public void unload() {
+        Events.remove(GameOverEvent.class, this::onGameOver);
+        Events.remove(PlayEvent.class, this::onPlay);
+        Events.remove(PlayerJoin.class, this::onPlayerJoin);
+        Events.remove(PlayerLeave.class, this::onPlayerLeave);
+        Events.remove(PlayerChatEvent.class, this::onPlayerChat);
+        Events.remove(ServerLoadEvent.class, this::onServerLoad);
+        Events.remove(PlayerConnect.class, this::onPlayerConnect);
+        Events.remove(BlockBuildEndEvent.class, this::onBuildBlockEnd);
+
+        if (Config.IS_HUB) {
+            Events.remove(TapEvent.class, this::handleTap);
+        }
+
+        if (updateServerTask != null) {
+            updateServerTask.cancel();
+        }
+
+        if (updateServerCore != null) {
+            updateServerCore.cancel();
+        }
+    }
+
+    private void handleTap(TapEvent event) {
+        if (event.tile == null) {
+            return;
+        }
+        var map = Vars.state.map;
+
+        if (map == null) {
+            return;
+        }
+
+        var tapSize = 4;
+
+        var tapX = event.tile.x;
+        var tapY = event.tile.y;
+
+        for (var core : serverCores) {
+            if (tapX >= core.x - tapSize //
+                    && tapX <= core.x + tapSize //
+                    && tapY >= core.y - tapSize
+                    && tapY <= core.y + tapSize//
+            ) {
+                onServerChoose(event.player, core.server.id.toString(), core.server.name);
+            }
+        }
     }
 
     private void onBuildBlockEnd(BlockBuildEndEvent event) {

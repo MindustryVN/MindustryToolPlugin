@@ -1,7 +1,7 @@
 {
   "name": "ServerController",
   "author": "Sharrlotte",
-  "main": "mindustrytool.Main",
+  "main": "mindustrytool.ServerController",
   "description": "A plugin to demonstrate some basic features.",
   "version": 1.0
 }

@@ -68,7 +68,6 @@ import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
-import mindustry.world.consumers.ConsumeItems;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.Duration;

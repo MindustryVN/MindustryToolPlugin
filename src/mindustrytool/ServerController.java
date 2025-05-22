@@ -1,8 +1,5 @@
 package mindustrytool;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -45,16 +42,11 @@ public class ServerController implements MindustryToolPlugin {
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
-    public final PrintStream standardOutputStream = System.out;
-
     private final Interval autosaveCount = new Interval();
     private final DateTimeFormatter autosaveDate = DateTimeFormatter.ofPattern("MM-dd-yyyy_HH-mm-ss");
 
     @Override
     public void init() {
-
-        initOutputStream();
-
         Core.settings.defaults("bans", "", "admins", "", "shufflemode", "custom", "globalrules",
                 "{reactorExplosions: false, logicUnitBuild: false}");
 
@@ -192,42 +184,5 @@ public class ServerController implements MindustryToolPlugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
         clientCommandHandler.registerCommands(handler);
-    }
-
-    private void sendToConsole(String message) {
-        try {
-            apiGateway.sendConsoleMessage(message);
-        } catch (Exception e) {
-            standardOutputStream.println(message);
-            standardOutputStream.println(e.getMessage());
-        }
-    }
-
-    private void initOutputStream() {
-        System.out.println("Setup logger");
-        var custom = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                try {
-                    String message = new String(b, off, len);
-                    standardOutputStream.println(message);
-                    sendToConsole(message);
-                } catch (Exception e) {
-                    standardOutputStream.println(e.getMessage());
-                }
-            }
-
-            @Override
-            public void flush() throws IOException {
-                standardOutputStream.flush();
-            }
-        };
-
-        System.setOut(new PrintStream(custom));
-        System.out.println("Setup logger done");
     }
 }

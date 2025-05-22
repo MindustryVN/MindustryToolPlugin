@@ -67,7 +67,8 @@ import mindustry.net.NetConnection;
 import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 import mindustry.world.Tile;
-import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.blocks.campaign.Accelerator;
+import mindustry.world.consumers.ConsumeItems;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.Duration;
@@ -247,8 +248,27 @@ public class EventHandler {
                                     Tile tile = Vars.world.tile(coreX, coreY);
 
                                     if (tile != null) {
-                                        if (tile.build == null || !(tile.block() instanceof CoreBlock))
-                                            tile.setBlock(Blocks.coreNucleus, Team.sharded, 0);
+                                        if (tile.build == null || !(tile.block() instanceof Accelerator)) {
+                                            tile.setBlock(Blocks.interplanetaryAccelerator, Team.sharded, 0);
+
+                                            var block = tile.block();
+                                            var build = tile.build;
+                                            if (block == null || build == null)
+                                                return;
+
+                                            for (var consumer : block.consumers) {
+                                                if (consumer instanceof ConsumeItems consumeItems) {
+                                                    if (block.name.equals(Blocks.thoriumReactor.name)) {
+                                                        for (var stack : consumeItems.items) {
+                                                            if (build.items.get(stack.item) < block.itemCapacity) {
+                                                                build.items.add(stack.item, block.itemCapacity);
+                                                                continue;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                         serverCores.add(new ServerCore(server, coreX, coreY));
                                     }
 
@@ -595,7 +615,7 @@ public class EventHandler {
                 ServerController.apiGateway.sendChatMessage(chat);
 
                 var playerData = ServerController.apiGateway.setPlayer(request);
-               
+
                 if (Config.IS_HUB) {
                     sendHub(event.player, playerData.getLoginLink());
                 }

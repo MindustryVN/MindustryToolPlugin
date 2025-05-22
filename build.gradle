@@ -56,7 +56,6 @@ jar{
     }
 
     from(rootDir){
-        include "plugin.json"
         include "plugin.properties"
     }
 }

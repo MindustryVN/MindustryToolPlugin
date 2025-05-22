@@ -46,6 +46,11 @@ dependencies{
 
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
+    annotationProcessor 'org.pf4j:pf4j:3.6.0'
+}
+
+tasks.withType(JavaCompile) {
+    options.annotationProcessorPath = configurations.annotationProcessor
 }
 
 jar{

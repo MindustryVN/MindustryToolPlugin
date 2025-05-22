@@ -57,5 +57,6 @@ jar{
 
     from(rootDir){
         include "plugin.properties"
+        include "META-INF/plugin.properties"
     }
 }

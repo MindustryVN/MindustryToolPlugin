@@ -256,16 +256,9 @@ public class EventHandler {
                                             if (block == null || build == null)
                                                 return;
 
-                                            for (var consumer : block.consumers) {
-                                                if (consumer instanceof ConsumeItems consumeItems) {
-                                                    if (block.name.equals(Blocks.thoriumReactor.name)) {
-                                                        for (var stack : consumeItems.items) {
-                                                            if (build.items.get(stack.item) < block.itemCapacity) {
-                                                                build.items.add(stack.item, block.itemCapacity);
-                                                                continue;
-                                                            }
-                                                        }
-                                                    }
+                                            for (var item : Vars.content.items()) {
+                                                if (block.consumesItem(item) && build.items.get(item) < 10000) {
+                                                    build.items.add(item, 10000);
                                                 }
                                             }
                                         }

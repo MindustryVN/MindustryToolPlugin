@@ -25,7 +25,7 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    private static final HttpClient httpClient = HttpClient.newBuilder()//
+    private final HttpClient httpClient = HttpClient.newBuilder()//
             .connectTimeout(Duration.ofSeconds(2))//
             .build();
 

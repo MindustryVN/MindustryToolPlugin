@@ -45,10 +45,10 @@ public class ServerController implements MindustryToolPlugin {
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
-    public static final PrintStream standardOutputStream = System.out;
+    public final PrintStream standardOutputStream = System.out;
 
     private final Interval autosaveCount = new Interval();
-    private static DateTimeFormatter autosaveDate = DateTimeFormatter.ofPattern("MM-dd-yyyy_HH-mm-ss");
+    private final DateTimeFormatter autosaveDate = DateTimeFormatter.ofPattern("MM-dd-yyyy_HH-mm-ss");
 
     @Override
     public void init() {

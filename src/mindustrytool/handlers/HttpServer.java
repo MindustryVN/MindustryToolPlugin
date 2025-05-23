@@ -47,6 +47,7 @@ public class HttpServer {
     public void init() {
         System.out.println("Setup http server");
         app = Javalin.create(config -> {
+            config.showJavalinBanner = false;
             config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                 mapper//
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//

@@ -51,19 +51,21 @@ public class Utils {
                 Log.info("Randomized next map to be @.", result.plainName());
             }
 
-            Log.info("Loading map...");
-
+            
             Vars.logic.reset();
             ServerController.eventHandler.lastMode = preset;
             Core.settings.put("lastServerMode", ServerController.eventHandler.lastMode.name());
-
+            
+            Log.info("Loading map...");
             Vars.world.loadMap(result, result.applyRules(ServerController.eventHandler.lastMode));
+            Log.info("Map loaded.");
             Vars.state.rules = result.applyRules(preset);
             Vars.logic.play();
 
-            Log.info("Map loaded.");
 
+            Log.info("Starting server...");
             Vars.netServer.openServer();
+            Log.info("Server started.");
         } catch (MapException event) {
             Log.err("@: @", event.map.plainName(), event.getMessage());
         }

@@ -6,6 +6,7 @@ import java.util.Locale;
 import arc.func.Boolf;
 import arc.func.Cons;
 import arc.struct.ObjectMap;
+import mindustry.gen.Groups;
 import mindustry.gen.Player;
 
 public class Session {
@@ -33,7 +34,11 @@ public class Session {
         this.locale = Locale.forLanguageTag(p.locale().replace('_', '-'));
     }
 
-    public static void clear(){
+    public static void load() {
+        Groups.player.each(Session::put);
+    }
+
+    public static void clear() {
         data.clear();
     }
 

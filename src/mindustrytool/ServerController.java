@@ -72,7 +72,7 @@ public class ServerController implements MindustryToolPlugin {
 
         System.out.println("Setup auto save");
 
-        Log.info("MindustryToolPlugin initialized.");
+        Log.info("Server controller initialized.");
 
         Timer.schedule(() -> {
             if (!Vars.state.isGame()) {

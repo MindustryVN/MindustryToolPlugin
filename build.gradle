@@ -47,7 +47,9 @@ dependencies{
 
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
-    annotationProcessor 'org.pf4j:pf4j:3.13.0'
+    annotationProcessor ('org.pf4j:pf4j:3.13.0') {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
 }
 
 tasks.withType(JavaCompile) {

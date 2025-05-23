@@ -1,5 +1,6 @@
 package mindustrytool.handlers;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -190,7 +191,9 @@ public class HttpServer {
                                 .setIp(player.ip())
                                 .setLocale(player.locale())//
                                 .setAdmin(player.admin)//
-                                .setJoinedAt(Session.get(player).joinedAt)
+                                .setJoinedAt(Session.contains(player) //
+                                        ? Session.get(player).joinedAt
+                                        : Instant.now().toEpochMilli())
                                 .setTeam(new TeamDto()//
                                         .setColor(player.team().color.toString())//
                                         .setName(player.team().name)))

@@ -96,13 +96,15 @@ public class ServerController implements MindustryToolPlugin {
 
         Log.info("MindustryToolPlugin initialized.");
 
-        if (!Vars.state.isGame()) {
-            try {
-                apiGateway.host(SERVER_ID.toString());
-            } catch (Exception e) {
-                Log.err(e);
+        Timer.schedule(() -> {
+            if (!Vars.state.isGame()) {
+                try {
+                    apiGateway.host(SERVER_ID.toString());
+                } catch (Exception e) {
+                    Log.err(e);
+                }
             }
-        }
+        }, 15);
     }
 
     public void handleCommandString(String line) {

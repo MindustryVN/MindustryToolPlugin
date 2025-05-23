@@ -11,12 +11,12 @@ public class Main extends Plugin {
 
     @Override
     public void stop() {
-        Config.BACKGROUND_TASK_EXECUTOR.shutdown();
-        Config.BACKGROUND_SCHEDULER.shutdown();
+        Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
+        Config.BACKGROUND_SCHEDULER.shutdownNow();
+
         HudUtils.unload();
-        
         Session.clear();
-        
+
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();
         ServerController.apiGateway = null;

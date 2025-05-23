@@ -55,34 +55,16 @@ public class ServerController implements MindustryToolPlugin {
             Vars.maps.setShuffleMode(ShuffleMode.all);
         }
 
-        eventHandler.init();
-        apiGateway.init();
+        // eventHandler.init();
+        // apiGateway.init();
         httpServer.init();
 
-        HudUtils.init();
+        // HudUtils.init();
 
-        if (Config.autosave.bool()) {
-            System.out.println("Auto save is on");
-            Core.app.post(() -> {
-                // try to load auto-update save if possible
-                Fi fi = Vars.saveDirectory.child("autosavebe." + Vars.saveExtension);
-
-                if (fi.exists()) {
-                    try {
-                        SaveIO.load(fi);
-                        Log.info("Auto-save loaded.");
-                        Vars.state.set(State.playing);
-                        Vars.netServer.openServer();
-                    } catch (Throwable e) {
-                        Log.err(e);
-                    }
-                }
-            });
-        }
-
+    
         System.out.println("Register server commands");
 
-        Vars.mods.eachClass(p -> p.registerServerCommands(handler));
+        // Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         System.out.println("Register server commands done");
 

@@ -33,6 +33,10 @@ public class Session {
         this.locale = Locale.forLanguageTag(p.locale().replace('_', '-'));
     }
 
+    public static void clear(){
+        data.clear();
+    }
+
     public boolean spectate() {
         return this.spectate != null;
     }

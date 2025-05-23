@@ -3,6 +3,7 @@ package mindustrytool;
 import org.pf4j.Plugin;
 
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.Session;
 
 public class Main extends Plugin {
     public Main() {
@@ -15,5 +16,7 @@ public class Main extends Plugin {
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();
         HudUtils.unload();
+
+        Session.clear();
     }
 }

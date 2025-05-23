@@ -20,7 +20,7 @@ public class Utils {
         }
     }
 
-    public static void host(String mapName, String mode) {
+    public synchronized static void host(String mapName, String mode) {
         if (Vars.state.isGame()) {
             Log.err("Already hosting. Type 'stop' to stop hosting first.");
             return;

@@ -175,6 +175,8 @@ public class EventHandler {
 
                     if (map != null) {
 
+                        Call.label(Config.HUB_MESSAGE, 5, map.width / 2 * 8, map.height / 2 * 8);
+
                         for (int x = 0; x < columns; x++) {
                             for (int y = 0; y < rows; y++) {
                                 var index = x + y * columns;
@@ -226,7 +228,7 @@ public class EventHandler {
                                         serverCores.add(new ServerCore(server, coreX, coreY));
                                     }
 
-                                    Call.label(message, 1, messageX, messageY);
+                                    Call.label(message, 5, messageX, messageY);
                                 } else {
                                     Tile tile = Vars.world.tile(coreX, coreY);
                                     if (tile != null && tile.build != null) {
@@ -239,7 +241,7 @@ public class EventHandler {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 0, 1);
+            }, 0, 5);
         }
         System.out.println("Setup event handler done");
     }
@@ -729,12 +731,6 @@ public class EventHandler {
         }, "[red]Close"));
 
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
-
-        var map = Vars.state.map;
-
-        if (map != null) {
-            Call.label(Config.HUB_MESSAGE, 200000, map.width / 2 * 8, map.height / 2 * 8);
-        }
     }
 
     public void sendServerList(Player player, int page) {

@@ -5,15 +5,12 @@ import java.util.UUID;
 import org.pf4j.Extension;
 
 import arc.*;
-import arc.files.Fi;
 import arc.util.*;
 import arc.util.CommandHandler.Command;
 import arc.util.CommandHandler.CommandResponse;
 import arc.util.CommandHandler.ResponseType;
 import mindustry.Vars;
-import mindustry.core.GameState.State;
 import mindustry.core.Version;
-import mindustry.io.SaveIO;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.net.Administration.Config;
 import mindustrytool.handlers.ClientCommandHandler;
@@ -28,13 +25,13 @@ import mindustrytoolpluginloader.MindustryToolPlugin;
 @Extension
 public class ServerController implements MindustryToolPlugin {
 
-    public static final RtvVoteHandler voteHandler = new RtvVoteHandler();
-    public static final EventHandler eventHandler = new EventHandler();
-    public static final CommandHandler handler = new CommandHandler("");
-    public static final ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
-    public static final ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    public static final ApiGateway apiGateway = new ApiGateway();
-    public static final HttpServer httpServer = new HttpServer();
+    public static RtvVoteHandler voteHandler = new RtvVoteHandler();
+    public static EventHandler eventHandler = new EventHandler();
+    public static CommandHandler handler = new CommandHandler("");
+    public static ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
+    public static ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
+    public static ApiGateway apiGateway = new ApiGateway();
+    public static HttpServer httpServer = new HttpServer();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
@@ -55,16 +52,15 @@ public class ServerController implements MindustryToolPlugin {
             Vars.maps.setShuffleMode(ShuffleMode.all);
         }
 
-        // eventHandler.init();
-        // apiGateway.init();
+        eventHandler.init();
+        apiGateway.init();
         httpServer.init();
 
-        // HudUtils.init();
+        HudUtils.init();
 
-    
         System.out.println("Register server commands");
 
-        // Vars.mods.eachClass(p -> p.registerServerCommands(handler));
+        Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         System.out.println("Register server commands done");
 

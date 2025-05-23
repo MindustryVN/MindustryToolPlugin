@@ -13,10 +13,18 @@ public class Main extends Plugin {
     public void stop() {
         Config.BACKGROUND_TASK_EXECUTOR.shutdown();
         Config.BACKGROUND_SCHEDULER.shutdown();
+        HudUtils.unload();
+        
+        Session.clear();
+        
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();
-        HudUtils.unload();
-
-        Session.clear();
+        ServerController.apiGateway = null;
+        ServerController.voteHandler = null;
+        ServerController.eventHandler = null;
+        ServerController.handler = null;
+        ServerController.clientCommandHandler = null;
+        ServerController.serverCommandHandler = null;
+        ServerController.httpServer = null;
     }
 }

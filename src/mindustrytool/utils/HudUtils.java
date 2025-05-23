@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 
-import arc.Events;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -53,17 +52,7 @@ public class HudUtils {
         private final String text;
     }
 
-    public static void init() {
-        Events.on(PlayerLeave.class, HudUtils::onPlayerLeave);
-        Events.on(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
-    }
-    
-    public static void unload(){
-        Events.remove(PlayerLeave.class, HudUtils::onPlayerLeave);
-        Events.remove(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
-    }
-
-    private static void onPlayerLeave(PlayerLeave event) {
+    public static void onPlayerLeave(PlayerLeave event) {
         menus.invalidate(event.player.uuid());
     }
 

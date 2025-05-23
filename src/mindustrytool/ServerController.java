@@ -11,6 +11,16 @@ import arc.util.CommandHandler.CommandResponse;
 import arc.util.CommandHandler.ResponseType;
 import mindustry.Vars;
 import mindustry.core.Version;
+import mindustry.game.EventType.BlockBuildEndEvent;
+import mindustry.game.EventType.GameOverEvent;
+import mindustry.game.EventType.MenuOptionChooseEvent;
+import mindustry.game.EventType.PlayEvent;
+import mindustry.game.EventType.PlayerChatEvent;
+import mindustry.game.EventType.PlayerConnect;
+import mindustry.game.EventType.PlayerJoin;
+import mindustry.game.EventType.PlayerLeave;
+import mindustry.game.EventType.ServerLoadEvent;
+import mindustry.game.EventType.TapEvent;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.net.Administration.Config;
 import mindustrytool.handlers.ClientCommandHandler;
@@ -55,8 +65,6 @@ public class ServerController implements MindustryToolPlugin {
         eventHandler.init();
         apiGateway.init();
         httpServer.init();
-
-        HudUtils.init();
 
         System.out.println("Register server commands");
 
@@ -121,5 +129,36 @@ public class ServerController implements MindustryToolPlugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
         clientCommandHandler.registerCommands(handler);
+    }
+
+    @Override
+    public void onEvent(Object event) {
+
+        if (event instanceof GameOverEvent gameOver) {
+            eventHandler.onGameOver(gameOver);
+        } else if (event instanceof PlayEvent playEvent) {
+            eventHandler.onPlay(playEvent);
+        } else if (event instanceof PlayerJoin playerJoin) {
+            eventHandler.onPlayerJoin(playerJoin);
+        } else if (event instanceof PlayerLeave playerLeave) {
+            eventHandler.onPlayerLeave(playerLeave);
+            HudUtils.onPlayerLeave(playerLeave);
+        } else if (event instanceof PlayerChatEvent playerChat) {
+            eventHandler.onPlayerChat(playerChat);
+        } else if (event instanceof ServerLoadEvent serverLoad) {
+            eventHandler.onServerLoad(serverLoad);
+        } else if (event instanceof PlayerConnect playerConnect) {
+            eventHandler.onPlayerConnect(playerConnect);
+        } else if (event instanceof BlockBuildEndEvent blockBuild) {
+            eventHandler.onBuildBlockEnd(blockBuild);
+        } else if (event instanceof TapEvent tapEvent) {
+            if (mindustrytool.Config.IS_HUB) {
+                eventHandler.onTap(tapEvent);
+            }
+        } else if (event instanceof MenuOptionChooseEvent menuOption) {
+            HudUtils.onMenuOptionChoose(menuOption);
+        } else {
+            Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
+        }
     }
 }

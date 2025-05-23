@@ -12,7 +12,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import arc.Core;
-import arc.Events;
 import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
@@ -141,19 +140,8 @@ public class EventHandler {
             }
         }
 
-        Events.on(GameOverEvent.class, this::onGameOver);
-        Events.on(PlayEvent.class, this::onPlay);
-        Events.on(PlayerJoin.class, this::onPlayerJoin);
-        Events.on(PlayerLeave.class, this::onPlayerLeave);
-        Events.on(PlayerChatEvent.class, this::onPlayerChat);
-        Events.on(ServerLoadEvent.class, this::onServerLoad);
-        Events.on(PlayerConnect.class, this::onPlayerConnect);
-        Events.on(BlockBuildEndEvent.class, this::onBuildBlockEnd);
-
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
-
-            Events.on(TapEvent.class, this::handleTap);
 
             updateServerTask = Timer.schedule(() -> {
                 try {
@@ -247,19 +235,6 @@ public class EventHandler {
     }
 
     public void unload() {
-        Events.remove(GameOverEvent.class, this::onGameOver);
-        Events.remove(PlayEvent.class, this::onPlay);
-        Events.remove(PlayerJoin.class, this::onPlayerJoin);
-        Events.remove(PlayerLeave.class, this::onPlayerLeave);
-        Events.remove(PlayerChatEvent.class, this::onPlayerChat);
-        Events.remove(ServerLoadEvent.class, this::onServerLoad);
-        Events.remove(PlayerConnect.class, this::onPlayerConnect);
-        Events.remove(BlockBuildEndEvent.class, this::onBuildBlockEnd);
-
-        if (Config.IS_HUB) {
-            Events.remove(TapEvent.class, this::handleTap);
-        }
-
         if (updateServerTask != null) {
             updateServerTask.cancel();
         }
@@ -269,7 +244,7 @@ public class EventHandler {
         }
     }
 
-    private void handleTap(TapEvent event) {
+    public void onTap(TapEvent event) {
         if (event.tile == null) {
             return;
         }
@@ -295,7 +270,7 @@ public class EventHandler {
         }
     }
 
-    private void onBuildBlockEnd(BlockBuildEndEvent event) {
+    public void onBuildBlockEnd(BlockBuildEndEvent event) {
         try {
 
             if (event.unit == null || !event.unit.isPlayer()) {
@@ -363,7 +338,7 @@ public class EventHandler {
         return icons.get(index);
     }
 
-    private void onPlayerConnect(PlayerConnect event) {
+    public void onPlayerConnect(PlayerConnect event) {
         Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             try {
                 var player = event.player;

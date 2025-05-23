@@ -532,7 +532,7 @@ public class EventHandler {
                 Timer.schedule(() -> {
                     if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                         Vars.state.set(State.paused);
-                        ServerController.apiGateway.sendConsoleMessage("No player: paused");
+                        Log.info("No player: paused");
                     }
                 }, 10);
 
@@ -571,7 +571,7 @@ public class EventHandler {
             try {
                 if (Vars.state.isPaused()) {
                     Vars.state.set(State.playing);
-                    ServerController.apiGateway.sendConsoleMessage("Player join: unpaused");
+                    Log.info("Player join: unpaused");
                 }
 
                 var player = event.player;
@@ -702,7 +702,7 @@ public class EventHandler {
             ServerController.apiGateway.sendChatMessage(message);
         } catch (Exception e) {
             Log.err(e);
-            ServerController.apiGateway.sendConsoleMessage(e.getMessage());
+            Log.info(e.getMessage());
         }
 
     }
@@ -864,7 +864,7 @@ public class EventHandler {
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
                 Vars.net.closeServer();
-                ServerController.apiGateway.sendConsoleMessage(e.getMessage());
+                Log.info(e.getMessage());
             }
         };
 

@@ -126,20 +126,6 @@ public class ApiGateway {
 
     }
 
-    public void sendConsoleMessage(String chat) {
-        var request = setHeaders(HttpRequest.newBuilder(path("console")))//
-                .header("Content-Type", "application/json")//
-                .POST(HttpRequest.BodyPublishers.ofString(chat))//
-                .build();
-
-        httpClient.sendAsync(request, BodyHandlers.ofString())
-                .whenComplete((_result, error) -> {
-                    if (error != null) {
-                        Log.err("Can not send console message: " + error.getMessage());
-                    }
-                });
-    }
-
     public void sendBuildLog(BuildLogDto buildLog) {
         if (!buildLogs.offer(buildLog)) {
             Log.warn("Build log queue is full. Dropping log.");

@@ -133,7 +133,6 @@ public class ServerController implements MindustryToolPlugin {
 
     @Override
     public void onEvent(Object event) {
-
         if (event instanceof GameOverEvent gameOver) {
             eventHandler.onGameOver(gameOver);
         } else if (event instanceof PlayEvent playEvent) {

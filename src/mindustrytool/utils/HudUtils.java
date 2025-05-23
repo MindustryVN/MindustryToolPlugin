@@ -53,6 +53,12 @@ public class HudUtils {
     }
 
     public static void onPlayerLeave(PlayerLeave event) {
+        var menu = menus.getIfPresent(event.player.uuid());
+        if (menu != null) {
+            for (var data : menu) {
+                Call.hideFollowUpMenu(event.player.con, data.id);
+            }
+        }
         menus.invalidate(event.player.uuid());
     }
 

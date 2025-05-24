@@ -405,6 +405,8 @@ public class EventHandler {
                 }
                 buffer.position(0);
                 handler.respond(buffer);
+
+                buffer.clear();
             });
 
         } catch (Exception e) {

@@ -362,7 +362,7 @@ public class HttpServer {
         byte[] mapData = {};
 
         if (map != null) {
-            var pix = MapIO.generatePreview(Vars.world.tiles);
+            var pix = MapIO.writeImage(Vars.world.tiles);
             Fi file = Fi.tempFile(TEMP_SAVE_NAME);
             file.writePng(pix);
             mapData = file.readBytes();

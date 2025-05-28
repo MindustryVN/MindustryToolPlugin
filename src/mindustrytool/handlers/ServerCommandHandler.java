@@ -195,7 +195,7 @@ public class ServerCommandHandler {
                 return;
             }
 
-            Call.sendMessage("[scarlet][[Server]:[] " + arg[0]);
+            Call.sendMessage("[]" + arg[0]);
 
             Log.info("&fi&lcServer: &fr@", "&lw" + arg[0]);
         });

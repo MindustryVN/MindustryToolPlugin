@@ -15,6 +15,7 @@ import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.core.GameState.State;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -124,6 +125,14 @@ public class HttpServer {
                 context.contentType(ContentType.TEXT_PLAIN);
                 context.status(500);
                 context.result(e.getMessage());
+            }
+        });
+
+        app.post("host", context -> {
+            if (Vars.state.isPaused()) {
+                Vars.state.set(State.paused);
+            } else {
+                Vars.state.set(State.playing);
             }
         });
 

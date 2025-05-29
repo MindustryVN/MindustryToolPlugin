@@ -128,7 +128,7 @@ public class HttpServer {
             }
         });
 
-        app.post("host", context -> {
+        app.post("pause", context -> {
             if (Vars.state.isPaused()) {
                 Vars.state.set(State.paused);
             } else {

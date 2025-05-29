@@ -40,7 +40,7 @@ dependencies{
     compileOnly files('lib/MindustryToolPluginLoader.jar')
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.2'
     
-	implementation ("io.javalin:javalin:6.4.0"){
+	implementation ("io.javalin:javalin:6.6.0"){
         exclude group: "org.slf4j", module: "slf4j-api"
     }
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'

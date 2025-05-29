@@ -90,7 +90,7 @@ public class ServerController implements MindustryToolPlugin {
                     Log.err(e);
                 }
             }
-        }, 15);
+        }, 5);
     }
 
     public void handleCommandString(String line) {

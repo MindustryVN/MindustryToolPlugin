@@ -8,12 +8,13 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class StatsDto {
-    public long ramUsage;
-    public long totalRam;
-    public int players;
-    public String mapName;
-    public byte[] mapData;
-    public List<String> mods;
-    public String status;
-    public int kicks;
+    private long ramUsage;
+    private long totalRam;
+    private int players;
+    private String mapName;
+    private byte[] mapData;
+    private List<String> mods;
+    private String status;
+    private int kicks;
+    private boolean isPaused = false;
 }

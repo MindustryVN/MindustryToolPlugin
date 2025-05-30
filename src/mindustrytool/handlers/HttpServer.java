@@ -67,8 +67,8 @@ public class HttpServer {
         });
 
         app.get("image", context -> {
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(mapPreview());
+            context.contentType(ContentType.APPLICATION_OCTET_STREAM);
+            context.result(mapPreview());
 
         });
 

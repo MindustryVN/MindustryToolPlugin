@@ -41,7 +41,6 @@ import mindustry.gen.Player;
 import mindustry.io.JsonIO;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
-import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
@@ -117,25 +116,6 @@ public class EventHandler {
 
     public void init() {
         System.out.println("Setup event handler");
-
-        try {
-            lastMode = Gamemode.valueOf(Core.settings.getString("lastServerMode", "survival"));
-        } catch (Exception e) { // handle enum parse exception
-            lastMode = Gamemode.survival;
-        }
-
-        if (!Vars.mods.orderedMods().isEmpty()) {
-            Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
-        }
-
-        int unsupported = Vars.mods.list().count(l -> !l.enabled());
-
-        if (unsupported > 0) {
-            Log.err("There were errors loading @ mod(s):", unsupported);
-            for (LoadedMod mod : Vars.mods.list().select(l -> !l.enabled())) {
-                Log.err("- @ &ly(" + mod.state + ")", mod.meta.name);
-            }
-        }
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();

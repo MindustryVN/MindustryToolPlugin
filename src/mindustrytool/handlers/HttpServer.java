@@ -51,7 +51,7 @@ public class HttpServer {
             config.showJavalinBanner = false;
             config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                 mapper//
-                        .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false)
+
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
                         .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -253,7 +253,6 @@ public class HttpServer {
 
             data.put("stats", getStats());
             data.put("players", player);
-            data.put("map", Vars.state.map);
             data.put("session", Session.get());
             data.put("hud", HudUtils.menus.asMap());
             data.put("buildLogs", ServerController.apiGateway.buildLogs);
@@ -261,15 +260,30 @@ public class HttpServer {
             data.put("isHub", Config.IS_HUB);
             data.put("ip", Config.SERVER_IP);
             data.put("enemies", Vars.state.enemies);
-            data.put("rules", Vars.state.rules);
             data.put("tps", Vars.state.serverTps);
-            data.put("stats", Vars.state.stats);
-            data.put("gameStats", Vars.state.stats);
-            data.put("activeTeam", Vars.state.teams.active);
-            data.put("presentTeam", Vars.state.teams.present);
+
+            var gameStats = new HashMap<String, Object>();
+
+            gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
+            gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
+            gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
+            gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
+            gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
+            gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
+            gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
+            gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
+
+            data.put("gameStats", gameStats);
             data.put("locales", Vars.locales);
-            data.put("maps", Vars.maps.all().list());
-            data.put("mods", Vars.mods.list());
+            
+            var maps = new ArrayList<HashMap<String, String>>();
+            Vars.maps.all().forEach(map -> {
+                var tags = new HashMap<String, String>();
+                map.tags.each((key, value) -> tags.put(key, value));
+                maps.add(tags);
+            });
+            data.put("maps", Vars.maps.all().map(map -> map.tags).list());
+            data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
             data.put("votes", ServerController.voteHandler.votes);
 
             var settings = new HashMap<String, Object>();

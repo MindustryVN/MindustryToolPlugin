@@ -51,6 +51,5 @@ public class JsonUtils {
         } catch (Exception e) {
             throw new NotMessageException();
         }
-
     }
 }

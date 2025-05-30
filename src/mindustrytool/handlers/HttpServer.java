@@ -41,7 +41,7 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.plugin.bundled.RouteOverviewPlugin;
 
 public class HttpServer {
-    private static final String TEMP_SAVE_NAME = "TempSave";
+    private static final String MAP_PREVIEW_FILE_NAME = "MapPreview";
 
     private Javalin app;
 
@@ -65,9 +65,9 @@ public class HttpServer {
             context.json(getStats());
         });
 
-        app.get("detail-stats", context -> {
+        app.get("image", context -> {
             context.contentType(ContentType.APPLICATION_JSON);
-            context.json(detailStats());
+            context.json(mapPreview());
 
         });
 
@@ -291,20 +291,20 @@ public class HttpServer {
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 
-    public StatsDto detailStats() {
+    public byte[] mapPreview() {
         Map map = Vars.state.map;
         byte[] mapData = {};
 
         if (map != null) {
             var pix = MapIO.generatePreview(Vars.world.tiles);
-            Fi file = Fi.tempFile(TEMP_SAVE_NAME);
+            Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
             file.writePng(pix);
             mapData = file.readBytes();
             file.delete();
             pix.dispose();
         }
 
-        return getStats().setMapData(mapData);
+        return mapData;
     }
 
     public void unload() {

@@ -125,7 +125,6 @@ public class Session {
             if (pred.get(p))
                 return p;
         }
-
         return null;
     }
 }

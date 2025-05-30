@@ -51,6 +51,7 @@ public class HttpServer {
             config.showJavalinBanner = false;
             config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
                 mapper//
+                        .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false)
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
                         .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -268,7 +269,7 @@ public class HttpServer {
             data.put("presentTeam", Vars.state.teams.present);
             data.put("locales", Vars.locales);
             data.put("maps", Vars.maps.all().list());
-            data.put("mods", Vars.mods.list().list());
+            data.put("mods", Vars.mods.list());
             data.put("votes", ServerController.voteHandler.votes);
 
             var settings = new HashMap<String, Object>();

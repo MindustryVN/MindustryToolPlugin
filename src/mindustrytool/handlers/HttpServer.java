@@ -26,6 +26,8 @@ import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.PlayerInfoDto;
 import mindustrytool.type.MindustryPlayerDto;
+import mindustrytool.type.ModDto;
+import mindustrytool.type.ModDto.ModMetaDto;
 import mindustrytool.type.PlayerDto;
 import mindustrytool.type.ServerCommandDto;
 import mindustrytool.type.StartServerDto;
@@ -325,9 +327,26 @@ public class HttpServer {
     private StatsDto getStats() {
         Map map = Vars.state.map;
         String mapName = map != null ? map.name() : "";
-        List<String> mods = Vars.mods == null //
+        List<ModDto> mods = Vars.mods == null //
                 ? List.of()
-                : Vars.mods.list().map(mod -> mod.name).list();
+                : Vars.mods.list().map(mod -> new ModDto()//
+                        .setFilename(mod.file.name())//
+                        .setName(mod.name)
+                        .setMeta(new ModMetaDto()//
+                                .setAuthor(mod.meta.author)//
+                                .setDependencies(mod.meta.dependencies.list())
+                                .setDescription(mod.meta.description)
+                                .setDisplayName(mod.meta.displayName)
+                                .setHidden(mod.meta.hidden)
+                                .setInternalName(mod.meta.internalName)
+                                .setJava(mod.meta.java)
+                                .setMain(mod.meta.main)
+                                .setMinGameVersion(mod.meta.minGameVersion)
+                                .setName(mod.meta.name)
+                                .setRepo(mod.meta.repo)
+                                .setSubtitle(mod.meta.subtitle)
+                                .setVersion(mod.meta.version)))
+                        .list();
 
         int players = Groups.player.size();
 

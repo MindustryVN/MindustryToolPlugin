@@ -13,7 +13,7 @@ public class StatsDto {
     private int players;
     private String mapName;
     private byte[] mapData;
-    private List<String> mods;
+    private List<ModDto> mods;
     private String status;
     private int kicks;
     private boolean isPaused = false;

@@ -61,39 +61,19 @@ public class HttpServer {
         });
 
         app.get("stats", context -> {
-            try {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(getStats());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(getStats());
         });
 
         app.get("detail-stats", context -> {
-            try {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(detailStats());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(detailStats());
+
         });
 
         app.get("ok", (context) -> {
-            try {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json("Ok");
         });
 
         app.get("plugin-version", context -> {
@@ -102,30 +82,17 @@ public class HttpServer {
         });
 
         app.get("hosting", (context) -> {
-            try {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(Vars.state.isGame());
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(Vars.state.isGame());
+
         });
 
         app.post("discord", context -> {
-            try {
-                String message = context.body();
+            String message = context.body();
 
-                Call.sendMessage(message);
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            Call.sendMessage(message);
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
         });
 
         app.post("pause", context -> {
@@ -137,83 +104,63 @@ public class HttpServer {
         });
 
         app.post("host", context -> {
-            try {
-                StartServerDto request = context.bodyAsClass(StartServerDto.class);
-                host(request);
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            StartServerDto request = context.bodyAsClass(StartServerDto.class);
+            host(request);
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
         });
 
         app.post("set-player", context -> {
-            try {
-                MindustryPlayerDto request = context.bodyAsClass(MindustryPlayerDto.class);
+            MindustryPlayerDto request = context.bodyAsClass(MindustryPlayerDto.class);
 
-                String uuid = request.getUuid();
-                boolean isAdmin = request.isAdmin();
+            String uuid = request.getUuid();
+            boolean isAdmin = request.isAdmin();
 
-                PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-                Player player = Groups.player.find(p -> p.getInfo() == target);
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+            Player player = Groups.player.find(p -> p.getInfo() == target);
 
-                if (target != null) {
-                    if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id,
-                                player == null ? target.adminUsid : player.usid());
-                    } else {
-                        Vars.netServer.admins.unAdminPlayer(target.id);
-                    }
-                    if (player != null)
-                        player.admin = isAdmin;
+            if (target != null) {
+                if (isAdmin) {
+                    Vars.netServer.admins.adminPlayer(target.id,
+                            player == null ? target.adminUsid : player.usid());
                 } else {
-                    Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+                    Vars.netServer.admins.unAdminPlayer(target.id);
                 }
-
-                if (player != null) {
-                    HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                    ServerController.eventHandler.addPlayer(request, player);
-                }
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
+                if (player != null)
+                    player.admin = isAdmin;
+            } else {
+                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
             }
+
+            if (player != null) {
+                HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                ServerController.eventHandler.addPlayer(request, player);
+            }
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
 
         });
 
         app.get("players", context -> {
-            try {
-                var players = new ArrayList<Player>();
-                Groups.player.forEach(players::add);
+            var players = new ArrayList<Player>();
+            Groups.player.forEach(players::add);
 
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(players.stream()//
-                        .map(player -> new PlayerDto()//
-                                .setName(player.coloredName())//
-                                .setUuid(player.uuid())//
-                                .setIp(player.ip())
-                                .setLocale(player.locale())//
-                                .setAdmin(player.admin)//
-                                .setJoinedAt(Session.contains(player) //
-                                        ? Session.get(player).joinedAt
-                                        : Instant.now().toEpochMilli())
-                                .setTeam(new TeamDto()//
-                                        .setColor(player.team().color.toString())//
-                                        .setName(player.team().name)))
-                        .collect(Collectors.toList()));
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(players.stream()//
+                    .map(player -> new PlayerDto()//
+                            .setName(player.coloredName())//
+                            .setUuid(player.uuid())//
+                            .setIp(player.ip())
+                            .setLocale(player.locale())//
+                            .setAdmin(player.admin)//
+                            .setJoinedAt(Session.contains(player) //
+                                    ? Session.get(player).joinedAt
+                                    : Instant.now().toEpochMilli())
+                            .setTeam(new TeamDto()//
+                                    .setColor(player.team().color.toString())//
+                                    .setName(player.team().name)))
+                    .collect(Collectors.toList()));
+
         });
 
         app.get("player-infos", context -> {
@@ -226,98 +173,75 @@ public class HttpServer {
             Boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : null;
 
             int offset = page * size;
-            try {
-                Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
-                var result = bans.list()//
-                        .stream()//
-                        .filter(info -> isBanned == null ? true : info.banned == isBanned)//
-                        .skip(offset)//
-                        .limit(size)//
-                        .map(ban -> new PlayerInfoDto()
-                                .setId(ban.id)
-                                .setLastName(ban.lastName)
-                                .setLastIP(ban.lastIP)
-                                .setIps(ban.ips.list())
-                                .setNames(ban.names.list())
-                                .setAdminUsid(ban.adminUsid)
-                                .setTimesKicked(ban.timesKicked)
-                                .setTimesJoined(ban.timesJoined)
-                                .setBanned(ban.banned)
-                                .setAdmin(ban.admin)
-                                .setLastKicked(ban.lastKicked))
-                        .toList();
 
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
+            var result = bans.list()//
+                    .stream()//
+                    .filter(info -> isBanned == null ? true : info.banned == isBanned)//
+                    .skip(offset)//
+                    .limit(size)//
+                    .map(ban -> new PlayerInfoDto()
+                            .setId(ban.id)
+                            .setLastName(ban.lastName)
+                            .setLastIP(ban.lastIP)
+                            .setIps(ban.ips.list())
+                            .setNames(ban.names.list())
+                            .setAdminUsid(ban.adminUsid)
+                            .setTimesKicked(ban.timesKicked)
+                            .setTimesJoined(ban.timesJoined)
+                            .setBanned(ban.banned)
+                            .setAdmin(ban.admin)
+                            .setLastKicked(ban.lastKicked))
+                    .toList();
+
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(result);
+
         });
         app.get("kicks", context -> {
-            try {
-                var result = new HashMap<>();
-                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                    if (entry.value != 0 && Time.millis() - entry.value < 0) {
-                        result.put(entry.key, entry.value);
-                    }
+            var result = new HashMap<>();
+            for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                    result.put(entry.key, entry.value);
                 }
-                context.contentType(ContentType.APPLICATION_JSON);
-
-                context.json(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
             }
+            context.contentType(ContentType.APPLICATION_JSON);
+
+            context.json(result);
+
         });
 
         app.get("commands", context -> {
-            try {
-                var commands = ServerCommandHandler.getHandler()//
-                        .getCommandList()
-                        .map(command -> new ServerCommandDto()
-                                .setText(command.text)
-                                .setDescription(command.description)
-                                .setParamText(command.paramText)
-                                .setParams(new Seq<>(command.params)
-                                        .map(param -> new CommandParamDto()//
-                                                .setName(param.name)//
-                                                .setOptional(param.optional)
-                                                .setVariadic(param.variadic))//
-                                        .list()))
-                        .list();
+            var commands = ServerCommandHandler.getHandler()//
+                    .getCommandList()
+                    .map(command -> new ServerCommandDto()
+                            .setText(command.text)
+                            .setDescription(command.description)
+                            .setParamText(command.paramText)
+                            .setParams(new Seq<>(command.params)
+                                    .map(param -> new CommandParamDto()//
+                                            .setName(param.name)//
+                                            .setOptional(param.optional)
+                                            .setVariadic(param.variadic))//
+                                    .list()))
+                    .list();
 
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(commands);
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
-            }
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(commands);
+
         });
 
         app.post("commands", context -> {
-            try {
-                String[] commands = context.bodyAsClass(String[].class);
-                if (commands != null) {
-                    for (var command : commands) {
-                        Log.info("Execute: " + command);
-                        ServerCommandHandler.getHandler().handleMessage(command);
-                    }
+            String[] commands = context.bodyAsClass(String[].class);
+            if (commands != null) {
+                for (var command : commands) {
+                    Log.info("Execute: " + command);
+                    ServerCommandHandler.getHandler().handleMessage(command);
                 }
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            } catch (Exception e) {
-                e.printStackTrace();
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.status(500);
-                context.result(e.getMessage());
             }
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+
         });
 
         app.start(9999);

@@ -16,6 +16,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
+import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
@@ -24,7 +25,6 @@ import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustrytool.utils.Session;
-import mindustrytool.utils.Utils;
 
 public class ClientCommandHandler {
 
@@ -72,7 +72,7 @@ public class ClientCommandHandler {
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
             ServerController.voteHandler.check(mapId);
         });
-        
+
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
             Seq<Map> maps = ServerController.voteHandler.getMaps();
@@ -247,7 +247,7 @@ public class ClientCommandHandler {
 
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
-        Utils.executeExpectError(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
             try {
@@ -282,7 +282,7 @@ public class ClientCommandHandler {
     }
 
     public void sendRedirectServerList(Player player, int page) {
-        Utils.executeExpectError(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 var size = 8;
                 var request = new PaginationRequest()//

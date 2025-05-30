@@ -54,7 +54,6 @@ import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerDto.ResponseData;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Session;
-import mindustrytool.utils.Utils;
 import mindustrytool.utils.HudUtils.Option;
 import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
@@ -64,7 +63,6 @@ import mindustry.net.WorldReloader;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -97,7 +95,6 @@ public class EventHandler {
         Instant createdAt = Instant.now();
     }
 
-    public final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
     private final Cache<String, String> translationCache = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(2))
             .maximumSize(1000)
@@ -105,7 +102,7 @@ public class EventHandler {
 
     private final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
-            .maximumSize(1000)
+            .maximumSize(10)
             .build();
 
     private Task updateServerTask, updateServerCore;
@@ -503,7 +500,6 @@ public class EventHandler {
                 Player player = event.player;
 
                 Session.remove(player);
-                playerMeta.remove(event.player.uuid());
 
                 ServerController.voteHandler.removeVote(player);
 
@@ -779,7 +775,7 @@ public class EventHandler {
 
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
-        Utils.executeExpectError(() -> {
+        Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
 
             try {
                 player.sendMessage(
@@ -863,12 +859,6 @@ public class EventHandler {
             Log.warn("Player with null uuid: " + playerData);
             return;
         }
-
-        playerMeta.put(uuid, new PlayerMetaData()//
-                .setExp(exp)//
-                .setPlayer(player)//
-                .setLoggedIn(isLoggedIn)//
-                .setName(name));
 
         if (isLoggedIn) {
             setName(player, name, (int) Math.sqrt(exp));

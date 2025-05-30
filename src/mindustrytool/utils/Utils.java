@@ -7,18 +7,9 @@ import mindustry.Vars;
 import mindustry.game.Gamemode;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
-import mindustrytool.Config;
 import mindustrytool.ServerController;
 
 public class Utils {
-
-    public static void executeExpectError(Runnable runnable) {
-        try {
-            Config.BACKGROUND_TASK_EXECUTOR.execute(runnable);
-        } catch (Exception e) {
-            Log.err(e);
-        }
-    }
 
     public synchronized static void host(String mapName, String mode) {
         if (Vars.state.isGame()) {
@@ -51,17 +42,15 @@ public class Utils {
                 Log.info("Randomized next map to be @.", result.plainName());
             }
 
-            
             Vars.logic.reset();
             ServerController.eventHandler.lastMode = preset;
             Core.settings.put("lastServerMode", ServerController.eventHandler.lastMode.name());
-            
+
             Log.info("Loading map...");
             Vars.world.loadMap(result, result.applyRules(ServerController.eventHandler.lastMode));
             Log.info("Map loaded.");
             Vars.state.rules = result.applyRules(preset);
             Vars.logic.play();
-
 
             Log.info("Starting server...");
             Vars.netServer.openServer();

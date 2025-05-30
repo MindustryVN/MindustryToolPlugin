@@ -67,9 +67,8 @@ public class HttpServer {
         });
 
         app.get("image", context -> {
-            context.contentType(ContentType.APPLICATION_OCTET_STREAM);
+            context.contentType(ContentType.IMAGE_PNG);
             context.result(mapPreview());
-
         });
 
         app.get("ok", (context) -> {
@@ -275,7 +274,7 @@ public class HttpServer {
 
             data.put("gameStats", gameStats);
             data.put("locales", Vars.locales);
-            
+
             var maps = new ArrayList<HashMap<String, String>>();
             Vars.maps.all().forEach(map -> {
                 var tags = new HashMap<String, String>();

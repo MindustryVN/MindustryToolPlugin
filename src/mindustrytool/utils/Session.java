@@ -1,16 +1,16 @@
 package mindustrytool.utils;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Locale;
 
 import arc.func.Boolf;
 import arc.func.Cons;
-import arc.struct.ObjectMap;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 
 public class Session {
-    private static ObjectMap<Player, Session> data = new ObjectMap<>();
+    private static HashMap<Player, Session> data = new HashMap<>();
 
     public final Player player;
     public final Locale locale;
@@ -32,6 +32,10 @@ public class Session {
         this.player = p;
         this.lastUnit = p.unit();
         this.locale = Locale.forLanguageTag(p.locale().replace('_', '-'));
+    }
+
+    public static HashMap<Player, Session> get() {
+        return data;
     }
 
     public static void load() {
@@ -99,11 +103,11 @@ public class Session {
     }
 
     public static void each(Cons<Session> item) {
-        data.each((k, v) -> item.get(v));
+        data.forEach((k, v) -> item.get(v));
     }
 
     public static void each(Boolf<Session> pred, Cons<Session> item) {
-        data.each((k, v) -> {
+        data.forEach((k, v) -> {
             if (pred.get(v))
                 item.get(v);
         });

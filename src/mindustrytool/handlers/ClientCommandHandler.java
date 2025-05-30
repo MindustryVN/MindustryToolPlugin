@@ -31,6 +31,10 @@ public class ClientCommandHandler {
     private static boolean isPreparingForNewWave = false;
     private static short waveVoted = 0;
 
+    public static void unload() {
+        handler = null;
+    }
+
     @Getter
     private static CommandHandler handler;
 

@@ -29,7 +29,7 @@ public class ApiGateway {
             .connectTimeout(Duration.ofSeconds(2))//
             .build();
 
-    private final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);
+    public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);
 
     public void init() {
         System.out.println("Setup api gateway");

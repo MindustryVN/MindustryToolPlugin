@@ -38,6 +38,10 @@ public class ServerCommandHandler {
     @Getter
     private static CommandHandler handler = ServerController.handler;
 
+    public static void unload(){
+        handler = null;
+    }
+
     public void registerCommands(CommandHandler handler) {
 
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {

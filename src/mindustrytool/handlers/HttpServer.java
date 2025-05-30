@@ -244,6 +244,47 @@ public class HttpServer {
 
         });
 
+        app.get("json", context -> {
+            var data = new HashMap<String, Object>();
+
+            var player = new ArrayList<Player>();
+            Groups.player.forEach(player::add);
+
+            data.put("stats", getStats());
+            data.put("players", player);
+            data.put("map", Vars.state.map);
+            data.put("session", Session.get());
+            data.put("hud", HudUtils.menus.asMap());
+            data.put("buildLogs", ServerController.apiGateway.buildLogs);
+            data.put("lastMode", ServerController.eventHandler.lastMode);
+            data.put("isHub", Config.IS_HUB);
+            data.put("ip", Config.SERVER_IP);
+            data.put("enemies", Vars.state.enemies);
+            data.put("rules", Vars.state.rules);
+            data.put("tps", Vars.state.serverTps);
+            data.put("stats", Vars.state.stats);
+            data.put("gameStats", Vars.state.stats);
+            data.put("activeTeam", Vars.state.teams.active);
+            data.put("presentTeam", Vars.state.teams.present);
+            data.put("locales", Vars.locales);
+            data.put("maps", Vars.maps.all().list());
+            data.put("mods", Vars.mods.list().list());
+            data.put("votes", ServerController.voteHandler.votes);
+            data.put("clientCommands", ClientCommandHandler.getHandler().getCommandList());
+            data.put("serverCommands", ServerCommandHandler.getHandler().getCommandList());
+            data.put("env", Config.ENV);
+
+            var settings = new HashMap<String, Object>();
+
+            Core.settings.keys().forEach(key -> {
+                settings.put(key, Core.settings.getString(key));
+            });
+            
+            data.put("settings", settings);
+
+            context.json(data);
+        });
+
         app.start(9999);
         System.out.println("Setup http server done");
     }

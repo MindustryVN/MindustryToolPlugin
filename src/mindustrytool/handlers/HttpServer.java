@@ -274,7 +274,7 @@ public class HttpServer {
             var settings = new HashMap<String, Object>();
 
             Core.settings.keys().forEach(key -> {
-                settings.put(key, Core.settings.getString(key));
+                settings.put(key, Core.settings.get(key, null));
             });
 
             data.put("settings", settings);

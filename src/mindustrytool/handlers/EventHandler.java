@@ -485,7 +485,7 @@ public class EventHandler {
 
                 String playerName = event.player != null ? event.player.plainName() : "Unknown";
                 String chat = Strings.format("@ leaved the server, current players: @", playerName,
-                        Groups.player.size() - 1);
+                        Math.max(Groups.player.size() - 1, 0));
 
                 Timer.schedule(() -> {
                     if (!Vars.state.isPaused() && Groups.player.size() == 0) {

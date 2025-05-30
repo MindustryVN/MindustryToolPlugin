@@ -270,16 +270,13 @@ public class HttpServer {
             data.put("maps", Vars.maps.all().list());
             data.put("mods", Vars.mods.list().list());
             data.put("votes", ServerController.voteHandler.votes);
-            data.put("clientCommands", ClientCommandHandler.getHandler().getCommandList());
-            data.put("serverCommands", ServerCommandHandler.getHandler().getCommandList());
-            data.put("env", Config.ENV);
 
             var settings = new HashMap<String, Object>();
 
             Core.settings.keys().forEach(key -> {
                 settings.put(key, Core.settings.getString(key));
             });
-            
+
             data.put("settings", settings);
 
             context.json(data);

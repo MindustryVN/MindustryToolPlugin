@@ -12,13 +12,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import arc.Core;
-import arc.Events;
 import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
 import arc.util.Timer.Task;
-import arc.util.serialization.JsonValue;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustry.Vars;
@@ -26,24 +24,16 @@ import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.game.EventType.BlockBuildEndEvent;
-import mindustry.game.EventType.GameOverEvent;
-import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerConnect;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.EventType.TapEvent;
-import mindustry.game.EventType.WorldLoadEvent;
-import mindustry.game.Gamemode;
 import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
-import mindustry.io.JsonIO;
-import mindustry.maps.Map;
-import mindustry.maps.MapException;
-import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
@@ -60,7 +50,6 @@ import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
-import mindustry.net.WorldReloader;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
 
@@ -68,11 +57,6 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class EventHandler {
-
-    public Task lastTask;
-
-    public Gamemode lastMode;
-    public boolean inGameOverWait;
 
     private List<ResponseData> servers = new ArrayList<>();
     private List<ServerCore> serverCores = new ArrayList<>();
@@ -118,11 +102,6 @@ public class EventHandler {
 
     public void init() {
         System.out.println("Setup event handler");
-
-        Events.on(WorldLoadEvent.class, event -> {
-            Log.info("World load event");
-            Thread.dumpStack();
-        });
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
@@ -215,7 +194,6 @@ public class EventHandler {
                 }
             }, 0, 5);
         }
-
         System.out.println("Setup event handler done");
     }
 
@@ -612,66 +590,6 @@ public class EventHandler {
         });
     }
 
-    public void onPlay(PlayEvent event) {
-        try {
-            JsonValue value = JsonIO.json.fromJson(null, Core.settings.getString("globalrules"));
-            JsonIO.json.readFields(Vars.state.rules, value);
-        } catch (Throwable t) {
-            Log.err("Error applying custom rules, proceeding without them.", t);
-        }
-    }
-
-    public void onGameOver(GameOverEvent event) {
-        try {
-            if (inGameOverWait) {
-                return;
-            }
-
-            if (Vars.state.rules.waves) {
-                Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
-                        Groups.player.size(),
-                        Strings.capitalize(Vars.state.map.plainName()));
-            } else {
-                Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
-                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-            }
-
-            // set the next map to be played
-            Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
-            if (map != null) {
-                Call.infoMessage(
-                        (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
-                                : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
-                                + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
-                                + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
-                                + " seconds.");
-
-                Vars.state.gameOver = true;
-                Call.updateGameOver(event.winner);
-
-                Log.info("Selected next map to be @.", map.plainName());
-
-                play(() -> Vars.world.loadMap(map, map.applyRules(lastMode)));
-            } else {
-                Vars.netServer.kickAll(KickReason.gameover);
-                Vars.state.set(State.menu);
-                Vars.net.closeServer();
-            }
-
-            String message = Vars.state.rules.waves
-                    ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
-                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
-                    : Strings.format("Game over! Team @ is victorious with @ players online on map @.",
-                            event.winner.name,
-                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-
-            ServerController.apiGateway.sendChatMessage(message);
-        } catch (Exception e) {
-            Log.err(e);
-            Log.info(e.getMessage());
-        }
-
-    }
 
     public void sendHub(Player player, String loginLink) {
         var options = new ArrayList<Option>();
@@ -793,48 +711,6 @@ public class EventHandler {
                 player.sendMessage("Error: Can not load server");
             }
         });
-    }
-
-    public void cancelPlayTask() {
-        if (lastTask != null)
-            lastTask.cancel();
-    }
-
-    public void play(Runnable run) {
-        play(true, run);
-    }
-
-    public void play(boolean wait, Runnable run) {
-        inGameOverWait = true;
-        cancelPlayTask();
-
-        Runnable reload = () -> {
-            try {
-                WorldReloader reloader = new WorldReloader();
-                reloader.begin();
-
-                run.run();
-
-                Vars.state.rules = Vars.state.map.applyRules(lastMode);
-                Vars.logic.play();
-
-                reloader.end();
-                inGameOverWait = false;
-
-            } catch (MapException e) {
-                Log.err("@: @", e.map.plainName(), e.getMessage());
-                Vars.net.closeServer();
-                Log.info(e.getMessage());
-            }
-        };
-
-        if (wait) {
-            lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
-        } else {
-            reload.run();
-        }
-
-        System.gc();
     }
 
     public void addPlayer(MindustryPlayerDto playerData, Player player) {

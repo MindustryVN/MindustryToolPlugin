@@ -257,7 +257,6 @@ public class HttpServer {
             data.put("session", Session.get());
             data.put("hud", HudUtils.menus.asMap());
             data.put("buildLogs", ServerController.apiGateway.buildLogs);
-            data.put("lastMode", ServerController.eventHandler.lastMode);
             data.put("isHub", Config.IS_HUB);
             data.put("ip", Config.SERVER_IP);
             data.put("enemies", Vars.state.enemies);

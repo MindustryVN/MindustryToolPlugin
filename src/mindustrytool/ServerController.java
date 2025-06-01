@@ -7,9 +7,7 @@ import org.pf4j.Extension;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.game.EventType.BlockBuildEndEvent;
-import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.MenuOptionChooseEvent;
-import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerConnect;
 import mindustry.game.EventType.PlayerJoin;
@@ -70,11 +68,7 @@ public class ServerController implements MindustryToolPlugin {
 
     @Override
     public void onEvent(Object event) {
-        if (event instanceof GameOverEvent gameOver) {
-            eventHandler.onGameOver(gameOver);
-        } else if (event instanceof PlayEvent playEvent) {
-            eventHandler.onPlay(playEvent);
-        } else if (event instanceof PlayerJoin playerJoin) {
+        if (event instanceof PlayerJoin playerJoin) {
             eventHandler.onPlayerJoin(playerJoin);
         } else if (event instanceof PlayerLeave playerLeave) {
             eventHandler.onPlayerLeave(playerLeave);

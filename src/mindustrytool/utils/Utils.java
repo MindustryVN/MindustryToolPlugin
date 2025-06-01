@@ -1,13 +1,11 @@
 package mindustrytool.utils;
 
-import arc.Core;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.game.Gamemode;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
-import mindustrytool.ServerController;
 
 public class Utils {
 
@@ -16,6 +14,7 @@ public class Utils {
             Log.err("Already hosting. Type 'stop' to stop hosting first.");
             return;
         }
+
         try {
             Gamemode preset = Gamemode.survival;
 
@@ -43,12 +42,7 @@ public class Utils {
             }
 
             Vars.logic.reset();
-            ServerController.eventHandler.lastMode = preset;
-            Core.settings.put("lastServerMode", ServerController.eventHandler.lastMode.name());
 
-            Log.info("Loading map...");
-            Vars.world.loadMap(result, result.applyRules(ServerController.eventHandler.lastMode));
-            Log.info("Map loaded.");
             Vars.state.rules = result.applyRules(preset);
             Vars.logic.play();
 

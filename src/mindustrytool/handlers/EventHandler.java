@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import arc.Core;
+import arc.Events;
 import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
@@ -33,6 +34,7 @@ import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.EventType.TapEvent;
+import mindustry.game.EventType.WorldLoadEvent;
 import mindustry.game.Gamemode;
 import mindustry.game.Team;
 import mindustry.gen.Call;
@@ -116,6 +118,11 @@ public class EventHandler {
 
     public void init() {
         System.out.println("Setup event handler");
+
+        Events.on(WorldLoadEvent.class, event -> {
+            Log.info("World load event");
+            Thread.dumpStack();
+        });
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
@@ -208,6 +215,7 @@ public class EventHandler {
                 }
             }, 0, 5);
         }
+
         System.out.println("Setup event handler done");
     }
 

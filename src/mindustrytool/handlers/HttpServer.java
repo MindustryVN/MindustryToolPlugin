@@ -238,7 +238,7 @@ public class HttpServer {
             String[] commands = context.bodyAsClass(String[].class);
             if (commands != null) {
                 for (var command : commands) {
-                    Log.info("Execute: " + command);
+                    Log.info("Execute command: " + command);
                     ServerCommandHandler.getHandler().handleMessage(command);
                 }
             }
@@ -315,7 +315,7 @@ public class HttpServer {
         if (commands != null && !commands.isBlank()) {
             String[] commandsArray = commands.split("\n");
             for (var command : commandsArray) {
-                Log.info("Execute: " + command);
+                Log.info("Host command: " + command);
                 ServerCommandHandler.getHandler().handleMessage(command);
             }
             return;

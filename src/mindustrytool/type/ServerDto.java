@@ -23,6 +23,7 @@ public class ServerDto {
         public String mode;
         public int port;
         public String hostCommand;
+        public String discordChannelId;
         public String status = "UNSET";
         public boolean official;
         public long ramUsage;

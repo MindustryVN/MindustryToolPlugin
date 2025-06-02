@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import arc.Core;
 import arc.files.Fi;
+import arc.graphics.Pixmap;
 import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Time;
@@ -362,19 +363,25 @@ public class HttpServer {
     }
 
     public byte[] mapPreview() {
-        Map map = Vars.state.map;
-        byte[] mapData = {};
+        Pixmap pix = null;
+        try {
+            Map map = Vars.state.map;
+            byte[] mapData = {};
 
-        if (map != null) {
-            var pix = MapIO.generatePreview(Vars.world.tiles);
-            Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
-            file.writePng(pix);
-            mapData = file.readBytes();
-            file.delete();
-            pix.dispose();
+            if (map != null) {
+                pix = MapIO.generatePreview(Vars.world.tiles);
+                Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
+                file.writePng(pix);
+                mapData = file.readBytes();
+                pix.dispose();
+            }
+
+            return mapData;
+        } finally {
+            if (pix != null) {
+                pix.dispose();
+            }
         }
-
-        return mapData;
     }
 
     public void unload() {

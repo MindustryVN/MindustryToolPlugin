@@ -356,6 +356,7 @@ public class HttpServer {
                 .setPlayers(players)//
                 .setMapName(mapName)
                 .setMods(mods)//
+                .setHosting(Vars.state.isGame())
                 .setPaused(Vars.state.isPaused())//
                 .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
                         .select(value -> Time.millis() - value < 0).size)//

@@ -244,7 +244,19 @@ public class HttpServer {
             }
             context.contentType(ContentType.TEXT_PLAIN);
             context.result("Ok");
+        });
 
+        app.post("say", context -> {
+            if (!Vars.state.isGame()) {
+                Log.err("Not hosting. Host a game first.");
+                return;
+            }
+
+            String message = context.bodyAsClass(String.class);
+            Call.sendMessage("[]" + message);
+
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
         });
 
         app.get("json", context -> {

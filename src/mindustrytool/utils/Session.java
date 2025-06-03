@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import arc.func.Boolf;
 import arc.func.Cons;
 import mindustry.gen.Groups;
@@ -12,11 +14,15 @@ import mindustry.gen.Player;
 public class Session {
     private static HashMap<Player, Session> data = new HashMap<>();
 
+    @JsonIgnore
     public final Player player;
     public final Locale locale;
     public final Long joinedAt = Instant.now().toEpochMilli();
 
+    @JsonIgnore
     public mindustry.game.Team spectate = null;
+
+    @JsonIgnore
     public mindustry.gen.Unit lastUnit;
     public String tag = "", noColorTag = "", rainbowedName = "";
     public int hue = 0;

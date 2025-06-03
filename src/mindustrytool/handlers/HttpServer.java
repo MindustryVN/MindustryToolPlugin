@@ -262,11 +262,7 @@ public class HttpServer {
         app.get("json", context -> {
             var data = new HashMap<String, Object>();
 
-            var player = new ArrayList<Player>();
-            Groups.player.forEach(player::add);
-
             data.put("stats", getStats());
-            data.put("players", player);
             data.put("session", Session.get());
             data.put("hud", HudUtils.menus.asMap());
             data.put("buildLogs", ServerController.apiGateway.buildLogs);

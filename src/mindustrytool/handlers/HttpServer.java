@@ -252,7 +252,7 @@ public class HttpServer {
                 return;
             }
 
-            String message = context.bodyAsClass(String.class);
+            String message = context.body();
             Call.sendMessage("[]" + message);
 
             context.contentType(ContentType.TEXT_PLAIN);

@@ -14,7 +14,7 @@ public class StatsDto {
     private String mapName;
     private byte[] mapData;
     private List<ModDto> mods;
-    private String status;
+    private String status = "SERVER_UNSET";
     private int kicks;
     private boolean isPaused = false;
     private boolean isHosting = false;

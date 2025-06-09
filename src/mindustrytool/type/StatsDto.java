@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class StatsDto {
+    private long tps;
     private long ramUsage;
     private long totalRam;
     private int players;

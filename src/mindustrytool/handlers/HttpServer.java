@@ -269,7 +269,7 @@ public class HttpServer {
             data.put("isHub", Config.IS_HUB);
             data.put("ip", Config.SERVER_IP);
             data.put("enemies", Vars.state.enemies);
-            data.put("tps", Vars.state.serverTps);
+            data.put("tps", Core.graphics.getFramesPerSecond());
 
             var gameStats = new HashMap<String, Object>();
 

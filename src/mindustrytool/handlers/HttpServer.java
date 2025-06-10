@@ -13,7 +13,11 @@ import arc.Core;
 import arc.files.Fi;
 import arc.graphics.Pixmap;
 import arc.struct.Seq;
+import arc.util.CommandHandler.Command;
+import arc.util.CommandHandler.CommandResponse;
+import arc.util.CommandHandler.ResponseType;
 import arc.util.Log;
+import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
@@ -237,9 +241,35 @@ public class HttpServer {
         app.post("commands", context -> {
             String[] commands = context.bodyAsClass(String[].class);
             if (commands != null) {
-                for (var command : commands) {
-                    Log.info("Execute command: " + command);
-                    ServerCommandHandler.getHandler().handleMessage(command);
+                for (var c : commands) {
+                    Log.info("Execute command: " + c);
+                    CommandResponse response = ServerCommandHandler.getHandler().handleMessage(c);
+
+                    if (response.type == ResponseType.unknownCommand) {
+
+                        int minDst = 0;
+                        Command closest = null;
+
+                        for (Command command : ServerCommandHandler.getHandler().getCommandList()) {
+                            int dst = Strings.levenshtein(command.text, response.runCommand);
+                            if (dst < 3 && (closest == null || dst < minDst)) {
+                                minDst = dst;
+                                closest = command;
+                            }
+                        }
+
+                        if (closest != null && !closest.text.equals("yes")) {
+                            Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
+                        } else {
+                            Log.err("Invalid command. Type 'help' for help.");
+                        }
+                    } else if (response.type == ResponseType.fewArguments) {
+                        Log.err("Too few command arguments. Usage: " + response.command.text + " "
+                                + response.command.paramText);
+                    } else if (response.type == ResponseType.manyArguments) {
+                        Log.err("Too many command arguments. Usage: " + response.command.text + " "
+                                + response.command.paramText);
+                    }
                 }
             }
             context.contentType(ContentType.TEXT_PLAIN);

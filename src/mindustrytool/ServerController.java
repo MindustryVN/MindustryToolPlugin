@@ -50,7 +50,7 @@ public class ServerController implements MindustryToolPlugin {
                     Log.err(e);
                 }
             }
-        }, 5);
+        }, 10);
 
         Log.info("Server controller initialized.");
     }

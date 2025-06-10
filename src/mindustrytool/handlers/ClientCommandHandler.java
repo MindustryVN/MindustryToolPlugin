@@ -31,15 +31,11 @@ public class ClientCommandHandler {
     private static boolean isPreparingForNewWave = false;
     private static short waveVoted = 0;
 
-    public static void unload() {
-        handler = null;
-    }
-
     @Getter
-    private static CommandHandler handler;
+    private CommandHandler handler;
 
     public void registerCommands(CommandHandler handler) {
-        ClientCommandHandler.handler = handler;
+        this.handler = handler;
 
         handler.<Player>register("rtv", "<mapId>", "Vote to change map (map id in /maps)", (args, player) -> {
             if (args.length != 1) {

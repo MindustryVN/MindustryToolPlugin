@@ -2,8 +2,6 @@ package mindustrytool;
 
 import org.pf4j.Plugin;
 
-import mindustrytool.handlers.ClientCommandHandler;
-import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.utils.Session;
 
 public class Main extends Plugin {
@@ -19,8 +17,5 @@ public class Main extends Plugin {
 
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();
-
-        ClientCommandHandler.unload();
-        ServerCommandHandler.unload();
     }
 }

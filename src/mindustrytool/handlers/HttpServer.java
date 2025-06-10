@@ -14,7 +14,6 @@ import arc.files.Fi;
 import arc.graphics.Pixmap;
 import arc.struct.Seq;
 import arc.util.CommandHandler.Command;
-import arc.util.CommandHandler.CommandResponse;
 import arc.util.CommandHandler.ResponseType;
 import arc.util.Log;
 import arc.util.Strings;
@@ -219,12 +218,12 @@ public class HttpServer {
         });
 
         app.get("commands", context -> {
-            if (ServerCommandHandler.getHandler() == null) {
+            if (ServerController.serverCommandHandler.getHandler() == null) {
                 context.json(List.of());
                 return;
             }
 
-            var commands = ServerCommandHandler.getHandler()//
+            var commands = ServerController.serverCommandHandler.getHandler()//
                     .getCommandList()
                     .map(command -> new ServerCommandDto()
                             .setText(command.text)
@@ -248,33 +247,35 @@ public class HttpServer {
             if (commands != null) {
                 for (var c : commands) {
                     Log.info("Execute command: " + c);
-                    CommandResponse response = ServerCommandHandler.getHandler().handleMessage(c);
+                    ServerController.serverCommandHandler.execute(c, response -> {
 
-                    if (response.type == ResponseType.unknownCommand) {
+                        if (response.type == ResponseType.unknownCommand) {
 
-                        int minDst = 0;
-                        Command closest = null;
+                            int minDst = 0;
+                            Command closest = null;
 
-                        for (Command command : ServerCommandHandler.getHandler().getCommandList()) {
-                            int dst = Strings.levenshtein(command.text, response.runCommand);
-                            if (dst < 3 && (closest == null || dst < minDst)) {
-                                minDst = dst;
-                                closest = command;
+                            for (Command command : ServerController.serverCommandHandler.getHandler()
+                                    .getCommandList()) {
+                                int dst = Strings.levenshtein(command.text, response.runCommand);
+                                if (dst < 3 && (closest == null || dst < minDst)) {
+                                    minDst = dst;
+                                    closest = command;
+                                }
                             }
-                        }
 
-                        if (closest != null && !closest.text.equals("yes")) {
-                            Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
-                        } else {
-                            Log.err("Invalid command. Type 'help' for help.");
+                            if (closest != null && !closest.text.equals("yes")) {
+                                Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
+                            } else {
+                                Log.err("Invalid command. Type 'help' for help.");
+                            }
+                        } else if (response.type == ResponseType.fewArguments) {
+                            Log.err("Too few command arguments. Usage: " + response.command.text + " "
+                                    + response.command.paramText);
+                        } else if (response.type == ResponseType.manyArguments) {
+                            Log.err("Too many command arguments. Usage: " + response.command.text + " "
+                                    + response.command.paramText);
                         }
-                    } else if (response.type == ResponseType.fewArguments) {
-                        Log.err("Too few command arguments. Usage: " + response.command.text + " "
-                                + response.command.paramText);
-                    } else if (response.type == ResponseType.manyArguments) {
-                        Log.err("Too many command arguments. Usage: " + response.command.text + " "
-                                + response.command.paramText);
-                    }
+                    });
                 }
             }
             context.contentType(ContentType.TEXT_PLAIN);
@@ -359,7 +360,8 @@ public class HttpServer {
             String[] commandsArray = commands.split("\n");
             for (var command : commandsArray) {
                 Log.info("Host command: " + command);
-                ServerCommandHandler.getHandler().handleMessage(command);
+                ServerController.serverCommandHandler.execute(command, (_ignore) -> {
+                });
             }
             return;
         }

@@ -1,10 +1,15 @@
 package mindustrytool.handlers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import arc.Core;
 import arc.Events;
 import arc.struct.ObjectSet;
 import arc.struct.Seq;
 import arc.util.CommandHandler.Command;
+import arc.util.CommandHandler.CommandResponse;
 import arc.util.Log;
 import arc.util.CommandHandler;
 import arc.util.OS;
@@ -35,15 +40,25 @@ import mindustrytool.utils.Utils;
 public class ServerCommandHandler {
 
     @Getter
-    private static CommandHandler handler;
+    private CommandHandler handler;
 
-    public static void unload(){
-        handler = null;
+    private static record PrevCommand(String command, Consumer<CommandResponse> callback) {
+    }
+
+    private List<PrevCommand> prevCommands = new ArrayList<>();
+
+    public void execute(String command, Consumer<CommandResponse> callback) {
+        if (this.handler == null) {
+            prevCommands.add(new PrevCommand(command, callback));
+        } else {
+            callback.accept(this.handler.handleMessage(command));
+        }
     }
 
     public void registerCommands(CommandHandler handler) {
+        this.handler = handler;
 
-        ServerCommandHandler.handler = handler;
+        prevCommands.forEach(prev -> prev.callback.accept(handler.handleMessage(prev.command)));
 
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {

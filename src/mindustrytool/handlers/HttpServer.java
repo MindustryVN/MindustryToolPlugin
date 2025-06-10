@@ -219,6 +219,11 @@ public class HttpServer {
         });
 
         app.get("commands", context -> {
+            if (ServerCommandHandler.getHandler() == null) {
+                context.json(List.of());
+                return;
+            }
+
             var commands = ServerCommandHandler.getHandler()//
                     .getCommandList()
                     .map(command -> new ServerCommandDto()

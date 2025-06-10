@@ -525,7 +525,10 @@ public class EventHandler {
                 if (Config.IS_HUB) {
                     var serverData = getTopServer();
 
-                    if (serverData != null && !serverData.getId().equals(ServerController.SERVER_ID)) {
+                    if (serverData != null //
+                            && !serverData.getId().equals(ServerController.SERVER_ID)
+                            && serverData.players > 0//
+                    ) {
                         var options = List.of(//
                                 HudUtils.option((p, state) -> {
                                     HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
@@ -589,7 +592,6 @@ public class EventHandler {
             }
         });
     }
-
 
     public void sendHub(Player player, String loginLink) {
         var options = new ArrayList<Option>();

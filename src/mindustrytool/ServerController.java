@@ -28,7 +28,6 @@ public class ServerController implements MindustryToolPlugin {
 
     public static RtvVoteHandler voteHandler = new RtvVoteHandler();
     public static EventHandler eventHandler = new EventHandler();
-    public static CommandHandler handler = new CommandHandler("");
     public static ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
     public static ApiGateway apiGateway = new ApiGateway();

@@ -30,19 +30,20 @@ import mindustry.net.Administration.Config;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
-import mindustrytool.ServerController;
 import mindustrytool.utils.Utils;
 
 public class ServerCommandHandler {
 
     @Getter
-    private static CommandHandler handler = ServerController.handler;
+    private static CommandHandler handler;
 
     public static void unload(){
         handler = null;
     }
 
     public void registerCommands(CommandHandler handler) {
+
+        ServerCommandHandler.handler = handler;
 
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {

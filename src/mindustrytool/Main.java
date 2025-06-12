@@ -17,5 +17,12 @@ public class Main extends Plugin {
 
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();
+
+        ServerController.apiGateway = null;
+        ServerController.serverCommandHandler = null;
+        ServerController.clientCommandHandler = null;
+        ServerController.apiGateway = null;
+        ServerController.httpServer = null;
+        ServerController.eventHandler = null;
     }
 }

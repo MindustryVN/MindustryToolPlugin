@@ -377,11 +377,11 @@ public class EventHandler {
         }
     }
 
-    private static void writeString(ByteBuffer buffer, String string) {
+    private void writeString(ByteBuffer buffer, String string) {
         writeString(buffer, string, 32);
     }
 
-    private static void writeString(ByteBuffer buffer, String string, int maxlen) {
+    private void writeString(ByteBuffer buffer, String string, int maxlen) {
         byte[] bytes = string.getBytes(Vars.charset);
         if (bytes.length > maxlen) {
             bytes = Arrays.copyOfRange(bytes, 0, maxlen);

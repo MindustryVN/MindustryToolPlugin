@@ -194,22 +194,14 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            var iter = Vars.netServer.admins.playerInfo.values();
-            var result = new ArrayList<PlayerInfoDto>();
-            var index = 0;
-
-            int start = offset;
-            int end = offset + size;
-
-            while (iter.hasNext()) {
-                var ban = iter.next();
-
-                if (index >= end) {
-                    break;
-                }
-
-                if (index >= start && conditions.stream().allMatch(condition -> condition.test(ban))) {
-                    result.add(new PlayerInfoDto()
+            Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.copy().values().toSeq();
+            
+            var result = bans.list()//
+                    .stream()//
+                    .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
+                    .skip(offset)//
+                    .limit(size)//
+                    .map(ban -> new PlayerInfoDto()
                             .setId(ban.id)
                             .setLastName(ban.lastName)
                             .setLastIP(ban.lastIP)
@@ -220,12 +212,8 @@ public class HttpServer {
                             .setTimesJoined(ban.timesJoined)
                             .setBanned(ban.banned)
                             .setAdmin(ban.admin)
-                            .setLastKicked(ban.lastKicked));
-                }
-
-                index++;
-
-            }
+                            .setLastKicked(ban.lastKicked))
+                    .toList();
 
             context.contentType(ContentType.APPLICATION_JSON);
             context.json(result);

@@ -1,5 +1,6 @@
 package mindustrytool.utils;
 
+import java.lang.ref.WeakReference;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Locale;
@@ -12,18 +13,16 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 
 public class Session {
-    private static HashMap<Player, Session> data = new HashMap<>();
+    private static HashMap<String, Session> data = new HashMap<>();
 
     @JsonIgnore
-    public final Player player;
+    public final WeakReference<Player> player;
     public final Locale locale;
     public final Long joinedAt = Instant.now().toEpochMilli();
 
     @JsonIgnore
     public mindustry.game.Team spectate = null;
 
-    @JsonIgnore
-    public mindustry.gen.Unit lastUnit;
     public String tag = "", noColorTag = "", rainbowedName = "";
     public int hue = 0;
     public boolean votedVNW = false, //
@@ -35,12 +34,11 @@ public class Session {
             isCreator;
 
     private Session(Player p) {
-        this.player = p;
-        this.lastUnit = p.unit();
+        this.player = new WeakReference<Player>(p);
         this.locale = Locale.forLanguageTag(p.locale().replace('_', '-'));
     }
 
-    public static HashMap<Player, Session> get() {
+    public static HashMap<String, Session> get() {
         return data;
     }
 
@@ -57,12 +55,13 @@ public class Session {
     }
 
     public void reset() {
-        Session newData = new Session(this.player);
+        if (this.player.get() == null)
+            return;
+
+        Session newData = new Session(this.player.get());
 
         if (spectate())
-            this.player.team(this.spectate);
-        this.player.unit().health = this.player.unit().maxHealth;
-        this.lastUnit = newData.lastUnit;
+            this.player.get().team(this.spectate);
         this.spectate = newData.spectate;
         this.hue = newData.hue;
         this.votedVNW = newData.votedVNW;
@@ -75,23 +74,23 @@ public class Session {
     }
 
     public static Session getByName(String name) {
-        return find(p -> p.player.name.equals(name));
+        return find(p -> p.player.get() != null && p.player.get().name.equals(name));
     }
 
     public static Session getByID(String id) {
-        return find(p -> p.player.uuid().equals(id));
+        return find(p -> p.player.get() != null && p.player.get().uuid().equals(id));
     }
 
     public static Session get(Player p) {
         if (p == null)
             return null;
-        return data.get(p);
+        return data.get(p.uuid());
     }
 
     public static Session put(Player p) {
         Session data_ = new Session(p);
 
-        data.put(p, data_);
+        data.put(p.uuid(), data_);
 
         return data_;
     }
@@ -99,13 +98,13 @@ public class Session {
     public static Session remove(Player p) {
         Session data_ = get(p);
 
-        data.remove(p);
+        data.remove(p.uuid());
 
         return data_;
     }
 
     public static boolean contains(Player p) {
-        return data.containsKey(p);
+        return data.containsKey(p.uuid());
     }
 
     public static void each(Cons<Session> item) {

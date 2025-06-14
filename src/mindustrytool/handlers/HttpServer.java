@@ -327,7 +327,15 @@ public class HttpServer {
                 map.tags.each((key, value) -> tags.put(key, value));
                 maps.add(tags);
             });
-            data.put("maps", Vars.maps.all().map(map -> map.tags).list());
+            data.put("maps",
+                    Vars.maps.all().map(map -> java.util.Map.of(
+                            "name", map.name(), //
+                            "author", map.author(), //
+                            "file", map.file.absolutePath(),
+                            "tags", map.tags,
+                            "description", map.description(),
+                            "width", map.width,
+                            "height", map.height)).list());
             data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
             data.put("votes", ServerController.voteHandler.votes);
 

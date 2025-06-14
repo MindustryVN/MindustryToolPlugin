@@ -194,13 +194,22 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
-            var result = bans.list()//
-                    .stream()//
-                    .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
-                    .skip(offset)//
-                    .limit(size)//
-                    .map(ban -> new PlayerInfoDto()
+            var iter = Vars.netServer.admins.playerInfo.values();
+            var result = new ArrayList<PlayerInfoDto>();
+            var index = 0;
+
+            int start = offset;
+            int end = offset + size;
+
+            while (iter.hasNext()) {
+                var ban = iter.next();
+
+                if (index >= end) {
+                    break;
+                }
+
+                if (index >= start && conditions.stream().allMatch(condition -> condition.test(ban))) {
+                    result.add(new PlayerInfoDto()
                             .setId(ban.id)
                             .setLastName(ban.lastName)
                             .setLastIP(ban.lastIP)
@@ -211,8 +220,12 @@ public class HttpServer {
                             .setTimesJoined(ban.timesJoined)
                             .setBanned(ban.banned)
                             .setAdmin(ban.admin)
-                            .setLastKicked(ban.lastKicked))
-                    .toList();
+                            .setLastKicked(ban.lastKicked));
+                }
+
+                index++;
+
+            }
 
             context.contentType(ContentType.APPLICATION_JSON);
             context.json(result);
@@ -318,6 +331,7 @@ public class HttpServer {
             data.put("buildLogs", ServerController.apiGateway.buildLogs);
             data.put("isHub", Config.IS_HUB);
             data.put("ip", Config.SERVER_IP);
+            data.put("units", Groups.unit.size());
             data.put("enemies", Vars.state.enemies);
             data.put("tps", Core.graphics.getFramesPerSecond());
 

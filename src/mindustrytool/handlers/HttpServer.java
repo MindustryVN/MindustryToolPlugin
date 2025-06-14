@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -173,6 +174,7 @@ public class HttpServer {
             var pageString = context.queryParam("page");
             var sizeString = context.queryParam("size");
             var isBannedString = context.queryParam("banned");
+            var filter = context.queryParam("filter");
 
             int page = pageString != null ? Integer.parseInt(pageString) : 0;
             int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
@@ -180,10 +182,22 @@ public class HttpServer {
 
             int offset = page * size;
 
+            List<Predicate<PlayerInfo>> conditions = new ArrayList<>();
+
+            if (filter != null) {
+                conditions.add(info -> //
+                info.names.contains(name -> name.contains(filter))
+                        || info.ips.contains(ip -> ip.contains(filter)));
+            }
+
+            if (isBanned != null) {
+                conditions.add(info -> info.banned == isBanned);
+            }
+
             Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
             var result = bans.list()//
                     .stream()//
-                    .filter(info -> isBanned == null ? true : info.banned == isBanned)//
+                    .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
                     .skip(offset)//
                     .limit(size)//
                     .map(ban -> new PlayerInfoDto()

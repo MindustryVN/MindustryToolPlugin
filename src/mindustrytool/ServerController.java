@@ -117,6 +117,13 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
         Config.BACKGROUND_SCHEDULER.shutdownNow();
 
+        try {
+            Config.BACKGROUND_SCHEDULER.awaitTermination(1, TimeUnit.MINUTES);
+            Config.BACKGROUND_TASK_EXECUTOR.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         Session.clear();
 
         HudUtils.menus.invalidateAll();

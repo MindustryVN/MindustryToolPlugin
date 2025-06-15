@@ -61,7 +61,7 @@ public class ApiGateway {
     }
 
     private Builder setHeaders(Builder builder) {
-        return builder.header("X-SERVER-ID", ServerController.SERVER_ID.toString());
+        return builder.header("X-SERVER-ID", ServerController.SERVER_ID.toString()).timeout(Duration.ofSeconds(2));
     }
 
     private URI path(String... path) {

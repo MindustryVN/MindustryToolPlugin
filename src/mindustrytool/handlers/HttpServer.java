@@ -50,342 +50,342 @@ import io.javalin.plugin.bundled.RouteOverviewPlugin;
 public class HttpServer {
     private static final String MAP_PREVIEW_FILE_NAME = "MapPreview";
 
-    private Javalin app;
+    private final Javalin app;
     private boolean isUnloaded = false;
 
     private final ServerController controller;
 
     public HttpServer(ServerController controller) {
         this.controller = controller;
+
+        System.out.println("Setup http server");
+
+        app = Javalin.create(config -> {
+            config.showJavalinBanner = false;
+            config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
+                mapper//
+
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
+                        .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
+                        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+            }));
+
+            config.registerPlugin(new RouteOverviewPlugin());
+        });
+
+        app.get("stats", context -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(getStats());
+        });
+
+        app.get("image", context -> {
+            context.contentType(ContentType.IMAGE_PNG);
+            context.result(mapPreview());
+        });
+
+        app.get("ok", (context) -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json("Ok");
+        });
+
+        app.get("plugin-version", context -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(Config.PLUGIN_VERSION);
+        });
+
+        app.get("hosting", (context) -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(Vars.state.isGame());
+
+        });
+
+        app.post("discord", context -> {
+            String message = context.body();
+
+            Call.sendMessage(message);
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+        });
+
+        app.post("pause", context -> {
+            if (Vars.state.isPaused()) {
+                Vars.state.set(State.paused);
+            } else {
+                Vars.state.set(State.playing);
+            }
+        });
+
+        app.post("host", context -> {
+            StartServerDto request = context.bodyAsClass(StartServerDto.class);
+            host(request);
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+        });
+
+        app.post("set-player", context -> {
+            MindustryPlayerDto request = context.bodyAsClass(MindustryPlayerDto.class);
+
+            String uuid = request.getUuid();
+            boolean isAdmin = request.isAdmin();
+
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+            Player player = Groups.player.find(p -> p.getInfo() == target);
+
+            if (target != null) {
+                if (isAdmin) {
+                    Vars.netServer.admins.adminPlayer(target.id,
+                            player == null ? target.adminUsid : player.usid());
+                } else {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
+                }
+                if (player != null)
+                    player.admin = isAdmin;
+            } else {
+                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+            }
+
+            if (player != null) {
+                HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                controller.eventHandler.setPlayerData(request, player);
+            }
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+
+        });
+
+        app.get("players", context -> {
+            var players = new ArrayList<Player>();
+            Groups.player.forEach(players::add);
+
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(players.stream()//
+                    .map(player -> new PlayerDto()//
+                            .setName(player.coloredName())//
+                            .setUuid(player.uuid())//
+                            .setIp(player.ip())
+                            .setLocale(player.locale())//
+                            .setAdmin(player.admin)//
+                            .setJoinedAt(Session.contains(player) //
+                                    ? Session.get(player).joinedAt
+                                    : Instant.now().toEpochMilli())
+                            .setTeam(new TeamDto()//
+                                    .setColor(player.team().color.toString())//
+                                    .setName(player.team().name)))
+                    .collect(Collectors.toList()));
+
+        });
+
+        app.get("player-infos", context -> {
+            var pageString = context.queryParam("page");
+            var sizeString = context.queryParam("size");
+            var isBannedString = context.queryParam("banned");
+            var filter = context.queryParam("filter");
+
+            int page = pageString != null ? Integer.parseInt(pageString) : 0;
+            int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
+            Boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : null;
+
+            int offset = page * size;
+
+            List<Predicate<PlayerInfo>> conditions = new ArrayList<>();
+
+            if (filter != null) {
+                conditions.add(info -> //
+                info.names.contains(name -> name.contains(filter))
+                        || info.ips.contains(ip -> ip.contains(filter)));
+            }
+
+            if (isBanned != null) {
+                conditions.add(info -> info.banned == isBanned);
+            }
+
+            Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.copy().values().toSeq();
+
+            var result = bans.list()//
+                    .stream()//
+                    .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
+                    .skip(offset)//
+                    .limit(size)//
+                    .map(ban -> new PlayerInfoDto()
+                            .setId(ban.id)
+                            .setLastName(ban.lastName)
+                            .setLastIP(ban.lastIP)
+                            .setIps(ban.ips.list())
+                            .setNames(ban.names.list())
+                            .setAdminUsid(ban.adminUsid)
+                            .setTimesKicked(ban.timesKicked)
+                            .setTimesJoined(ban.timesJoined)
+                            .setBanned(ban.banned)
+                            .setAdmin(ban.admin)
+                            .setLastKicked(ban.lastKicked))
+                    .toList();
+
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(result);
+
+        });
+        app.get("kicks", context -> {
+            var result = new HashMap<>();
+            for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                    result.put(entry.key, entry.value);
+                }
+            }
+            context.contentType(ContentType.APPLICATION_JSON);
+
+            context.json(result);
+
+        });
+
+        app.get("commands", context -> {
+            var commands = controller.serverCommandHandler.getHandler() == null
+                    ? List.of()
+                    : controller.serverCommandHandler.getHandler()//
+                            .getCommandList()
+                            .map(command -> new ServerCommandDto()
+                                    .setText(command.text)
+                                    .setDescription(command.description)
+                                    .setParamText(command.paramText)
+                                    .setParams(new Seq<>(command.params)
+                                            .map(param -> new CommandParamDto()//
+                                                    .setName(param.name)//
+                                                    .setOptional(param.optional)
+                                                    .setVariadic(param.variadic))//
+                                            .list()))
+                            .list();
+
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(commands);
+
+        });
+
+        app.post("commands", context -> {
+            String[] commands = context.bodyAsClass(String[].class);
+            if (commands != null) {
+                for (var c : commands) {
+                    Log.info("Execute command: " + c);
+                    controller.serverCommandHandler.execute(c, response -> {
+
+                        if (response.type == ResponseType.unknownCommand) {
+
+                            int minDst = 0;
+                            Command closest = null;
+
+                            for (Command command : controller.serverCommandHandler.getHandler()
+                                    .getCommandList()) {
+                                int dst = Strings.levenshtein(command.text, response.runCommand);
+                                if (dst < 3 && (closest == null || dst < minDst)) {
+                                    minDst = dst;
+                                    closest = command;
+                                }
+                            }
+
+                            if (closest != null && !closest.text.equals("yes")) {
+                                Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
+                            } else {
+                                Log.err("Invalid command. Type 'help' for help.");
+                            }
+                        } else if (response.type == ResponseType.fewArguments) {
+                            Log.err("Too few command arguments. Usage: " + response.command.text + " "
+                                    + response.command.paramText);
+                        } else if (response.type == ResponseType.manyArguments) {
+                            Log.err("Too many command arguments. Usage: " + response.command.text + " "
+                                    + response.command.paramText);
+                        }
+                    });
+                }
+            }
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+        });
+
+        app.post("say", context -> {
+            if (!Vars.state.isGame()) {
+                Log.err("Not hosting. Host a game first.");
+                return;
+            }
+
+            String message = context.body();
+            Call.sendMessage("[]" + message);
+
+            context.contentType(ContentType.TEXT_PLAIN);
+            context.result("Ok");
+        });
+
+        app.get("json", context -> {
+            var data = new HashMap<String, Object>();
+
+            data.put("stats", getStats());
+            data.put("session", Session.get());
+            data.put("hud", HudUtils.menus.asMap());
+            data.put("buildLogs", controller.apiGateway.buildLogs);
+            data.put("isHub", Config.IS_HUB);
+            data.put("ip", Config.SERVER_IP);
+            data.put("units", Groups.unit.size());
+            data.put("enemies", Vars.state.enemies);
+            data.put("tps", Core.graphics.getFramesPerSecond());
+
+            var gameStats = new HashMap<String, Object>();
+
+            gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
+            gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
+            gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
+            gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
+            gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
+            gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
+            gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
+            gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
+
+            data.put("gameStats", gameStats);
+            data.put("locales", Vars.locales);
+
+            var maps = new ArrayList<HashMap<String, String>>();
+            Vars.maps.all().forEach(map -> {
+                var tags = new HashMap<String, String>();
+                map.tags.each((key, value) -> tags.put(key, value));
+                maps.add(tags);
+            });
+            data.put("maps",
+                    Vars.maps.all().map(map -> java.util.Map.of(
+                            "name", map.name(), //
+                            "author", map.author(), //
+                            "file", map.file.absolutePath(),
+                            "tags", map.tags,
+                            "description", map.description(),
+                            "width", map.width,
+                            "height", map.height)).list());
+            data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
+            data.put("votes", controller.voteHandler.votes);
+
+            var settings = new HashMap<String, Object>();
+
+            Core.settings.keys().forEach(key -> {
+                settings.put(key, Core.settings.get(key, null));
+            });
+
+            data.put("settings", settings);
+
+            context.json(data);
+        });
+
+        app.exception(Exception.class, (exception, context) -> {
+            Log.err(exception);
+
+            var result = java.util.Map.of("message", exception.getMessage());
+
+            context.status(500)
+                    .json(result);
+        });
+
+        if (!isUnloaded) {
+            app.start(9999);
+        }
+        System.out.println("Setup http server done");
     }
 
     public void init() {
-        synchronized (this) {
 
-            System.out.println("Setup http server");
-            app = Javalin.create(config -> {
-                config.showJavalinBanner = false;
-                config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
-                    mapper//
-
-                            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
-                            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
-                            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-                }));
-
-                config.registerPlugin(new RouteOverviewPlugin());
-            });
-
-            app.get("stats", context -> {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(getStats());
-            });
-
-            app.get("image", context -> {
-                context.contentType(ContentType.IMAGE_PNG);
-                context.result(mapPreview());
-            });
-
-            app.get("ok", (context) -> {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json("Ok");
-            });
-
-            app.get("plugin-version", context -> {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(Config.PLUGIN_VERSION);
-            });
-
-            app.get("hosting", (context) -> {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(Vars.state.isGame());
-
-            });
-
-            app.post("discord", context -> {
-                String message = context.body();
-
-                Call.sendMessage(message);
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            });
-
-            app.post("pause", context -> {
-                if (Vars.state.isPaused()) {
-                    Vars.state.set(State.paused);
-                } else {
-                    Vars.state.set(State.playing);
-                }
-            });
-
-            app.post("host", context -> {
-                StartServerDto request = context.bodyAsClass(StartServerDto.class);
-                host(request);
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            });
-
-            app.post("set-player", context -> {
-                MindustryPlayerDto request = context.bodyAsClass(MindustryPlayerDto.class);
-
-                String uuid = request.getUuid();
-                boolean isAdmin = request.isAdmin();
-
-                PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-                Player player = Groups.player.find(p -> p.getInfo() == target);
-
-                if (target != null) {
-                    if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id,
-                                player == null ? target.adminUsid : player.usid());
-                    } else {
-                        Vars.netServer.admins.unAdminPlayer(target.id);
-                    }
-                    if (player != null)
-                        player.admin = isAdmin;
-                } else {
-                    Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
-                }
-
-                if (player != null) {
-                    HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                    controller.eventHandler.setPlayerData(request, player);
-                }
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-
-            });
-
-            app.get("players", context -> {
-                var players = new ArrayList<Player>();
-                Groups.player.forEach(players::add);
-
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(players.stream()//
-                        .map(player -> new PlayerDto()//
-                                .setName(player.coloredName())//
-                                .setUuid(player.uuid())//
-                                .setIp(player.ip())
-                                .setLocale(player.locale())//
-                                .setAdmin(player.admin)//
-                                .setJoinedAt(Session.contains(player) //
-                                        ? Session.get(player).joinedAt
-                                        : Instant.now().toEpochMilli())
-                                .setTeam(new TeamDto()//
-                                        .setColor(player.team().color.toString())//
-                                        .setName(player.team().name)))
-                        .collect(Collectors.toList()));
-
-            });
-
-            app.get("player-infos", context -> {
-                var pageString = context.queryParam("page");
-                var sizeString = context.queryParam("size");
-                var isBannedString = context.queryParam("banned");
-                var filter = context.queryParam("filter");
-
-                int page = pageString != null ? Integer.parseInt(pageString) : 0;
-                int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
-                Boolean isBanned = isBannedString != null ? Boolean.parseBoolean(isBannedString) : null;
-
-                int offset = page * size;
-
-                List<Predicate<PlayerInfo>> conditions = new ArrayList<>();
-
-                if (filter != null) {
-                    conditions.add(info -> //
-                    info.names.contains(name -> name.contains(filter))
-                            || info.ips.contains(ip -> ip.contains(filter)));
-                }
-
-                if (isBanned != null) {
-                    conditions.add(info -> info.banned == isBanned);
-                }
-
-                Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.copy().values().toSeq();
-
-                var result = bans.list()//
-                        .stream()//
-                        .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
-                        .skip(offset)//
-                        .limit(size)//
-                        .map(ban -> new PlayerInfoDto()
-                                .setId(ban.id)
-                                .setLastName(ban.lastName)
-                                .setLastIP(ban.lastIP)
-                                .setIps(ban.ips.list())
-                                .setNames(ban.names.list())
-                                .setAdminUsid(ban.adminUsid)
-                                .setTimesKicked(ban.timesKicked)
-                                .setTimesJoined(ban.timesJoined)
-                                .setBanned(ban.banned)
-                                .setAdmin(ban.admin)
-                                .setLastKicked(ban.lastKicked))
-                        .toList();
-
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(result);
-
-            });
-            app.get("kicks", context -> {
-                var result = new HashMap<>();
-                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                    if (entry.value != 0 && Time.millis() - entry.value < 0) {
-                        result.put(entry.key, entry.value);
-                    }
-                }
-                context.contentType(ContentType.APPLICATION_JSON);
-
-                context.json(result);
-
-            });
-
-            app.get("commands", context -> {
-                var commands = controller.serverCommandHandler.getHandler() == null
-                        ? List.of()
-                        : controller.serverCommandHandler.getHandler()//
-                                .getCommandList()
-                                .map(command -> new ServerCommandDto()
-                                        .setText(command.text)
-                                        .setDescription(command.description)
-                                        .setParamText(command.paramText)
-                                        .setParams(new Seq<>(command.params)
-                                                .map(param -> new CommandParamDto()//
-                                                        .setName(param.name)//
-                                                        .setOptional(param.optional)
-                                                        .setVariadic(param.variadic))//
-                                                .list()))
-                                .list();
-
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(commands);
-
-            });
-
-            app.post("commands", context -> {
-                String[] commands = context.bodyAsClass(String[].class);
-                if (commands != null) {
-                    for (var c : commands) {
-                        Log.info("Execute command: " + c);
-                        controller.serverCommandHandler.execute(c, response -> {
-
-                            if (response.type == ResponseType.unknownCommand) {
-
-                                int minDst = 0;
-                                Command closest = null;
-
-                                for (Command command : controller.serverCommandHandler.getHandler()
-                                        .getCommandList()) {
-                                    int dst = Strings.levenshtein(command.text, response.runCommand);
-                                    if (dst < 3 && (closest == null || dst < minDst)) {
-                                        minDst = dst;
-                                        closest = command;
-                                    }
-                                }
-
-                                if (closest != null && !closest.text.equals("yes")) {
-                                    Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
-                                } else {
-                                    Log.err("Invalid command. Type 'help' for help.");
-                                }
-                            } else if (response.type == ResponseType.fewArguments) {
-                                Log.err("Too few command arguments. Usage: " + response.command.text + " "
-                                        + response.command.paramText);
-                            } else if (response.type == ResponseType.manyArguments) {
-                                Log.err("Too many command arguments. Usage: " + response.command.text + " "
-                                        + response.command.paramText);
-                            }
-                        });
-                    }
-                }
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            });
-
-            app.post("say", context -> {
-                if (!Vars.state.isGame()) {
-                    Log.err("Not hosting. Host a game first.");
-                    return;
-                }
-
-                String message = context.body();
-                Call.sendMessage("[]" + message);
-
-                context.contentType(ContentType.TEXT_PLAIN);
-                context.result("Ok");
-            });
-
-            app.get("json", context -> {
-                var data = new HashMap<String, Object>();
-
-                data.put("stats", getStats());
-                data.put("session", Session.get());
-                data.put("hud", HudUtils.menus.asMap());
-                data.put("buildLogs", controller.apiGateway.buildLogs);
-                data.put("isHub", Config.IS_HUB);
-                data.put("ip", Config.SERVER_IP);
-                data.put("units", Groups.unit.size());
-                data.put("enemies", Vars.state.enemies);
-                data.put("tps", Core.graphics.getFramesPerSecond());
-
-                var gameStats = new HashMap<String, Object>();
-
-                gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
-                gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
-                gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
-                gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
-                gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
-                gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
-                gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
-                gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
-
-                data.put("gameStats", gameStats);
-                data.put("locales", Vars.locales);
-
-                var maps = new ArrayList<HashMap<String, String>>();
-                Vars.maps.all().forEach(map -> {
-                    var tags = new HashMap<String, String>();
-                    map.tags.each((key, value) -> tags.put(key, value));
-                    maps.add(tags);
-                });
-                data.put("maps",
-                        Vars.maps.all().map(map -> java.util.Map.of(
-                                "name", map.name(), //
-                                "author", map.author(), //
-                                "file", map.file.absolutePath(),
-                                "tags", map.tags,
-                                "description", map.description(),
-                                "width", map.width,
-                                "height", map.height)).list());
-                data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-                data.put("votes", controller.voteHandler.votes);
-
-                var settings = new HashMap<String, Object>();
-
-                Core.settings.keys().forEach(key -> {
-                    settings.put(key, Core.settings.get(key, null));
-                });
-
-                data.put("settings", settings);
-
-                context.json(data);
-            });
-
-            app.exception(Exception.class, (exception, context) -> {
-                Log.err(exception);
-
-                var result = java.util.Map.of("message", exception.getMessage());
-
-                context.status(500)
-                        .json(result);
-            });
-
-            if (!isUnloaded) {
-                app.start(9999);
-            }
-            System.out.println("Setup http server done");
-        }
     }
 
     private synchronized void host(StartServerDto request) {

@@ -51,6 +51,7 @@ public class HttpServer {
     private static final String MAP_PREVIEW_FILE_NAME = "MapPreview";
 
     private Javalin app;
+    private boolean isUnloaded = false;
 
     private final ServerController controller;
 
@@ -381,7 +382,9 @@ public class HttpServer {
                     .json(result);
         });
 
-        app.start(9999);
+        if (!isUnloaded) {
+            app.start(9999);
+        }
         System.out.println("Setup http server done");
     }
 
@@ -471,6 +474,7 @@ public class HttpServer {
     }
 
     public void unload() {
+        isUnloaded = true;
         if (app != null) {
             app.stop();
         }

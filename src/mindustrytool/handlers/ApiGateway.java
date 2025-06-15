@@ -136,6 +136,7 @@ public class ApiGateway {
         var request = setHeaders(HttpRequest.newBuilder(path("host")))//
                 .header("Content-Type", "text/plain")//
                 .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
+                .timeout(Duration.ofSeconds(45))
                 .build();
 
         try {
@@ -162,6 +163,7 @@ public class ApiGateway {
     public String translate(String text, String targetLanguage) {
         var req = setHeaders(HttpRequest.newBuilder(path("translate/%s".formatted(targetLanguage))))//
                 .POST(HttpRequest.BodyPublishers.ofString(text))//
+                .timeout(Duration.ofSeconds(10))
                 .build();
 
         try {

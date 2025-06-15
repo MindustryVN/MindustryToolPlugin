@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import org.pf4j.Extension;
 
 import arc.util.*;
-import arc.util.Log.LogLevel;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.game.EventType.BlockBuildEndEvent;
@@ -43,8 +42,6 @@ public class ServerController implements MindustryToolPlugin {
 
     @Override
     public void init() {
-
-        Log.level = LogLevel.debug;
 
         eventHandler.init();
         apiGateway.init();

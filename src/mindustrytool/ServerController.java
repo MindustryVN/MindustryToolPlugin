@@ -113,6 +113,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         eventHandler.unload();
         httpServer.unload();
 
+        httpServer = null;
         apiGateway = null;
         serverCommandHandler = null;
         clientCommandHandler = null;

@@ -61,6 +61,7 @@ public class ApiGateway {
             }
 
         }, 0, 10, TimeUnit.SECONDS);
+        
 
         System.out.println("Setup api gateway done");
 

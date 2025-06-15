@@ -273,22 +273,23 @@ public class HttpServer {
 
         app.post("commands", context -> {
             String[] commands = context.bodyAsClass(String[].class);
-            if (commands != null) {
-                for (var c : commands) {
-                    Log.info("Execute command: " + c);
-                    controller.serverCommandHandler.execute(c, response -> {
 
+            if (commands != null) {
+                for (var command : commands) {
+                    Log.info("Execute command: " + command);
+
+                    controller.serverCommandHandler.execute(command, response -> {
                         if (response.type == ResponseType.unknownCommand) {
 
                             int minDst = 0;
                             Command closest = null;
 
-                            for (Command command : controller.serverCommandHandler.getHandler()
-                                    .getCommandList()) {
-                                int dst = Strings.levenshtein(command.text, response.runCommand);
+                            for (Command cmd : controller.serverCommandHandler.getHandler().getCommandList()) {
+                                int dst = Strings.levenshtein(cmd.text, response.runCommand);
+
                                 if (dst < 3 && (closest == null || dst < minDst)) {
                                     minDst = dst;
-                                    closest = command;
+                                    closest = cmd;
                                 }
                             }
 

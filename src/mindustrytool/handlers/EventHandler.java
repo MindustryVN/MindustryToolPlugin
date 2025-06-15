@@ -240,7 +240,15 @@ public class EventHandler {
                 return;
             }
 
-            if (event.tile == null || event.tile.build == null) {
+            var tile = event.tile;
+
+            if (tile == null) {
+                return;
+            }
+
+            var building = event.tile.build;
+
+            if (building == null) {
                 return;
             }
 
@@ -250,8 +258,6 @@ public class EventHandler {
             var team = new TeamDto()//
                     .setColor(player.team().color.toString())
                     .setName(player.team().name);
-
-            var building = event.tile.build;
 
             var buildLog = new BuildLogDto()//
                     .setPlayer(new PlayerDto()//

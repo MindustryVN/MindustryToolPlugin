@@ -7,6 +7,7 @@ import org.pf4j.Extension;
 import org.pf4j.Plugin;
 
 import arc.util.*;
+import arc.util.Log.LogLevel;
 import mindustry.Vars;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.MenuOptionChooseEvent;
@@ -40,6 +41,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
 
     @Override
     public void init() {
+
+        Log.level = LogLevel.debug;
 
         httpServer.init();
         eventHandler.init();

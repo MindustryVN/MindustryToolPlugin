@@ -39,6 +39,7 @@ public class ServerController implements MindustryToolPlugin {
     public HttpServer httpServer = new HttpServer(this);
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
+    public static boolean isUnloaded = false;
 
     @Override
     public void init() {
@@ -111,6 +112,7 @@ public class ServerController implements MindustryToolPlugin {
 
     @Override
     public void unload() {
+        isUnloaded = true;
         Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
         Config.BACKGROUND_SCHEDULER.shutdownNow();
 

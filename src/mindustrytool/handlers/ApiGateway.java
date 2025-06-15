@@ -38,7 +38,7 @@ public class ApiGateway {
     public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);
 
     public void init() {
-        System.out.println("Setup api gateway");
+        Log.info("Setup api gateway");
 
         Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
@@ -62,7 +62,7 @@ public class ApiGateway {
 
         }, 0, 10, TimeUnit.SECONDS);
 
-        System.out.println("Setup api gateway done");
+        Log.info("Setup api gateway done");
 
     }
 

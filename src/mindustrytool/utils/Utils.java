@@ -6,12 +6,17 @@ import mindustry.Vars;
 import mindustry.game.Gamemode;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
+import mindustrytool.ServerController;
 
 public class Utils {
 
     public synchronized static void host(String mapName, String mode) {
+        if (ServerController.isUnloaded){
+            Log.warn("Server unloaded, can not host");
+            return;
+        }
         if (Vars.state.isGame()) {
-            Log.err("Already hosting. Type 'stop' to stop hosting first.");
+            Log.warn("Already hosting. Type 'stop' to stop hosting first.");
             return;
         }
 

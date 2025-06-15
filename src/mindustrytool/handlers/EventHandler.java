@@ -92,7 +92,7 @@ public class EventHandler {
     );
 
     public void init() {
-        System.out.println("Setup event handler");
+        Log.info("Setup event handler");
 
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
@@ -185,7 +185,7 @@ public class EventHandler {
                 }
             }, 0, 5, TimeUnit.SECONDS);
         }
-        System.out.println("Setup event handler done");
+        Log.info("Setup event handler done");
     }
 
     public void unload() {

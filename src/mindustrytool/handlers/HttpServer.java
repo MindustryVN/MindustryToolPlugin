@@ -195,7 +195,7 @@ public class HttpServer {
             }
 
             Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.copy().values().toSeq();
-            
+
             var result = bans.list()//
                     .stream()//
                     .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
@@ -366,6 +366,15 @@ public class HttpServer {
             context.json(data);
         });
 
+        app.exception(Exception.class, (exception, context) -> {
+            Log.err(exception);
+
+            var result = java.util.Map.of("message", exception.getMessage());
+
+            context.status(500)
+                    .json(result);
+        });
+
         app.start(9999);
         System.out.println("Setup http server done");
     }
@@ -428,7 +437,7 @@ public class HttpServer {
                 .setTps(Core.graphics.getFramesPerSecond())//
                 .setHosting(Vars.state.isGame())
                 .setPaused(Vars.state.isPaused())//
-                .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
+                .setKicks(Vars.netServer.admins.kickedIPs.copy().values().toSeq()
                         .select(value -> Time.millis() - value < 0).size)//
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }

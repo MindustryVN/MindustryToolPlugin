@@ -269,7 +269,7 @@ public class EventHandler {
                             .setX(building.x())
                             .setY(building.y())
                             .setLastAccess(building.lastAccessed())
-                            .setName(building.block() != null ? building.block().name : "Unknow"))
+                            .setName(building.block() != null ? building.block().name : "Unknown"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
             ServerController.apiGateway.sendBuildLog(buildLog);

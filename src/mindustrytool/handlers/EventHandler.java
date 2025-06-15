@@ -397,8 +397,6 @@ public class EventHandler {
 
             String chat = Strings.format("[@] => @", player.plainName(), message);
 
-            Log.info(chat);
-
             // Filter all commands
             if (message.startsWith("/")) {
                 return;

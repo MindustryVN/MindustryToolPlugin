@@ -61,7 +61,6 @@ public class ApiGateway {
             }
 
         }, 0, 10, TimeUnit.SECONDS);
-        
 
         System.out.println("Setup api gateway done");
 
@@ -123,6 +122,8 @@ public class ApiGateway {
                 .header("Content-Type", "application/json")//
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
+
+        Log.info(chat);
 
         httpClient.sendAsync(request, BodyHandlers.ofString())
                 .whenComplete((_result, error) -> {

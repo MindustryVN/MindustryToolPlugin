@@ -119,5 +119,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         clientCommandHandler = null;
         apiGateway = null;
         eventHandler = null;
+
+        Log.info("Server controller stopped");
     }
 }

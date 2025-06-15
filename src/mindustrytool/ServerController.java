@@ -46,9 +46,9 @@ public class ServerController implements MindustryToolPlugin {
 
         Log.level = LogLevel.debug;
 
-        httpServer.init();
         eventHandler.init();
         apiGateway.init();
+        httpServer.init();
 
         Config.BACKGROUND_SCHEDULER.schedule(() -> {
             try {

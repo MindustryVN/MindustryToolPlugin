@@ -29,6 +29,12 @@ import mindustrytool.utils.Session;
 
 public class ClientCommandHandler {
 
+    private final ServerController controller;
+
+    public ClientCommandHandler(ServerController controller) {
+        this.controller = controller;
+    }
+
     private static boolean isPreparingForNewWave = false;
     private static short waveVoted = 0;
 
@@ -52,31 +58,31 @@ public class ClientCommandHandler {
                 return;
             }
 
-            Seq<Map> maps = ServerController.voteHandler.getMaps();
+            Seq<Map> maps = controller.voteHandler.getMaps();
 
             if (mapId < 0 || mapId > (maps.size - 1)) {
                 player.sendMessage("[red]Invalid map id");
                 return;
             }
-            if (ServerController.voteHandler.isVoted(player, mapId)) {
+            if (controller.voteHandler.isVoted(player, mapId)) {
                 Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
                         + maps.get(mapId).name());
-                ServerController.voteHandler.removeVote(player, mapId);
+                controller.voteHandler.removeVote(player, mapId);
                 return;
             }
-            ServerController.voteHandler.vote(player, mapId);
+            controller.voteHandler.vote(player, mapId);
             Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
                     + maps.get(mapId).name());
             Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
-                    + ServerController.voteHandler.getVoteCount(mapId) + "/"
-                    + ServerController.voteHandler.getRequire());
+                    + controller.voteHandler.getVoteCount(mapId) + "/"
+                    + controller.voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
-            ServerController.voteHandler.check(mapId);
+            controller.voteHandler.check(mapId);
         });
 
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
-            Seq<Map> maps = ServerController.voteHandler.getMaps();
+            Seq<Map> maps = controller.voteHandler.getMaps();
             int page = 1;
             int maxPage = maps.size / MAPS_PER_PAGE + (maps.size % MAPS_PER_PAGE == 0 ? 0 : 1);
             if (args.length == 0) {
@@ -108,11 +114,11 @@ public class ClientCommandHandler {
         });
 
         handler.<Player>register("servers", "", "Display available servers", (args, player) -> {
-            ServerController.eventHandler.sendServerList(player, 0);
+            controller.eventHandler.sendServerList(player, 0);
         });
 
         handler.<Player>register("hub", "", "Display available servers", (args, player) -> {
-            ServerController.eventHandler.sendHub(player, null);
+            controller.eventHandler.sendHub(player, null);
         });
 
         handler.<Player>register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
@@ -135,7 +141,7 @@ public class ClientCommandHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                MindustryPlayerDto playerData = ServerController.apiGateway.setPlayer(request);
+                MindustryPlayerDto playerData = controller.apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
 
@@ -251,7 +257,7 @@ public class ClientCommandHandler {
         player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
         try {
-            var data = ServerController.apiGateway.host(id);
+            var data = controller.apiGateway.host(id);
             player.sendMessage("[green]Redirecting");
             Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                     .formatted(player.coloredName(), name));
@@ -288,7 +294,7 @@ public class ClientCommandHandler {
                         .setPage(page)//
                         .setSize(size);
 
-                var response = ServerController.apiGateway.getServers(request);
+                var response = controller.apiGateway.getServers(request);
                 var servers = response.getServers();
 
                 PlayerPressCallback invalid = (p, s) -> {

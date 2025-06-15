@@ -28,13 +28,12 @@ import mindustrytoolpluginloader.MindustryToolPlugin;
 @Extension
 public class ServerController extends Plugin implements MindustryToolPlugin {
 
-    public static RtvVoteHandler voteHandler = new RtvVoteHandler();
-    public static EventHandler eventHandler = new EventHandler();
-    public static ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
-    public static ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
-    public static ApiGateway apiGateway = new ApiGateway();
-
-    public HttpServer httpServer = new HttpServer();
+    public RtvVoteHandler voteHandler = new RtvVoteHandler();
+    public EventHandler eventHandler = new EventHandler(this);
+    public ClientCommandHandler clientCommandHandler = new ClientCommandHandler(this);
+    public ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
+    public ApiGateway apiGateway = new ApiGateway(this);
+    public HttpServer httpServer = new HttpServer(this);
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 

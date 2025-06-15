@@ -56,6 +56,12 @@ import java.time.Duration;
 
 public class EventHandler {
 
+    private final ServerController controller;
+
+    public EventHandler(ServerController controller) {
+        this.controller = controller;
+    }
+
     private List<ServerResponseData> servers = new ArrayList<>();
     private List<ServerCore> serverCores = new ArrayList<>();
 
@@ -95,7 +101,7 @@ public class EventHandler {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
-                    var response = ServerController.apiGateway.getServers(request);
+                    var response = controller.apiGateway.getServers(request);
                     servers = response.getServers();
 
                 } catch (Exception e) {
@@ -257,7 +263,7 @@ public class EventHandler {
                             .setName(building.block() != null ? building.block().name : "Unknown"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
-            ServerController.apiGateway.sendBuildLog(buildLog);
+            controller.apiGateway.sendBuildLog(buildLog);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -399,7 +405,7 @@ public class EventHandler {
             }
 
             try {
-                ServerController.apiGateway.sendChatMessage(chat);
+                controller.apiGateway.sendChatMessage(chat);
             } catch (Exception e) {
                 Log.err(e);
             }
@@ -410,9 +416,9 @@ public class EventHandler {
                         var locale = p.locale();
                         try {
                             String translatedMessage = translationCache.get(locale + message,
-                                    key -> ServerController.apiGateway.translate(message, locale));
+                                    key -> controller.apiGateway.translate(message, locale));
                             p.sendMessage("[white][Translation] " + player.name() + "[]: " + translatedMessage);
-                            ServerController.apiGateway.sendChatMessage("[white][Translation] " + player.name() + "[]: "
+                            controller.apiGateway.sendChatMessage("[white][Translation] " + player.name() + "[]: "
                                     + translatedMessage);
 
                         } catch (Exception e) {
@@ -439,7 +445,7 @@ public class EventHandler {
                             .setName(team.name)//
                             .setColor(team.color.toString()));
 
-            ServerController.apiGateway.sendPlayerLeave(request);
+            controller.apiGateway.sendPlayerLeave(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -450,7 +456,7 @@ public class EventHandler {
 
             Session.remove(player);
 
-            ServerController.voteHandler.removeVote(player);
+            controller.voteHandler.removeVote(player);
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
             String chat = Strings.format("@ leaved the server, current players: @", playerName,
@@ -463,7 +469,7 @@ public class EventHandler {
                 }
             }, 10);
 
-            ServerController.apiGateway.sendChatMessage(chat);
+            controller.apiGateway.sendChatMessage(chat);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -473,7 +479,7 @@ public class EventHandler {
         try {
             return serversCache.get("server", ignore -> {
                 var request = new PaginationRequest().setPage(0).setSize(1);
-                var response = ServerController.apiGateway.getServers(request);
+                var response = controller.apiGateway.getServers(request);
                 var servers = response.getServers();
 
                 if (servers.isEmpty()) {
@@ -543,9 +549,9 @@ public class EventHandler {
                             .setName(team.name)//
                             .setColor(team.color.toString()));
 
-            ServerController.apiGateway.sendChatMessage(chat);
+            controller.apiGateway.sendChatMessage(chat);
 
-            var playerData = ServerController.apiGateway.setPlayer(request);
+            var playerData = controller.apiGateway.setPlayer(request);
 
             if (Config.IS_HUB) {
                 sendHub(event.player, playerData.getLoginLink());
@@ -587,7 +593,7 @@ public class EventHandler {
             var size = 8;
             var request = new PaginationRequest().setPage(page).setSize(size);
 
-            var response = ServerController.apiGateway.getServers(request);
+            var response = controller.apiGateway.getServers(request);
             var servers = response.getServers();
 
             PlayerPressCallback invalid = (p, s) -> {
@@ -653,7 +659,7 @@ public class EventHandler {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
-                var data = ServerController.apiGateway.host(id);
+                var data = controller.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));

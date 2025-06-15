@@ -52,6 +52,12 @@ public class HttpServer {
 
     private Javalin app;
 
+    private final ServerController controller;
+
+    public HttpServer(ServerController controller) {
+        this.controller = controller;
+    }
+
     public void init() {
         System.out.println("Setup http server");
         app = Javalin.create(config -> {
@@ -141,7 +147,7 @@ public class HttpServer {
 
             if (player != null) {
                 HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                ServerController.eventHandler.setPlayerData(request, player);
+                controller.eventHandler.setPlayerData(request, player);
             }
             context.contentType(ContentType.TEXT_PLAIN);
             context.result("Ok");
@@ -233,12 +239,12 @@ public class HttpServer {
         });
 
         app.get("commands", context -> {
-            if (ServerController.serverCommandHandler.getHandler() == null) {
+            if (controller.serverCommandHandler.getHandler() == null) {
                 context.json(List.of());
                 return;
             }
 
-            var commands = ServerController.serverCommandHandler.getHandler()//
+            var commands = controller.serverCommandHandler.getHandler()//
                     .getCommandList()
                     .map(command -> new ServerCommandDto()
                             .setText(command.text)
@@ -262,14 +268,14 @@ public class HttpServer {
             if (commands != null) {
                 for (var c : commands) {
                     Log.info("Execute command: " + c);
-                    ServerController.serverCommandHandler.execute(c, response -> {
+                    controller.serverCommandHandler.execute(c, response -> {
 
                         if (response.type == ResponseType.unknownCommand) {
 
                             int minDst = 0;
                             Command closest = null;
 
-                            for (Command command : ServerController.serverCommandHandler.getHandler()
+                            for (Command command : controller.serverCommandHandler.getHandler()
                                     .getCommandList()) {
                                 int dst = Strings.levenshtein(command.text, response.runCommand);
                                 if (dst < 3 && (closest == null || dst < minDst)) {
@@ -316,7 +322,7 @@ public class HttpServer {
             data.put("stats", getStats());
             data.put("session", Session.get());
             data.put("hud", HudUtils.menus.asMap());
-            data.put("buildLogs", ServerController.apiGateway.buildLogs);
+            data.put("buildLogs", controller.apiGateway.buildLogs);
             data.put("isHub", Config.IS_HUB);
             data.put("ip", Config.SERVER_IP);
             data.put("units", Groups.unit.size());
@@ -353,7 +359,7 @@ public class HttpServer {
                             "width", map.width,
                             "height", map.height)).list());
             data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-            data.put("votes", ServerController.voteHandler.votes);
+            data.put("votes", controller.voteHandler.votes);
 
             var settings = new HashMap<String, Object>();
 
@@ -393,7 +399,7 @@ public class HttpServer {
             String[] commandsArray = commands.split("\n");
             for (var command : commandsArray) {
                 Log.info("Host command: " + command);
-                ServerController.serverCommandHandler.execute(command, (_ignore) -> {
+                controller.serverCommandHandler.execute(command, (_ignore) -> {
                 });
             }
             return;

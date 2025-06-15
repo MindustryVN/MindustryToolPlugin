@@ -25,6 +25,12 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
+    final ServerController controller;
+
+    public ApiGateway(ServerController controller) {
+        this.controller = controller;
+    }
+
     private final HttpClient httpClient = HttpClient.newBuilder()//
             .connectTimeout(Duration.ofSeconds(2))//
             .build();

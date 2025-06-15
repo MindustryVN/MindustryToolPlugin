@@ -35,10 +35,17 @@ import mindustry.net.Administration.Config;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
+import mindustrytool.ServerController;
 import mindustrytool.type.PrevCommand;
 import mindustrytool.utils.Utils;
 
 public class ServerCommandHandler {
+
+    final ServerController controller;
+
+    public ServerCommandHandler(ServerController controller) {
+        this.controller = controller;
+    }
 
     @Getter
     private CommandHandler handler;

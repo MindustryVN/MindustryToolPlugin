@@ -9,6 +9,7 @@ import org.pf4j.Plugin;
 import arc.util.*;
 import arc.util.Log.LogLevel;
 import mindustry.Vars;
+import mindustry.core.GameState.State;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.MenuOptionChooseEvent;
 import mindustry.game.EventType.PlayerChatEvent;
@@ -17,6 +18,7 @@ import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.EventType.TapEvent;
+import mindustry.gen.Groups;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.HttpServer;
@@ -58,6 +60,13 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                 }
             } catch (Exception e) {
                 Log.err(e);
+            }
+        }, 10, TimeUnit.SECONDS);
+
+        Config.BACKGROUND_SCHEDULER.schedule(() -> {
+            if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                Vars.state.set(State.paused);
+                Log.info("No player: paused");
             }
         }, 10, TimeUnit.SECONDS);
 

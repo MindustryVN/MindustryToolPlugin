@@ -3,7 +3,6 @@ package mindustrytool;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.pf4j.Extension;
 import org.pf4j.Plugin;
 
 import arc.util.*;
@@ -29,7 +28,6 @@ import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Session;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
-@Extension
 public class ServerController extends Plugin implements MindustryToolPlugin {
 
     public ApiGateway apiGateway = new ApiGateway(this);

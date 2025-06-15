@@ -77,6 +77,7 @@ public class HttpServer {
 
             }));
 
+            config.useVirtualThreads = true;
             config.registerPlugin(new RouteOverviewPlugin());
         });
 

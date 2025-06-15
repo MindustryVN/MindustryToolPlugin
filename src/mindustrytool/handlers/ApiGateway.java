@@ -34,6 +34,7 @@ public class ApiGateway {
 
     private final HttpClient httpClient = HttpClient.newBuilder()//
             .connectTimeout(Duration.ofSeconds(2))//
+            .executor(Config.BACKGROUND_TASK_EXECUTOR)
             .build();
 
     public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);

@@ -240,24 +240,21 @@ public class HttpServer {
         });
 
         app.get("commands", context -> {
-            if (controller.serverCommandHandler.getHandler() == null) {
-                context.json(List.of());
-                return;
-            }
-
-            var commands = controller.serverCommandHandler.getHandler()//
-                    .getCommandList()
-                    .map(command -> new ServerCommandDto()
-                            .setText(command.text)
-                            .setDescription(command.description)
-                            .setParamText(command.paramText)
-                            .setParams(new Seq<>(command.params)
-                                    .map(param -> new CommandParamDto()//
-                                            .setName(param.name)//
-                                            .setOptional(param.optional)
-                                            .setVariadic(param.variadic))//
-                                    .list()))
-                    .list();
+            var commands = controller.serverCommandHandler.getHandler() == null
+                    ? List.of()
+                    : controller.serverCommandHandler.getHandler()//
+                            .getCommandList()
+                            .map(command -> new ServerCommandDto()
+                                    .setText(command.text)
+                                    .setDescription(command.description)
+                                    .setParamText(command.paramText)
+                                    .setParams(new Seq<>(command.params)
+                                            .map(param -> new CommandParamDto()//
+                                                    .setName(param.name)//
+                                                    .setOptional(param.optional)
+                                                    .setVariadic(param.variadic))//
+                                            .list()))
+                            .list();
 
             context.contentType(ContentType.APPLICATION_JSON);
             context.json(commands);

@@ -136,13 +136,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         HudUtils.menus = null;
         JsonUtils.objectMapper = null;
 
-        httpServer = null;
-        apiGateway = null;
-        serverCommandHandler = null;
-        clientCommandHandler = null;
-        apiGateway = null;
-        eventHandler = null;
-
         Log.info("Server controller stopped");
     }
 }

@@ -477,20 +477,25 @@ public class EventHandler {
 
     public synchronized ServerResponseData getTopServer() throws IOException {
         try {
-            return serversCache.get("server", ignore -> {
-                var request = new PaginationRequest().setPage(0).setSize(1);
-                var response = controller.apiGateway.getServers(request);
-                var servers = response.getServers();
+            return serversCache.get("server", _ignore -> {
+                try {
+                    var request = new PaginationRequest().setPage(0).setSize(1);
+                    var response = controller.apiGateway.getServers(request);
+                    var servers = response.getServers();
 
-                if (servers.isEmpty()) {
+                    if (servers.isEmpty()) {
+                        return null;
+                    }
+
+                    if (servers.get(0).getId() == null) {
+                        return null;
+                    }
+
+                    return servers.get(0);
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return null;
                 }
-
-                if (servers.get(0).getId() == null) {
-                    return null;
-                }
-
-                return servers.get(0);
             });
         } catch (Exception e) {
             e.printStackTrace();

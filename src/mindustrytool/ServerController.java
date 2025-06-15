@@ -125,16 +125,16 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             e.printStackTrace();
         }
 
+        eventHandler.unload();
+        httpServer.unload();
+        clientCommandHandler.unload();
+        serverCommandHandler.unload();
+
         Session.clear();
 
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
         JsonUtils.objectMapper = null;
-
-        eventHandler.unload();
-        httpServer.unload();
-        clientCommandHandler.unload();
-        serverCommandHandler.unload();
 
         httpServer = null;
         apiGateway = null;

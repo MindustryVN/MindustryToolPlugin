@@ -62,7 +62,11 @@ public class HttpServer {
     public void init() {
         synchronized (this) {
             System.out.println("Setup http server");
-            
+
+            if (app != null) {
+                throw new RuntimeException("Already init");
+            }
+
             app = Javalin.create(config -> {
                 config.showJavalinBanner = false;
                 config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {

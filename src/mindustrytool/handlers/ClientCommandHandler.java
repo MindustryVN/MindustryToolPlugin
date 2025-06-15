@@ -34,6 +34,7 @@ public class ClientCommandHandler {
 
     public ClientCommandHandler(ServerController controller) {
         this.controller = controller;
+        Log.info("Client command handler created");
     }
 
     private static boolean isPreparingForNewWave = false;

@@ -41,6 +41,10 @@ public class ServerController implements MindustryToolPlugin {
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
 
+    public ServerController() {
+        Log.info("Server controller created");
+    }
+
     @Override
     public void init() {
 

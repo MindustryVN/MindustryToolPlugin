@@ -24,6 +24,7 @@ public class ServerCommandHandler {
 
     public ServerCommandHandler(ServerController controller) {
         this.controller = controller;
+        Log.info("Server command handler created");
     }
 
     @Getter

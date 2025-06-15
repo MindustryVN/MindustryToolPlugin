@@ -35,15 +35,13 @@ import mindustry.net.Administration.Config;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
+import mindustrytool.type.PrevCommand;
 import mindustrytool.utils.Utils;
 
 public class ServerCommandHandler {
 
     @Getter
     private CommandHandler handler;
-
-    private static record PrevCommand(String command, Consumer<CommandResponse> callback) {
-    }
 
     private List<PrevCommand> prevCommands = new ArrayList<>();
 
@@ -58,7 +56,7 @@ public class ServerCommandHandler {
     public void registerCommands(CommandHandler handler) {
         this.handler = handler;
 
-        prevCommands.forEach(prev -> prev.callback.accept(handler.handleMessage(prev.command)));
+        prevCommands.forEach(prev -> prev.callback().accept(handler.handleMessage(prev.command())));
 
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {

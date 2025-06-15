@@ -5,9 +5,8 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class BuildLogDto {
-    private String message;
-    private PlayerDto player;
-    private BuildingDto building;
-
+public class CommandParamDto {
+    public String name;
+    public boolean optional;
+    public boolean variadic;
 }

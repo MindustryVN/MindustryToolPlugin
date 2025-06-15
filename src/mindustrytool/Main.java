@@ -2,6 +2,7 @@ package mindustrytool;
 
 import org.pf4j.Plugin;
 
+import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Session;
 
 public class Main extends Plugin {
@@ -14,6 +15,9 @@ public class Main extends Plugin {
         Config.BACKGROUND_SCHEDULER.shutdownNow();
 
         Session.clear();
+
+        HudUtils.menus.invalidateAll();
+        HudUtils.menus = null;
 
         ServerController.eventHandler.unload();
         ServerController.httpServer.unload();

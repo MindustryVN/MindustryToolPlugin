@@ -17,8 +17,6 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
 import arc.util.Timer.Task;
-import lombok.Data;
-import lombok.experimental.Accessors;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
@@ -37,16 +35,17 @@ import mindustry.gen.Player;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
+import mindustrytool.type.BuildingDto;
+import mindustrytool.type.HudOption;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
 import mindustrytool.type.PlayerDto;
-import mindustrytool.type.ServerDto;
+import mindustrytool.type.PlayerPressCallback;
+import mindustrytool.type.ServerCore;
 import mindustrytool.type.TeamDto;
-import mindustrytool.type.ServerDto.ResponseData;
+import mindustrytool.type.ServerResponseData;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Session;
-import mindustrytool.utils.HudUtils.Option;
-import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
@@ -54,11 +53,10 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
 
 import java.time.Duration;
-import java.time.Instant;
 
 public class EventHandler {
 
-    private List<ResponseData> servers = new ArrayList<>();
+    private List<ServerResponseData> servers = new ArrayList<>();
     private List<ServerCore> serverCores = new ArrayList<>();
 
     int page = 0;
@@ -67,25 +65,12 @@ public class EventHandler {
     int size = 40;
     int columns = size / rows;
 
-    public static record ServerCore(ResponseData server, int x, int y) {
-    }
-
-    @Data
-    @Accessors(chain = true)
-    public static class PlayerMetaData {
-        Player player;
-        long exp;
-        String name;
-        boolean isLoggedIn;
-        Instant createdAt = Instant.now();
-    }
-
     private final Cache<String, String> translationCache = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(2))
             .maximumSize(1000)
             .build();
 
-    private final Cache<String, ServerDto.ResponseData> serversCache = Caffeine.newBuilder()
+    private final Cache<String, ServerResponseData> serversCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
             .maximumSize(10)
             .build();
@@ -223,12 +208,12 @@ public class EventHandler {
         var tapY = event.tile.y;
 
         for (var core : serverCores) {
-            if (tapX >= core.x - tapSize //
-                    && tapX <= core.x + tapSize //
-                    && tapY >= core.y - tapSize
-                    && tapY <= core.y + tapSize//
+            if (tapX >= core.x() - tapSize //
+                    && tapX <= core.x() + tapSize //
+                    && tapY >= core.y() - tapSize
+                    && tapY <= core.y() + tapSize//
             ) {
-                onServerChoose(event.player, core.server.id.toString(), core.server.name);
+                onServerChoose(event.player, core.server().id.toString(), core.server().name);
             }
         }
     }
@@ -265,7 +250,7 @@ public class EventHandler {
                             .setName(playerName)
                             .setTeam(team)
                             .setUuid(player.uuid()))
-                    .setBuilding(new BuildLogDto.BuildingDto()//
+                    .setBuilding(new BuildingDto()//
                             .setX(building.x())
                             .setY(building.y())
                             .setLastAccess(building.lastAccessed())
@@ -484,7 +469,7 @@ public class EventHandler {
         }
     }
 
-    public synchronized ServerDto.ResponseData getTopServer() throws IOException {
+    public synchronized ServerResponseData getTopServer() throws IOException {
         try {
             return serversCache.get("server", ignore -> {
                 var request = new PaginationRequest().setPage(0).setSize(1);
@@ -574,7 +559,7 @@ public class EventHandler {
     }
 
     public void sendHub(Player player, String loginLink) {
-        var options = new ArrayList<Option>();
+        var options = new ArrayList<HudOption>();
 
         if (loginLink != null && !loginLink.isEmpty()) {
             options.add(HudUtils.option((trigger, state) -> {
@@ -610,9 +595,9 @@ public class EventHandler {
                 Call.infoToast(p.con, "Please don't click there", 10f);
             };
 
-            List<List<HudUtils.Option>> options = new ArrayList<>();
+            List<List<HudOption>> options = new ArrayList<>();
 
-            servers.stream().sorted(Comparator.comparing(ResponseData::getPlayers).reversed()).forEach(server -> {
+            servers.stream().sorted(Comparator.comparing(ServerResponseData::getPlayers).reversed()).forEach(server -> {
                 PlayerPressCallback valid = (p, s) -> onServerChoose(p, server.getId().toString(),
                         server.getName());
 

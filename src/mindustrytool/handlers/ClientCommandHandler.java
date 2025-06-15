@@ -18,12 +18,13 @@ import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
+import mindustrytool.type.HudOption;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
 import mindustrytool.type.PlayerDto;
+import mindustrytool.type.PlayerPressCallback;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.HudUtils.PlayerPressCallback;
 import mindustrytool.utils.Session;
 
 public class ClientCommandHandler {
@@ -295,7 +296,7 @@ public class ClientCommandHandler {
                     sendRedirectServerList(p, (int) s);
                 };
 
-                List<List<HudUtils.Option>> options = new ArrayList<>(List.of(
+                List<List<HudOption>> options = new ArrayList<>(List.of(
                         List.of(HudUtils.option(invalid, "[#FFD700]Server name"),
                                 HudUtils.option(invalid, "[#FFD700]Players playing")),
                         List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"),

@@ -43,13 +43,15 @@ public class ServerController implements MindustryToolPlugin {
         apiGateway.init();
 
         Timer.schedule(() -> {
-            if (!Vars.state.isGame()) {
-                Log.info("Server not hosting, auto host");
-                try {
-                    apiGateway.host(SERVER_ID.toString());
-                } catch (Exception e) {
-                    Log.err(e);
+            try {
+                if (!Vars.state.isGame()) {
+                    Log.info("Server not hosting, auto host");
+                    if (apiGateway != null) {
+                        apiGateway.host(SERVER_ID.toString());
+                    }
                 }
+            } catch (Exception e) {
+                Log.err(e);
             }
         }, 10);
 

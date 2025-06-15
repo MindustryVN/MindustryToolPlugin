@@ -110,12 +110,13 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
 
-        ServerController.eventHandler.unload();
+        eventHandler.unload();
+        httpServer.unload();
 
-        ServerController.apiGateway = null;
-        ServerController.serverCommandHandler = null;
-        ServerController.clientCommandHandler = null;
-        ServerController.apiGateway = null;
-        ServerController.eventHandler = null;
+        apiGateway = null;
+        serverCommandHandler = null;
+        clientCommandHandler = null;
+        apiGateway = null;
+        eventHandler = null;
     }
 }

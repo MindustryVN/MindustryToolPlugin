@@ -46,6 +46,11 @@ public class ServerController implements MindustryToolPlugin {
     }
 
     @Override
+    protected void finalize() throws Throwable {
+        System.out.println("Finalizing " + this);
+    }
+
+    @Override
     public void init() {
 
         eventHandler.init();

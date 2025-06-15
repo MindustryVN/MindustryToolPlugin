@@ -26,6 +26,7 @@ import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Session;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
@@ -128,6 +129,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
 
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
+        JsonUtils.objectMapper = null;
 
         eventHandler.unload();
         httpServer.unload();

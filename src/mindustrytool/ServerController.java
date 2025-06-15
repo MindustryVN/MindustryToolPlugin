@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.pf4j.Extension;
+import org.pf4j.Plugin;
 
 import arc.util.*;
 import mindustry.Vars;
@@ -29,7 +30,7 @@ import mindustrytool.utils.Session;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
 @Extension
-public class ServerController implements MindustryToolPlugin {
+public class ServerController extends Plugin implements MindustryToolPlugin {
 
     public ApiGateway apiGateway = new ApiGateway(this);
     public RtvVoteHandler voteHandler = new RtvVoteHandler();
@@ -120,7 +121,7 @@ public class ServerController implements MindustryToolPlugin {
     }
 
     @Override
-    public void unload() {
+    public void stop() {
         isUnloaded = true;
         Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
         Config.BACKGROUND_SCHEDULER.shutdownNow();

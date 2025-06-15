@@ -10,13 +10,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import arc.Core;
 import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
-import arc.util.Timer.Task;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
@@ -81,7 +82,7 @@ public class EventHandler {
             .maximumSize(10)
             .build();
 
-    private Task updateServerTask, updateServerCore;
+    private ScheduledFuture<?> updateServerTask, updateServerCore;
 
     private final List<String> icons = List.of(//
             "", "", "", "", "", "", "", "", "", "", //
@@ -97,7 +98,7 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
 
-            updateServerTask = Timer.schedule(() -> {
+            updateServerTask = Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
@@ -107,9 +108,9 @@ public class EventHandler {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 0, 30);
+            }, 0, 30, TimeUnit.SECONDS);
 
-            updateServerCore = Timer.schedule(() -> {
+            updateServerCore = Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var map = Vars.state.map;
 
@@ -183,18 +184,18 @@ public class EventHandler {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 0, 5);
+            }, 0, 5, TimeUnit.SECONDS);
         }
         System.out.println("Setup event handler done");
     }
 
     public void unload() {
         if (updateServerTask != null) {
-            updateServerTask.cancel();
+            updateServerTask.cancel(true);
         }
 
         if (updateServerCore != null) {
-            updateServerCore.cancel();
+            updateServerCore.cancel(true);
         }
     }
 
@@ -462,12 +463,12 @@ public class EventHandler {
             String chat = Strings.format("@ leaved the server, current players: @", playerName,
                     Math.max(Groups.player.size() - 1, 0));
 
-            Timer.schedule(() -> {
+            Config.BACKGROUND_SCHEDULER.schedule(() -> {
                 if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                     Vars.state.set(State.paused);
                     Log.info("No player: paused");
                 }
-            }, 10);
+            }, 10, TimeUnit.SECONDS);
 
             controller.apiGateway.sendChatMessage(chat);
         } catch (Exception e) {

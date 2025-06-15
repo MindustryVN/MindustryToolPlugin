@@ -1,6 +1,7 @@
 package mindustrytool;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.pf4j.Extension;
 import org.pf4j.Plugin;
@@ -44,7 +45,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         eventHandler.init();
         apiGateway.init();
 
-        Timer.schedule(() -> {
+        Config.BACKGROUND_SCHEDULER.schedule(() -> {
             try {
                 if (!Vars.state.isGame()) {
                     Log.info("Server not hosting, auto host");
@@ -55,7 +56,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             } catch (Exception e) {
                 Log.err(e);
             }
-        }, 10);
+        }, 10, TimeUnit.SECONDS);
 
         Log.info("Server controller initialized.");
     }

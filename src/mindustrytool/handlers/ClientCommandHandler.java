@@ -2,14 +2,13 @@ package mindustrytool.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.CommandHandler;
 import arc.util.Log;
 import arc.util.Strings;
-import arc.util.Timer;
-import arc.util.Timer.Task;
 import lombok.Getter;
 import mindustry.Vars;
 import mindustry.gen.Call;
@@ -193,23 +192,13 @@ public class ClientCommandHandler {
                     + (req - cur) + " votes missing)");
 
             if (!isPreparingForNewWave)
-                Timer.schedule(new Task() {
-                    @Override
-                    public void run() {
-                        Call.sendMessage("[scarlet]Vote for "
-                                + (waveVoted == 1 ? "sending a new wave"
-                                        : "skipping [scarlet]" + waveVoted + "[] waves")
-                                + " failed! []Not enough votes.");
-                        waveVoted = 0;
-                        cancel();
-                    }
-
-                    @Override
-                    public void cancel() {
-                        Session.each(p -> p.votedVNW = false);
-                        super.cancel();
-                    }
-                }, 60);
+                Config.BACKGROUND_SCHEDULER.schedule(() -> {
+                    Call.sendMessage("[scarlet]Vote for "
+                            + (waveVoted == 1 ? "sending a new wave"
+                                    : "skipping [scarlet]" + waveVoted + "[] waves")
+                            + " failed! []Not enough votes.");
+                    waveVoted = 0;
+                }, 60, TimeUnit.SECONDS);
 
             if (cur < req)
                 return;
@@ -232,7 +221,9 @@ public class ClientCommandHandler {
                 Vars.state.wave += waveVoted;
         });
 
-        handler.<Player>register("redirect", "", "Redirect all player to server", (args, player) -> {
+        handler.<Player>register("redirect", "", "Redirect all player to server", (args, player) ->
+
+        {
             if (player.admin) {
                 sendRedirectServerList(player, 0);
             } else {

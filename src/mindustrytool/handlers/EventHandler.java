@@ -302,21 +302,19 @@ public class EventHandler {
     }
 
     public void onPlayerConnect(PlayerConnect event) {
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            try {
-                var player = event.player;
+        try {
+            var player = event.player;
 
-                for (int i = 0; i < player.name().length(); i++) {
-                    char ch = player.name().charAt(i);
-                    if (ch <= '\u001f') {
-                        player.kick("Invalid name");
-                    }
+            for (int i = 0; i < player.name().length(); i++) {
+                char ch = player.name().charAt(i);
+                if (ch <= '\u001f') {
+                    player.kick("Invalid name");
                 }
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupCustomServerDiscovery() {
@@ -397,7 +395,6 @@ public class EventHandler {
 
     public void onPlayerChat(PlayerChatEvent event) {
         try {
-
             Player player = event.player;
             String message = event.message;
 
@@ -439,52 +436,46 @@ public class EventHandler {
     }
 
     public void onPlayerLeave(PlayerLeave event) {
+        try {
+            var player = event.player;
+            var team = player.team();
+            var request = new PlayerDto()//
+                    .setName(player.coloredName())//
+                    .setIp(player.ip())//
+                    .setLocale(player.locale())//
+                    .setUuid(player.uuid())//
+                    .setTeam(new TeamDto()//
+                            .setName(team.name)//
+                            .setColor(team.color.toString()));
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            ServerController.apiGateway.sendPlayerLeave(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            try {
-                var player = event.player;
-                var team = player.team();
-                var request = new PlayerDto()//
-                        .setName(player.coloredName())//
-                        .setIp(player.ip())//
-                        .setLocale(player.locale())//
-                        .setUuid(player.uuid())//
-                        .setTeam(new TeamDto()//
-                                .setName(team.name)//
-                                .setColor(team.color.toString()));
+        try {
 
-                ServerController.apiGateway.sendPlayerLeave(request);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            Player player = event.player;
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            try {
+            Session.remove(player);
 
-                Player player = event.player;
+            ServerController.voteHandler.removeVote(player);
 
-                Session.remove(player);
+            String playerName = event.player != null ? event.player.plainName() : "Unknown";
+            String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                    Math.max(Groups.player.size() - 1, 0));
 
-                ServerController.voteHandler.removeVote(player);
+            Timer.schedule(() -> {
+                if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                    Vars.state.set(State.paused);
+                    Log.info("No player: paused");
+                }
+            }, 10);
 
-                String playerName = event.player != null ? event.player.plainName() : "Unknown";
-                String chat = Strings.format("@ leaved the server, current players: @", playerName,
-                        Math.max(Groups.player.size() - 1, 0));
-
-                Timer.schedule(() -> {
-                    if (!Vars.state.isPaused() && Groups.player.size() == 0) {
-                        Vars.state.set(State.paused);
-                        Log.info("No player: paused");
-                    }
-                }, 10);
-
-                ServerController.apiGateway.sendChatMessage(chat);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            ServerController.apiGateway.sendChatMessage(chat);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public synchronized ServerDto.ResponseData getTopServer() throws IOException {
@@ -511,86 +502,69 @@ public class EventHandler {
     }
 
     public void onPlayerJoin(PlayerJoin event) {
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-            try {
-                if (Vars.state.isPaused()) {
-                    Vars.state.set(State.playing);
-                    Log.info("Player join: unpaused");
-                }
-
-                var player = event.player;
-
-                Session.put(player);
-
-                if (Config.IS_HUB) {
-                    var serverData = getTopServer();
-
-                    if (serverData != null //
-                            && !serverData.getId().equals(ServerController.SERVER_ID)
-                            && serverData.players > 0//
-                    ) {
-                        var options = List.of(//
-                                HudUtils.option((p, state) -> {
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
-                                }, "[red]No"),
-                                HudUtils.option((p, state) -> {
-                                    onServerChoose(p, serverData.id.toString(), serverData.name);
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
-                                }, "[green]Yes"));
-                        HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
-                                "Do you want to go to server: " + serverData.getName(), null, options);
-                    }
-                }
-
-                PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
-
-                if (target != null) {
-                    Vars.netServer.admins.unAdminPlayer(target.id);
-                }
-
-                String playerName = player != null ? player.plainName() : "Unknown";
-                String chat = Strings.format("@ joined the server, current players: @", playerName,
-                        Groups.player.size());
-
-                var team = player.team();
-                var request = new PlayerDto()//
-                        .setName(player.coloredName())//
-                        .setIp(player.ip())//
-                        .setLocale(player.locale())//
-                        .setUuid(player.uuid())//
-                        .setTeam(new TeamDto()//
-                                .setName(team.name)//
-                                .setColor(team.color.toString()));
-
-                ServerController.apiGateway.sendChatMessage(chat);
-
-                var playerData = ServerController.apiGateway.setPlayer(request);
-
-                if (Config.IS_HUB) {
-                    sendHub(event.player, playerData.getLoginLink());
-                }
-
-                var isAdmin = playerData.isAdmin();
-
-                addPlayer(playerData, player);
-
-                Player playert = Groups.player.find(p -> p.getInfo() == target);
-
-                if (target != null) {
-                    if (isAdmin) {
-                        Vars.netServer.admins.adminPlayer(target.id,
-                                playert == null ? target.adminUsid : playert.usid());
-                    } else {
-                        Vars.netServer.admins.unAdminPlayer(target.id);
-                    }
-                    if (playert != null)
-                        playert.admin = isAdmin;
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            if (Vars.state.isPaused()) {
+                Vars.state.set(State.playing);
+                Log.info("Player join: unpaused");
             }
-        });
+
+            var player = event.player;
+
+            Session.put(player);
+
+            if (Config.IS_HUB) {
+                var serverData = getTopServer();
+
+                if (serverData != null //
+                        && !serverData.getId().equals(ServerController.SERVER_ID)
+                        && serverData.players > 0//
+                ) {
+                    var options = List.of(//
+                            HudUtils.option((p, state) -> {
+                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                            }, "[red]No"),
+                            HudUtils.option((p, state) -> {
+                                onServerChoose(p, serverData.id.toString(), serverData.name);
+                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                            }, "[green]Yes"));
+                    HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
+                            "Do you want to go to server: " + serverData.getName(), null, options);
+                }
+            }
+
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
+
+            if (target != null) {
+                Vars.netServer.admins.unAdminPlayer(target.id);
+            }
+
+            String playerName = player != null ? player.plainName() : "Unknown";
+            String chat = Strings.format("@ joined the server, current players: @", playerName,
+                    Groups.player.size());
+
+            var team = player.team();
+            var request = new PlayerDto()//
+                    .setName(player.coloredName())//
+                    .setIp(player.ip())//
+                    .setLocale(player.locale())//
+                    .setUuid(player.uuid())//
+                    .setTeam(new TeamDto()//
+                            .setName(team.name)//
+                            .setColor(team.color.toString()));
+
+            ServerController.apiGateway.sendChatMessage(chat);
+
+            var playerData = ServerController.apiGateway.setPlayer(request);
+
+            if (Config.IS_HUB) {
+                sendHub(event.player, playerData.getLoginLink());
+            }
+
+            setPlayerData(playerData, player);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendHub(Player player, String loginLink) {
@@ -684,7 +658,6 @@ public class EventHandler {
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
-
             try {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
@@ -715,15 +688,31 @@ public class EventHandler {
         });
     }
 
-    public void addPlayer(MindustryPlayerDto playerData, Player player) {
+    public void setPlayerData(MindustryPlayerDto playerData, Player player) {
         var uuid = playerData.getUuid();
         var exp = playerData.getExp();
         var name = playerData.getName();
         var isLoggedIn = playerData.getLoginLink() == null;
 
+        PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
+        var isAdmin = playerData.isAdmin();
+
         if (uuid == null) {
             Log.warn("Player with null uuid: " + playerData);
             return;
+        }
+
+        Player playert = Groups.player.find(p -> p.getInfo() == target);
+
+        if (target != null) {
+            if (isAdmin) {
+                Vars.netServer.admins.adminPlayer(target.id,
+                        playert == null ? target.adminUsid : playert.usid());
+            } else {
+                Vars.netServer.admins.unAdminPlayer(target.id);
+            }
+            if (playert != null)
+                playert.admin = isAdmin;
         }
 
         if (isLoggedIn) {

@@ -141,7 +141,7 @@ public class HttpServer {
 
             if (player != null) {
                 HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
-                ServerController.eventHandler.addPlayer(request, player);
+                ServerController.eventHandler.setPlayerData(request, player);
             }
             context.contentType(ContentType.TEXT_PLAIN);
             context.result("Ok");

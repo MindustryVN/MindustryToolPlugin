@@ -2,10 +2,7 @@ package mindustrytool;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class Config {
 
@@ -19,13 +16,7 @@ public class Config {
 
         public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
 
-        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(
-                        1,
-                        4,
-                        0L, TimeUnit.MILLISECONDS,
-                        new LinkedBlockingQueue<>(100),
-                        Executors.defaultThreadFactory(),
-                        new ThreadPoolExecutor.AbortPolicy());
+        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = Executors.newCachedThreadPool();
 
         public static final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
                         .newSingleThreadScheduledExecutor();

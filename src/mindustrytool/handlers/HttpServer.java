@@ -81,6 +81,10 @@ public class HttpServer {
                 config.registerPlugin(new RouteOverviewPlugin());
             });
 
+            app.before(context -> {
+                Log.debug("[" + context.method().name() + "] " + context.fullUrl());
+            });
+
             app.get("stats", context -> {
                 context.contentType(ContentType.APPLICATION_JSON);
                 context.json(getStats());

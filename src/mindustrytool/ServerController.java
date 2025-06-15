@@ -3,6 +3,7 @@ package mindustrytool;
 import java.util.UUID;
 
 import org.pf4j.Extension;
+import org.pf4j.Plugin;
 
 import arc.util.*;
 import mindustry.Vars;
@@ -21,17 +22,19 @@ import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.Session;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
 @Extension
-public class ServerController implements MindustryToolPlugin {
+public class ServerController extends Plugin implements MindustryToolPlugin {
 
     public static RtvVoteHandler voteHandler = new RtvVoteHandler();
     public static EventHandler eventHandler = new EventHandler();
     public static ClientCommandHandler clientCommandHandler = new ClientCommandHandler();
     public static ServerCommandHandler serverCommandHandler = new ServerCommandHandler();
     public static ApiGateway apiGateway = new ApiGateway();
-    public static HttpServer httpServer = new HttpServer();
+
+    public HttpServer httpServer = new HttpServer();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
 
@@ -95,5 +98,24 @@ public class ServerController implements MindustryToolPlugin {
                 Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
             }
         });
+    }
+
+    @Override
+    public void stop() {
+        Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
+        Config.BACKGROUND_SCHEDULER.shutdownNow();
+
+        Session.clear();
+
+        HudUtils.menus.invalidateAll();
+        HudUtils.menus = null;
+
+        ServerController.eventHandler.unload();
+
+        ServerController.apiGateway = null;
+        ServerController.serverCommandHandler = null;
+        ServerController.clientCommandHandler = null;
+        ServerController.apiGateway = null;
+        ServerController.eventHandler = null;
     }
 }

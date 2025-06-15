@@ -404,20 +404,20 @@ public class EventHandler {
             Player player = event.player;
             String message = event.message;
 
+            String chat = Strings.format("[@] => @", player.plainName(), message);
+
+            Log.info(chat);
+
             // Filter all commands
             if (message.startsWith("/")) {
                 return;
             }
 
-            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-                String chat = Strings.format("[@] => @", player.plainName(), message);
-
-                try {
-                    ServerController.apiGateway.sendChatMessage(chat);
-                } catch (Exception e) {
-                    Log.err(e);
-                }
-            });
+            try {
+                ServerController.apiGateway.sendChatMessage(chat);
+            } catch (Exception e) {
+                Log.err(e);
+            }
 
             Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
                 Groups.player.each(p -> {

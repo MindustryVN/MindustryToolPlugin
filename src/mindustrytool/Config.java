@@ -3,6 +3,9 @@ package mindustrytool;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Config {
 
@@ -16,7 +19,9 @@ public class Config {
 
         public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
 
-        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = Executors.newCachedThreadPool();
+        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(0, 20,
+                        10, TimeUnit.SECONDS,
+                        new SynchronousQueue<Runnable>());
 
         public static final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
                         .newSingleThreadScheduledExecutor();

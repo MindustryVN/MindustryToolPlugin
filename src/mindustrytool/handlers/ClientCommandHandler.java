@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.util.CommandHandler;
+import arc.util.CommandHandler.CommandRunner;
 import arc.util.Log;
 import arc.util.Strings;
 import lombok.Getter;
@@ -29,6 +30,7 @@ import mindustrytool.utils.Session;
 public class ClientCommandHandler {
 
     private final ServerController controller;
+    private final List<String> registeredCommands = new ArrayList<>();
 
     public ClientCommandHandler(ServerController controller) {
         this.controller = controller;
@@ -40,10 +42,19 @@ public class ClientCommandHandler {
     @Getter
     private CommandHandler handler;
 
+    private void register(String text, String params, String description, CommandRunner<Player> runner) {
+        handler.register(text, params, description, runner);
+        registeredCommands.add(text);
+    }
+
+    public void unload() {
+        registeredCommands.forEach(command -> handler.removeCommand(command));
+    }
+
     public void registerCommands(CommandHandler handler) {
         this.handler = handler;
 
-        handler.<Player>register("rtv", "<mapId>", "Vote to change map (map id in /maps)", (args, player) -> {
+        register("rtv", "<mapId>", "Vote to change map (map id in /maps)", (args, player) -> {
             if (args.length != 1) {
                 return;
             }
@@ -79,7 +90,7 @@ public class ClientCommandHandler {
             controller.voteHandler.check(mapId);
         });
 
-        handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
+        register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
             Seq<Map> maps = controller.voteHandler.getMaps();
             int page = 1;
@@ -112,15 +123,15 @@ public class ClientCommandHandler {
             }
         });
 
-        handler.<Player>register("servers", "", "Display available servers", (args, player) -> {
+        register("servers", "", "Display available servers", (args, player) -> {
             controller.eventHandler.sendServerList(player, 0);
         });
 
-        handler.<Player>register("hub", "", "Display available servers", (args, player) -> {
+        register("hub", "", "Display available servers", (args, player) -> {
             controller.eventHandler.sendHub(player, null);
         });
 
-        handler.<Player>register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
+        register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
             if (player.admin) {
                 String output = Vars.mods.getScripts().runConsole(args[0]);
                 player.sendMessage("> " + (isError(output) ? "[#ff341c]" + output : output));
@@ -129,7 +140,7 @@ public class ClientCommandHandler {
             }
         });
 
-        handler.<Player>register("login", "", "Login", (args, player) -> {
+        register("login", "", "Login", (args, player) -> {
             try {
                 var team = player.team();
                 var request = new PlayerDto()//
@@ -154,7 +165,7 @@ public class ClientCommandHandler {
             }
         });
 
-        handler.<Player>register("vnw", "[number]", "Vote for sending a New Wave", (arg, player) -> {
+        register("vnw", "[number]", "Vote for sending a New Wave", (arg, player) -> {
             var session = Session.get(player);
 
             if (Groups.player.size() < 3 && !player.admin) {
@@ -221,7 +232,7 @@ public class ClientCommandHandler {
                 Vars.state.wave += waveVoted;
         });
 
-        handler.<Player>register("redirect", "", "Redirect all player to server", (args, player) ->
+        register("redirect", "", "Redirect all player to server", (args, player) ->
 
         {
             if (player.admin) {

@@ -120,8 +120,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void stop() {
         isUnloaded = true;
-        Config.BACKGROUND_TASK_EXECUTOR.close();
-        Config.BACKGROUND_SCHEDULER.close();
+        Config.BACKGROUND_TASK_EXECUTOR.shutdown();
+        Config.BACKGROUND_SCHEDULER.shutdown();
 
         eventHandler.unload();
         httpServer.unload();

@@ -171,7 +171,7 @@ public class ApiGateway {
         }
     }
 
-    public ServerDto getServers(PaginationRequest request) {
+    public synchronized ServerDto getServers(PaginationRequest request) {
         return serverQueryCache.get(request, _ignore -> {
 
             var req = setHeaders(

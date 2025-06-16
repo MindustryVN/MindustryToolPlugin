@@ -77,11 +77,6 @@ public class EventHandler {
             .maximumSize(1000)
             .build();
 
-    private final Cache<String, ServerResponseData> serversCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(1))
-            .maximumSize(10)
-            .build();
-
     private ScheduledFuture<?> updateServerTask, updateServerCore;
 
     private final List<String> icons = List.of(//
@@ -476,26 +471,19 @@ public class EventHandler {
 
     public synchronized ServerResponseData getTopServer() throws IOException {
         try {
-            return serversCache.get("server", _ignore -> {
-                try {
-                    var request = new PaginationRequest().setPage(0).setSize(1);
-                    var response = controller.apiGateway.getServers(request);
-                    var servers = response.getServers();
+            var request = new PaginationRequest().setPage(0).setSize(1);
+            var response = controller.apiGateway.getServers(request);
+            var servers = response.getServers();
 
-                    if (servers.isEmpty()) {
-                        return null;
-                    }
+            if (servers.isEmpty()) {
+                return null;
+            }
 
-                    if (servers.get(0).getId() == null) {
-                        return null;
-                    }
+            if (servers.get(0).getId() == null) {
+                return null;
+            }
 
-                    return servers.get(0);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            });
+            return servers.get(0);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

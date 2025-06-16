@@ -86,8 +86,10 @@ public class HttpServer {
         });
 
         app.get("stats", context -> {
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(getStats());
+            Core.app.post(() -> {
+                context.contentType(ContentType.APPLICATION_JSON);
+                context.json(getStats());
+            });
         });
 
         app.get("image", context -> {
@@ -108,7 +110,6 @@ public class HttpServer {
         app.get("hosting", (context) -> {
             context.contentType(ContentType.APPLICATION_JSON);
             context.json(Vars.state.isGame());
-
         });
 
         app.post("discord", context -> {
@@ -166,25 +167,27 @@ public class HttpServer {
         });
 
         app.get("players", context -> {
-            var players = new ArrayList<Player>();
-            Groups.player.forEach(players::add);
+            Core.app.post(() -> {
 
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(players.stream()//
-                    .map(player -> new PlayerDto()//
-                            .setName(player.coloredName())//
-                            .setUuid(player.uuid())//
-                            .setIp(player.ip())
-                            .setLocale(player.locale())//
-                            .setAdmin(player.admin)//
-                            .setJoinedAt(Session.contains(player) //
-                                    ? Session.get(player).joinedAt
-                                    : Instant.now().toEpochMilli())
-                            .setTeam(new TeamDto()//
-                                    .setColor(player.team().color.toString())//
-                                    .setName(player.team().name)))
-                    .collect(Collectors.toList()));
+                var players = new ArrayList<Player>();
+                Groups.player.forEach(players::add);
 
+                context.contentType(ContentType.APPLICATION_JSON);
+                context.json(players.stream()//
+                        .map(player -> new PlayerDto()//
+                                .setName(player.coloredName())//
+                                .setUuid(player.uuid())//
+                                .setIp(player.ip())
+                                .setLocale(player.locale())//
+                                .setAdmin(player.admin)//
+                                .setJoinedAt(Session.contains(player) //
+                                        ? Session.get(player).joinedAt
+                                        : Instant.now().toEpochMilli())
+                                .setTeam(new TeamDto()//
+                                        .setColor(player.team().color.toString())//
+                                        .setName(player.team().name)))
+                        .collect(Collectors.toList()));
+            });
         });
 
         app.get("player-infos", context -> {
@@ -211,42 +214,46 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.copy().values().toSeq();
+            Core.app.post(() -> {
 
-            var result = bans.list()//
-                    .stream()//
-                    .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
-                    .skip(offset)//
-                    .limit(size)//
-                    .map(ban -> new PlayerInfoDto()
-                            .setId(ban.id)
-                            .setLastName(ban.lastName)
-                            .setLastIP(ban.lastIP)
-                            .setIps(ban.ips.list())
-                            .setNames(ban.names.list())
-                            .setAdminUsid(ban.adminUsid)
-                            .setTimesKicked(ban.timesKicked)
-                            .setTimesJoined(ban.timesJoined)
-                            .setBanned(ban.banned)
-                            .setAdmin(ban.admin)
-                            .setLastKicked(ban.lastKicked))
-                    .toList();
+                Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
 
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(result);
+                var result = bans.list()//
+                        .stream()//
+                        .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
+                        .skip(offset)//
+                        .limit(size)//
+                        .map(ban -> new PlayerInfoDto()
+                                .setId(ban.id)
+                                .setLastName(ban.lastName)
+                                .setLastIP(ban.lastIP)
+                                .setIps(ban.ips.list())
+                                .setNames(ban.names.list())
+                                .setAdminUsid(ban.adminUsid)
+                                .setTimesKicked(ban.timesKicked)
+                                .setTimesJoined(ban.timesJoined)
+                                .setBanned(ban.banned)
+                                .setAdmin(ban.admin)
+                                .setLastKicked(ban.lastKicked))
+                        .toList();
 
+                context.contentType(ContentType.APPLICATION_JSON);
+                context.json(result);
+            });
         });
+
         app.get("kicks", context -> {
-            var result = new HashMap<>();
-            for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                if (entry.value != 0 && Time.millis() - entry.value < 0) {
-                    result.put(entry.key, entry.value);
+            Core.app.post(() -> {
+                var result = new HashMap<>();
+                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                    if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                        result.put(entry.key, entry.value);
+                    }
                 }
-            }
-            context.contentType(ContentType.APPLICATION_JSON);
+                context.contentType(ContentType.APPLICATION_JSON);
 
-            context.json(result);
-
+                context.json(result);
+            });
         });
 
         app.get("commands", context -> {
@@ -326,59 +333,62 @@ public class HttpServer {
         });
 
         app.get("json", context -> {
-            var data = new HashMap<String, Object>();
+            Core.app.post(() -> {
 
-            data.put("stats", getStats());
-            data.put("session", Session.get());
-            data.put("hud", HudUtils.menus.asMap());
-            data.put("buildLogs", controller.apiGateway.buildLogs);
-            data.put("isHub", Config.IS_HUB);
-            data.put("ip", Config.SERVER_IP);
-            data.put("units", Groups.unit.size());
-            data.put("enemies", Vars.state.enemies);
-            data.put("tps", Core.graphics.getFramesPerSecond());
+                var data = new HashMap<String, Object>();
 
-            var gameStats = new HashMap<String, Object>();
+                data.put("stats", getStats());
+                data.put("session", Session.get());
+                data.put("hud", HudUtils.menus.asMap());
+                data.put("buildLogs", controller.apiGateway.buildLogs);
+                data.put("isHub", Config.IS_HUB);
+                data.put("ip", Config.SERVER_IP);
+                data.put("units", Groups.unit.size());
+                data.put("enemies", Vars.state.enemies);
+                data.put("tps", Core.graphics.getFramesPerSecond());
 
-            gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
-            gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
-            gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
-            gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
-            gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
-            gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
-            gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
-            gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
+                var gameStats = new HashMap<String, Object>();
 
-            data.put("gameStats", gameStats);
-            data.put("locales", Vars.locales);
+                gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
+                gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
+                gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
+                gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
+                gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
+                gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
+                gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
+                gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
-            var maps = new ArrayList<HashMap<String, String>>();
-            Vars.maps.all().forEach(map -> {
-                var tags = new HashMap<String, String>();
-                map.tags.each((key, value) -> tags.put(key, value));
-                maps.add(tags);
+                data.put("gameStats", gameStats);
+                data.put("locales", Vars.locales);
+
+                var maps = new ArrayList<HashMap<String, String>>();
+                Vars.maps.all().forEach(map -> {
+                    var tags = new HashMap<String, String>();
+                    map.tags.each((key, value) -> tags.put(key, value));
+                    maps.add(tags);
+                });
+                data.put("maps",
+                        Vars.maps.all().map(map -> java.util.Map.of(
+                                "name", map.name(), //
+                                "author", map.author(), //
+                                "file", map.file.absolutePath(),
+                                "tags", map.tags,
+                                "description", map.description(),
+                                "width", map.width,
+                                "height", map.height)).list());
+                data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
+                data.put("votes", controller.voteHandler.votes);
+
+                var settings = new HashMap<String, Object>();
+
+                Core.settings.keys().forEach(key -> {
+                    settings.put(key, Core.settings.get(key, null));
+                });
+
+                data.put("settings", settings);
+
+                context.json(data);
             });
-            data.put("maps",
-                    Vars.maps.all().map(map -> java.util.Map.of(
-                            "name", map.name(), //
-                            "author", map.author(), //
-                            "file", map.file.absolutePath(),
-                            "tags", map.tags,
-                            "description", map.description(),
-                            "width", map.width,
-                            "height", map.height)).list());
-            data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-            data.put("votes", controller.voteHandler.votes);
-
-            var settings = new HashMap<String, Object>();
-
-            Core.settings.keys().forEach(key -> {
-                settings.put(key, Core.settings.get(key, null));
-            });
-
-            data.put("settings", settings);
-
-            context.json(data);
         });
 
         app.exception(Exception.class, (exception, context) -> {
@@ -454,7 +464,7 @@ public class HttpServer {
                 .setTps(Core.graphics.getFramesPerSecond())//
                 .setHosting(Vars.state.isGame())
                 .setPaused(Vars.state.isPaused())//
-                .setKicks(Vars.netServer.admins.kickedIPs.copy().values().toSeq()
+                .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
                         .select(value -> Time.millis() - value < 0).size)//
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }

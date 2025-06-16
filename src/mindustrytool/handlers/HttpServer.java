@@ -525,12 +525,13 @@ public class HttpServer {
             Map map = Vars.state.map;
 
             if (map != null) {
-                pix = MapIO.generatePreview(Vars.world.tiles);
-                Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
-                file.writePng(pix);
-                pix.dispose();
+             //TODO: CHECK
+                // pix = MapIO.generatePreview(Vars.world.tiles);
+                // Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
+                // file.writePng(pix);
+                // pix.dispose();
 
-                return file.readBytes();
+                // return file.readBytes();
             }
 
             return new byte[] {};

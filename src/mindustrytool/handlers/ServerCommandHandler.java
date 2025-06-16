@@ -106,6 +106,6 @@ public class ServerCommandHandler {
             }
         });
 
-        prevCommands.forEach(prev -> prev.callback().accept(handler.handleMessage(prev.command())));
+        prevCommands.forEach(prev -> prev.getCallback().accept(handler.handleMessage(prev.getCommand())));
     }
 }

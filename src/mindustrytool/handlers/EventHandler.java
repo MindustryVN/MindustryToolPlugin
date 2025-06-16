@@ -215,12 +215,12 @@ public class EventHandler {
         var tapY = event.tile.y;
 
         for (var core : serverCores) {
-            if (tapX >= core.x() - tapSize //
-                    && tapX <= core.x() + tapSize //
-                    && tapY >= core.y() - tapSize
-                    && tapY <= core.y() + tapSize//
+            if (tapX >= core.getX() - tapSize //
+                    && tapX <= core.getX() + tapSize //
+                    && tapY >= core.getY() - tapSize
+                    && tapY <= core.getY() + tapSize//
             ) {
-                onServerChoose(event.player, core.server().id.toString(), core.server().name);
+                onServerChoose(event.player, core.getServer().id.toString(), core.getServer().name);
             }
         }
     }

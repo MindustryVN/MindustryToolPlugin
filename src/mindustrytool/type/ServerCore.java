@@ -1,4 +1,10 @@
 package mindustrytool.type;
 
-public record ServerCore( ServerResponseData server, int x, int y) {
+import lombok.Data;
+
+@Data
+public class ServerCore {
+   private final ServerResponseData server;
+   private final int x;
+   private final int y;
 }

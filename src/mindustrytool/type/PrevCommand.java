@@ -3,7 +3,10 @@ package mindustrytool.type;
 import java.util.function.Consumer;
 
 import arc.util.CommandHandler.CommandResponse;
+import lombok.Data;
 
-public record PrevCommand(String command, Consumer<CommandResponse> callback) {
-    
+@Data
+public class PrevCommand {
+    private final String command;
+    private final Consumer<CommandResponse> callback;
 }

@@ -411,7 +411,9 @@ public class EventHandler {
                         try {
                             String translatedMessage = translationCache.get(locale + message,
                                     key -> controller.apiGateway.translate(message, locale));
+
                             p.sendMessage("[white][Translation] " + player.name() + "[]: " + translatedMessage);
+
                             controller.apiGateway.sendChatMessage("[white][Translation] " + player.name() + "[]: "
                                     + translatedMessage);
 

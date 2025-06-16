@@ -173,7 +173,6 @@ public class ApiGateway {
 
     public synchronized ServerDto getServers(PaginationRequest request) {
         return serverQueryCache.get(request, _ignore -> {
-
             var req = setHeaders(
                     HttpRequest.newBuilder(
                             path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//

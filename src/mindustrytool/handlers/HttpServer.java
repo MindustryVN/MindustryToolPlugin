@@ -87,14 +87,16 @@ public class HttpServer {
 
         app.get("stats", context -> {
             Core.app.post(() -> {
-                context.contentType(ContentType.APPLICATION_JSON);
                 context.json(getStats());
+                context.contentType(ContentType.APPLICATION_JSON);
             });
         });
 
         app.get("image", context -> {
-            context.contentType(ContentType.IMAGE_PNG);
-            context.result(mapPreview());
+            Core.app.post(() -> {
+                context.contentType(ContentType.IMAGE_PNG);
+                context.result(mapPreview());
+            });
         });
 
         app.get("ok", (context) -> {

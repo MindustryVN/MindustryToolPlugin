@@ -88,10 +88,10 @@ public class HttpServer {
             config.jetty.threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMillis);
 
             config.registerPlugin(new RouteOverviewPlugin());
-        });
 
-        app.before(context -> {
-            Log.debug("[" + context.method().name() + "] " + context.fullUrl());
+            config.requestLogger.http((context, ms) -> {
+                Log.debug("[" + context.method().name() + "] " + ms + "ms " + context.fullUrl());
+            });
         });
 
         app.get("stats", context -> {

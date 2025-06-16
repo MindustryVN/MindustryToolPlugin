@@ -53,7 +53,7 @@ dependencies{
 
 tasks.withType(JavaCompile) {
     options.annotationProcessorPath = configurations.annotationProcessor
-    options.release = 8
+    // options.release = 8
 }
 
 jar{

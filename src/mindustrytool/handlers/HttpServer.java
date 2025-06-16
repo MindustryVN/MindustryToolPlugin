@@ -102,12 +102,13 @@ public class HttpServer {
         });
 
         app.get("image", context -> {
-            context.contentType(ContentType.IMAGE_PNG);
             context.future(() -> {
                 var future = new CompletableFuture<byte[]>();
 
                 Core.app.post(() -> {
-                    future.complete(mapPreview());
+                    var mapPreview = mapPreview();
+                    context.contentType(ContentType.IMAGE_PNG).result(mapPreview);
+                    future.complete(mapPreview);
                 });
 
                 return future;
@@ -188,7 +189,7 @@ public class HttpServer {
                     var players = new ArrayList<Player>();
                     Groups.player.forEach(players::add);
 
-                    future.complete(players.stream()//
+                    var result = (players.stream()//
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
@@ -202,6 +203,8 @@ public class HttpServer {
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))
                             .collect(Collectors.toList()));
+                    context.json(result);
+                    future.complete(result);
                 });
                 return future;
             });
@@ -257,6 +260,7 @@ public class HttpServer {
                                     .setLastKicked(ban.lastKicked))
                             .toList();
 
+                    context.json(result);
                     future.complete(result);
                 });
                 return future;
@@ -275,6 +279,7 @@ public class HttpServer {
                         }
                     }
 
+                    context.json(result);
                     future.complete(result);
                 });
 
@@ -413,6 +418,7 @@ public class HttpServer {
 
                     data.put("settings", settings);
 
+                    context.json(data);
                     future.complete(data);
                 });
 

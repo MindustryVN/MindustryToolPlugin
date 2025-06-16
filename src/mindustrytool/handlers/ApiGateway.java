@@ -85,8 +85,10 @@ public class ApiGateway {
     }
 
     private URI path(String... path) {
-        Log.debug("REQUEST " + Strings.join("/", path));
-        return URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
+        var uri = URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
+        Log.debug("[REQUEST]: " + uri.toString());
+
+        return uri;
     }
 
     public MindustryPlayerDto setPlayer(PlayerDto payload) {

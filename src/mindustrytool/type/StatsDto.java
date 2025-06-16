@@ -19,4 +19,5 @@ public class StatsDto {
     private int kicks;
     private boolean isPaused = false;
     private boolean isHosting = false;
+    private String version = "custom";
 }

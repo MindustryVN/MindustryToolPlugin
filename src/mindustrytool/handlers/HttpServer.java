@@ -23,6 +23,7 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.core.Version;
 import mindustry.core.GameState.State;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -506,6 +507,7 @@ public class HttpServer {
                 .setTps(Core.graphics.getFramesPerSecond())//
                 .setHosting(Vars.state.isGame())
                 .setPaused(Vars.state.isPaused())//
+                .setVersion("V" + Version.number + "Build" + Version.build)
                 .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
                         .select(value -> Time.millis() - value < 0).size)//
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");

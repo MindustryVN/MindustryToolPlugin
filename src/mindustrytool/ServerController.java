@@ -10,6 +10,7 @@ import arc.util.*;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.game.EventType.BlockBuildEndEvent;
+import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.MenuOptionChooseEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerConnect;
@@ -111,6 +112,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                 eventHandler.onTap(tapEvent);
             } else if (event instanceof MenuOptionChooseEvent menuOption) {
                 HudUtils.onMenuOptionChoose(menuOption);
+            } else if (event instanceof GameOverEvent gameOverEvent) {
+                eventHandler.onGameOver(gameOverEvent);
             } else {
                 Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
             }

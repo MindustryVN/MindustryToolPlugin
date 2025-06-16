@@ -23,6 +23,7 @@ import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
 import mindustry.game.EventType.BlockBuildEndEvent;
+import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerConnect;
 import mindustry.game.EventType.PlayerJoin;
@@ -192,6 +193,9 @@ public class EventHandler {
         if (updateServerCore != null) {
             updateServerCore.cancel(true);
         }
+    }
+
+    public void onGameOver(GameOverEvent event) {
     }
 
     public void onTap(TapEvent event) {

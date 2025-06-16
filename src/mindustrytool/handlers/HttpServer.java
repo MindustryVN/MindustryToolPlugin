@@ -396,7 +396,7 @@ public class HttpServer {
                     gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
                     gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
                     gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
-                    
+
                     data.put("executors", java.util.Map.of(
                             "backgroundExecutor", Config.BACKGROUND_TASK_EXECUTOR.toString(), //
                             "backgroundScheduler", Config.BACKGROUND_SCHEDULER.toString()//
@@ -520,18 +520,16 @@ public class HttpServer {
 
     public byte[] mapPreview() {
         Pixmap pix = null;
-
         try {
             Map map = Vars.state.map;
 
             if (map != null) {
-             //TODO: CHECK
-                // pix = MapIO.generatePreview(Vars.world.tiles);
-                // Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
-                // file.writePng(pix);
-                // pix.dispose();
+                pix = MapIO.generatePreview(Vars.world.tiles);
+                Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
+                file.writePng(pix);
+                pix.dispose();
 
-                // return file.readBytes();
+                return file.readBytes();
             }
 
             return new byte[] {};

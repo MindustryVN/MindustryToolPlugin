@@ -35,21 +35,17 @@ dependencies{
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 
-	compileOnly 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
 
     compileOnly files('lib/MindustryToolPluginLoader.jar')
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.2'
     
-	implementation ("io.javalin:javalin:6.6.0"){
-        exclude group: "org.slf4j", module: "slf4j-api"
-    }
+    implementation 'io.javalin:javalin:6.3.0'
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
-	annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
-    annotationProcessor ('org.pf4j:pf4j:3.13.0') {
-        exclude group: "org.slf4j", module: "slf4j-api"
-    }
+    annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
+    annotationProcessor 'org.pf4j:pf4j:3.13.0'
 }
 
 tasks.withType(JavaCompile) {

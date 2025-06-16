@@ -396,7 +396,7 @@ public class HttpServer {
                     gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
                     gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
                     gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
-
+                    
                     data.put("executors", java.util.Map.of(
                             "backgroundExecutor", Config.BACKGROUND_TASK_EXECUTOR.toString(), //
                             "backgroundScheduler", Config.BACKGROUND_SCHEDULER.toString()//

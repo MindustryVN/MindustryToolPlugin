@@ -90,7 +90,6 @@ public class HttpServer {
             context.future(() -> {
                 var future = new CompletableFuture<StatsDto>();
                 Core.app.post(() -> {
-                    context.contentType(ContentType.APPLICATION_JSON);
                     future.complete(getStats());
                 });
 
@@ -178,7 +177,6 @@ public class HttpServer {
         });
 
         app.get("players", context -> {
-            context.contentType(ContentType.APPLICATION_JSON);
             context.future(() -> {
                 var future = new CompletableFuture<List<PlayerDto>>();
 
@@ -229,7 +227,6 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            context.contentType(ContentType.APPLICATION_JSON);
             context.future(() -> {
                 var future = new CompletableFuture<List<PlayerInfoDto>>();
 
@@ -263,7 +260,6 @@ public class HttpServer {
         });
 
         app.get("kicks", context -> {
-            context.contentType(ContentType.APPLICATION_JSON);
             context.future(() -> {
                 var future = new CompletableFuture<HashMap<Object, Object>>();
 
@@ -299,7 +295,6 @@ public class HttpServer {
                                             .list()))
                             .list();
 
-            context.contentType(ContentType.APPLICATION_JSON);
             context.json(commands);
 
         });

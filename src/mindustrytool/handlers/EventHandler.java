@@ -195,9 +195,14 @@ public class EventHandler {
     }
 
     public void onTap(TapEvent event) {
+        if (!mindustrytool.Config.IS_HUB) {
+            return;
+        }
+
         if (event.tile == null) {
             return;
         }
+
         var map = Vars.state.map;
 
         if (map == null) {

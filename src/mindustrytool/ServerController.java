@@ -108,9 +108,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             } else if (event instanceof BlockBuildEndEvent blockBuild) {
                 eventHandler.onBuildBlockEnd(blockBuild);
             } else if (event instanceof TapEvent tapEvent) {
-                if (mindustrytool.Config.IS_HUB) {
-                    eventHandler.onTap(tapEvent);
-                }
+                eventHandler.onTap(tapEvent);
             } else if (event instanceof MenuOptionChooseEvent menuOption) {
                 HudUtils.onMenuOptionChoose(menuOption);
             } else {
@@ -122,8 +120,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void stop() {
         isUnloaded = true;
-        Config.BACKGROUND_TASK_EXECUTOR.shutdownNow();
-        Config.BACKGROUND_SCHEDULER.shutdownNow();
+        Config.BACKGROUND_TASK_EXECUTOR.close();
+        Config.BACKGROUND_SCHEDULER.close();
 
         eventHandler.unload();
         httpServer.unload();

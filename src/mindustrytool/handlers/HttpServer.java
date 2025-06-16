@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -86,20 +87,27 @@ public class HttpServer {
         });
 
         app.get("stats", context -> {
-            context.async(() -> {
+            context.future(() -> {
+                var future = new CompletableFuture<StatsDto>();
                 Core.app.post(() -> {
                     context.contentType(ContentType.APPLICATION_JSON);
-                    context.json(getStats());
+                    future.complete(getStats());
                 });
+
+                return future;
             });
         });
 
         app.get("image", context -> {
-            context.async(() -> {
+            context.contentType(ContentType.IMAGE_PNG);
+            context.future(() -> {
+                var future = new CompletableFuture<byte[]>();
+
                 Core.app.post(() -> {
-                    context.contentType(ContentType.IMAGE_PNG);
-                    context.result(mapPreview());
+                    future.complete(mapPreview());
                 });
+
+                return future;
             });
         });
 
@@ -170,14 +178,15 @@ public class HttpServer {
         });
 
         app.get("players", context -> {
-            context.async(() -> {
-                Core.app.post(() -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.future(() -> {
+                var future = new CompletableFuture<List<PlayerDto>>();
 
+                Core.app.post(() -> {
                     var players = new ArrayList<Player>();
                     Groups.player.forEach(players::add);
 
-                    context.contentType(ContentType.APPLICATION_JSON);
-                    context.json(players.stream()//
+                    future.complete(players.stream()//
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
@@ -192,6 +201,7 @@ public class HttpServer {
                                             .setName(player.team().name)))
                             .collect(Collectors.toList()));
                 });
+                return future;
             });
         });
 
@@ -219,7 +229,10 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            context.async(() -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.future(() -> {
+                var future = new CompletableFuture<List<PlayerInfoDto>>();
+
                 Core.app.post(() -> {
 
                     Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
@@ -243,14 +256,17 @@ public class HttpServer {
                                     .setLastKicked(ban.lastKicked))
                             .toList();
 
-                    context.contentType(ContentType.APPLICATION_JSON);
-                    context.json(result);
+                    future.complete(result);
                 });
+                return future;
             });
         });
 
         app.get("kicks", context -> {
-            context.async(() -> {
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.future(() -> {
+                var future = new CompletableFuture<HashMap<Object, Object>>();
+
                 Core.app.post(() -> {
                     var result = new HashMap<>();
                     for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
@@ -258,10 +274,11 @@ public class HttpServer {
                             result.put(entry.key, entry.value);
                         }
                     }
-                    context.contentType(ContentType.APPLICATION_JSON);
 
-                    context.json(result);
+                    future.complete(result);
                 });
+
+                return future;
             });
         });
 
@@ -340,7 +357,9 @@ public class HttpServer {
         });
 
         app.get("json", context -> {
-            context.async(() -> {
+            context.future(() -> {
+                var future = new CompletableFuture<HashMap<String, Object>>();
+
                 Core.app.post(() -> {
 
                     var data = new HashMap<String, Object>();
@@ -395,8 +414,10 @@ public class HttpServer {
 
                     data.put("settings", settings);
 
-                    context.json(data);
+                    future.complete(data);
                 });
+
+                return future;
             });
         });
 

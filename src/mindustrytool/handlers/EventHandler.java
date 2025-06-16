@@ -196,6 +196,7 @@ public class EventHandler {
     }
 
     public void onGameOver(GameOverEvent event) {
+        System.gc();
     }
 
     public void onTap(TapEvent event) {

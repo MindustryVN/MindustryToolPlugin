@@ -92,8 +92,9 @@ public class HttpServer {
 
                 Core.app.post(() -> {
                     var stats = getStats();
-                    future.complete(stats);
                     context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(stats);
+                    future.complete(stats);
                 });
 
                 return future;

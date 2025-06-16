@@ -46,7 +46,6 @@ import mindustrytool.type.ServerCore;
 import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerResponseData;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.Session;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
@@ -457,7 +456,7 @@ public class EventHandler {
 
             Player player = event.player;
 
-            Session.remove(player);
+            controller.sessionHandler.remove(player);
 
             controller.voteHandler.removeVote(player);
 
@@ -508,7 +507,7 @@ public class EventHandler {
 
             var player = event.player;
 
-            Session.put(player);
+            controller.sessionHandler.put(player);
 
             if (Config.IS_HUB) {
                 var serverData = getTopServer();

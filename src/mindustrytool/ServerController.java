@@ -22,11 +22,11 @@ import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.HttpServer;
 import mindustrytool.handlers.ServerCommandHandler;
+import mindustrytool.handlers.SessionHandler;
 import mindustrytool.handlers.ApiGateway;
 import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.JsonUtils;
-import mindustrytool.utils.Session;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
 public class ServerController extends Plugin implements MindustryToolPlugin {
@@ -37,6 +37,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public ClientCommandHandler clientCommandHandler = new ClientCommandHandler(this);
     public ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
     public HttpServer httpServer = new HttpServer(this);
+    public SessionHandler sessionHandler = new SessionHandler();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
@@ -93,7 +94,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void onEvent(Object event) {
         Core.app.post(() -> {
-
             if (event instanceof PlayerJoin playerJoin) {
                 eventHandler.onPlayerJoin(playerJoin);
             } else if (event instanceof PlayerLeave playerLeave) {
@@ -129,8 +129,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         httpServer.unload();
         clientCommandHandler.unload();
         serverCommandHandler.unload();
-
-        Session.clear();
+        sessionHandler.clear();
 
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;

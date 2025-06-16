@@ -43,7 +43,6 @@ import mindustrytool.type.StartServerDto;
 import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -204,8 +203,8 @@ public class HttpServer {
                                     .setIp(player.ip())
                                     .setLocale(player.locale())//
                                     .setAdmin(player.admin)//
-                                    .setJoinedAt(Session.contains(player) //
-                                            ? Session.get(player).joinedAt
+                                    .setJoinedAt(controller.sessionHandler.contains(player) //
+                                            ? controller.sessionHandler.get(player).joinedAt
                                             : Instant.now().toEpochMilli())
                                     .setTeam(new TeamDto()//
                                             .setColor(player.team().color.toString())//
@@ -377,7 +376,7 @@ public class HttpServer {
                     var data = new HashMap<String, Object>();
 
                     data.put("stats", getStats());
-                    data.put("session", Session.get());
+                    data.put("session", controller.sessionHandler.get());
                     data.put("hud", HudUtils.menus.asMap());
                     data.put("buildLogs", controller.apiGateway.buildLogs);
                     data.put("isHub", Config.IS_HUB);

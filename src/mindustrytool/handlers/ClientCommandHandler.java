@@ -25,7 +25,6 @@ import mindustrytool.type.PlayerDto;
 import mindustrytool.type.PlayerPressCallback;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.Session;
 
 public class ClientCommandHandler {
 
@@ -167,7 +166,7 @@ public class ClientCommandHandler {
         });
 
         register("vnw", "[number]", "Vote for sending a New Wave", (arg, player) -> {
-            var session = Session.get(player);
+            var session = controller.sessionHandler.get(player);
 
             if (Groups.player.size() < 3 && !player.admin) {
                 player.sendMessage("[scarlet]3 players are required or be an admin to start a vote.");
@@ -198,7 +197,7 @@ public class ClientCommandHandler {
             }
 
             session.votedVNW = true;
-            int cur = Session.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
+            int cur = controller.sessionHandler.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
             Call.sendMessage(player.name + "[orange] has voted to "
                     + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray]("
                     + (req - cur) + " votes missing)");

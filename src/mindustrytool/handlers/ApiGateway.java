@@ -9,8 +9,12 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import arc.util.Log;
 import arc.util.Strings;
@@ -26,6 +30,12 @@ import mindustrytool.type.ServerDto;
 public class ApiGateway {
 
     final ServerController controller;
+    private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
+
+    public Cache<PaginationRequest, ServerDto> serverQueryCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofSeconds(15))
+            .maximumSize(100)
+            .build();
 
     public ApiGateway(ServerController controller) {
         this.controller = controller;
@@ -144,31 +154,39 @@ public class ApiGateway {
     }
 
     public String host(String targetServerId) {
-        var request = setHeaders(HttpRequest.newBuilder(path("host")))//
-                .header("Content-Type", "text/plain")//
-                .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
-                .timeout(Duration.ofSeconds(45))
-                .build();
+        Object lock = locks.computeIfAbsent(targetServerId, k -> new Object());
 
-        try {
-            return httpClient.send(request, BodyHandlers.ofString()).body();
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        synchronized (lock) {
+            var request = setHeaders(HttpRequest.newBuilder(path("host")))//
+                    .header("Content-Type", "text/plain")//
+                    .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
+                    .timeout(Duration.ofSeconds(45))
+                    .build();
+
+            try {
+                return httpClient.send(request, BodyHandlers.ofString()).body();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public ServerDto getServers(PaginationRequest request) {
-        var req = setHeaders(
-                HttpRequest.newBuilder(path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
-                .GET()//
-                .build();
+        return serverQueryCache.get(request, _ignore -> {
 
-        try {
-            var result = httpClient.send(req, BodyHandlers.ofString()).body();
-            return JsonUtils.readJsonAsClass(result, ServerDto.class);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            var req = setHeaders(
+                    HttpRequest.newBuilder(
+                            path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
+                    .GET()//
+                    .build();
+
+            try {
+                var result = httpClient.send(req, BodyHandlers.ofString()).body();
+                return JsonUtils.readJsonAsClass(result, ServerDto.class);
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public String translate(String text, String targetLanguage) {

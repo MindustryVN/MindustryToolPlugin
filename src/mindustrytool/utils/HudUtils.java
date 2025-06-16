@@ -26,7 +26,7 @@ public class HudUtils {
 
     public static Cache<String, LinkedList<MenuData>> menus = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(10))
-            .maximumSize(1000)
+            .maximumSize(100)
             .build();
 
     public static void onPlayerLeave(PlayerLeave event) {

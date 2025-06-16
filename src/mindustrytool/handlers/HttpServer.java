@@ -514,19 +514,23 @@ public class HttpServer {
 
     public byte[] mapPreview() {
         Pixmap pix = null;
+
         try {
             Map map = Vars.state.map;
-            byte[] mapData = {};
 
             if (map != null) {
                 pix = MapIO.generatePreview(Vars.world.tiles);
                 Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
                 file.writePng(pix);
-                mapData = file.readBytes();
                 pix.dispose();
+
+                return file.readBytes();
             }
 
-            return mapData;
+            return new byte[] {};
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new byte[] {};
         } finally {
             if (pix != null) {
                 pix.dispose();

@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -404,22 +405,28 @@ public class EventHandler {
                 Log.err(e);
             }
 
-            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
-                Groups.player.each(p -> {
-                    if (p.id != player.id) {
-                        var locale = p.locale();
-                        try {
-                            String translatedMessage = translationCache.get(locale + message,
-                                    key -> controller.apiGateway.translate(message, locale));
+            HashMap<String, List<Player>> groupByLocale = new HashMap<>();
+
+            Groups.player.forEach(p -> groupByLocale.getOrDefault(p.locale(), new ArrayList<>()).add(p));
+
+            groupByLocale.forEach((locale, ps) -> {
+                Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                    try {
+                        String translatedMessage = translationCache.get(locale + message,
+                                _ignore -> controller.apiGateway.translate(message, locale));
+
+                        for (var p : ps) {
+                            if (p.id == player.id) {
+                                continue;
+                            }
 
                             p.sendMessage("[white][Translation] " + player.name() + "[]: " + translatedMessage);
+                            controller.apiGateway.sendChatMessage(
+                                    "[white][Translation] " + player.name() + "[]: " + translatedMessage);
 
-                            controller.apiGateway.sendChatMessage("[white][Translation] " + player.name() + "[]: "
-                                    + translatedMessage);
-
-                        } catch (Exception e) {
-                            Log.err(e);
                         }
+                    } catch (Exception e) {
+                        Log.err(e);
                     }
                 });
             });

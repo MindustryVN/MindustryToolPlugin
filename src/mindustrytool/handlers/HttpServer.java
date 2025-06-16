@@ -147,9 +147,9 @@ public class HttpServer {
 
         app.post("pause", context -> {
             if (Vars.state.isPaused()) {
-                Vars.state.set(State.paused);
-            } else {
                 Vars.state.set(State.playing);
+            } else if (Vars.state.isPlaying()) {
+                Vars.state.set(State.paused);
             }
         });
 

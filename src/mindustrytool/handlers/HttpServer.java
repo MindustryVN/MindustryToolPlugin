@@ -8,6 +8,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -78,7 +80,13 @@ public class HttpServer {
 
             }));
 
+            int maxThreads = 20;
+            int minThreads = 1;
+            int idleTimeoutMillis = 10000;
+
             config.useVirtualThreads = true;
+            config.jetty.threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMillis);
+
             config.registerPlugin(new RouteOverviewPlugin());
         });
 

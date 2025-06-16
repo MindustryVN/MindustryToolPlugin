@@ -118,8 +118,7 @@ public class HttpServer {
             String message = context.body();
 
             Call.sendMessage(message);
-            context.contentType(ContentType.TEXT_PLAIN);
-            context.result("Ok");
+            context.result();
         });
 
         app.post("pause", context -> {
@@ -133,8 +132,7 @@ public class HttpServer {
         app.post("host", context -> {
             StartServerDto request = context.bodyAsClass(StartServerDto.class);
             host(request);
-            context.contentType(ContentType.TEXT_PLAIN);
-            context.result("Ok");
+            context.result();
         });
 
         app.post("set-player", context -> {
@@ -163,8 +161,7 @@ public class HttpServer {
                 HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
                 controller.eventHandler.setPlayerData(request, player);
             }
-            context.contentType(ContentType.TEXT_PLAIN);
-            context.result("Ok");
+            context.result();
 
         });
 
@@ -317,8 +314,7 @@ public class HttpServer {
                     });
                 }
             }
-            context.contentType(ContentType.TEXT_PLAIN);
-            context.result("Ok");
+            context.result();
         });
 
         app.post("say", context -> {
@@ -330,8 +326,7 @@ public class HttpServer {
             String message = context.body();
             Call.sendMessage("[]" + message);
 
-            context.contentType(ContentType.TEXT_PLAIN);
-            context.result("Ok");
+            context.result();
         });
 
         app.get("json", context -> {

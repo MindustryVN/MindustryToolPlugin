@@ -86,16 +86,20 @@ public class HttpServer {
         });
 
         app.get("stats", context -> {
-            Core.app.post(() -> {
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(getStats());
+            context.async(() -> {
+                Core.app.post(() -> {
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(getStats());
+                });
             });
         });
 
         app.get("image", context -> {
-            Core.app.post(() -> {
-                context.contentType(ContentType.IMAGE_PNG);
-                context.result(mapPreview());
+            context.async(() -> {
+                Core.app.post(() -> {
+                    context.contentType(ContentType.IMAGE_PNG);
+                    context.result(mapPreview());
+                });
             });
         });
 
@@ -166,26 +170,28 @@ public class HttpServer {
         });
 
         app.get("players", context -> {
-            Core.app.post(() -> {
+            context.async(() -> {
+                Core.app.post(() -> {
 
-                var players = new ArrayList<Player>();
-                Groups.player.forEach(players::add);
+                    var players = new ArrayList<Player>();
+                    Groups.player.forEach(players::add);
 
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(players.stream()//
-                        .map(player -> new PlayerDto()//
-                                .setName(player.coloredName())//
-                                .setUuid(player.uuid())//
-                                .setIp(player.ip())
-                                .setLocale(player.locale())//
-                                .setAdmin(player.admin)//
-                                .setJoinedAt(Session.contains(player) //
-                                        ? Session.get(player).joinedAt
-                                        : Instant.now().toEpochMilli())
-                                .setTeam(new TeamDto()//
-                                        .setColor(player.team().color.toString())//
-                                        .setName(player.team().name)))
-                        .collect(Collectors.toList()));
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(players.stream()//
+                            .map(player -> new PlayerDto()//
+                                    .setName(player.coloredName())//
+                                    .setUuid(player.uuid())//
+                                    .setIp(player.ip())
+                                    .setLocale(player.locale())//
+                                    .setAdmin(player.admin)//
+                                    .setJoinedAt(Session.contains(player) //
+                                            ? Session.get(player).joinedAt
+                                            : Instant.now().toEpochMilli())
+                                    .setTeam(new TeamDto()//
+                                            .setColor(player.team().color.toString())//
+                                            .setName(player.team().name)))
+                            .collect(Collectors.toList()));
+                });
             });
         });
 
@@ -213,45 +219,49 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            Core.app.post(() -> {
+            context.async(() -> {
+                Core.app.post(() -> {
 
-                Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
+                    Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
 
-                var result = bans.list()//
-                        .stream()//
-                        .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
-                        .skip(offset)//
-                        .limit(size)//
-                        .map(ban -> new PlayerInfoDto()
-                                .setId(ban.id)
-                                .setLastName(ban.lastName)
-                                .setLastIP(ban.lastIP)
-                                .setIps(ban.ips.list())
-                                .setNames(ban.names.list())
-                                .setAdminUsid(ban.adminUsid)
-                                .setTimesKicked(ban.timesKicked)
-                                .setTimesJoined(ban.timesJoined)
-                                .setBanned(ban.banned)
-                                .setAdmin(ban.admin)
-                                .setLastKicked(ban.lastKicked))
-                        .toList();
+                    var result = bans.list()//
+                            .stream()//
+                            .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
+                            .skip(offset)//
+                            .limit(size)//
+                            .map(ban -> new PlayerInfoDto()
+                                    .setId(ban.id)
+                                    .setLastName(ban.lastName)
+                                    .setLastIP(ban.lastIP)
+                                    .setIps(ban.ips.list())
+                                    .setNames(ban.names.list())
+                                    .setAdminUsid(ban.adminUsid)
+                                    .setTimesKicked(ban.timesKicked)
+                                    .setTimesJoined(ban.timesJoined)
+                                    .setBanned(ban.banned)
+                                    .setAdmin(ban.admin)
+                                    .setLastKicked(ban.lastKicked))
+                            .toList();
 
-                context.contentType(ContentType.APPLICATION_JSON);
-                context.json(result);
+                    context.contentType(ContentType.APPLICATION_JSON);
+                    context.json(result);
+                });
             });
         });
 
         app.get("kicks", context -> {
-            Core.app.post(() -> {
-                var result = new HashMap<>();
-                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                    if (entry.value != 0 && Time.millis() - entry.value < 0) {
-                        result.put(entry.key, entry.value);
+            context.async(() -> {
+                Core.app.post(() -> {
+                    var result = new HashMap<>();
+                    for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                        if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                            result.put(entry.key, entry.value);
+                        }
                     }
-                }
-                context.contentType(ContentType.APPLICATION_JSON);
+                    context.contentType(ContentType.APPLICATION_JSON);
 
-                context.json(result);
+                    context.json(result);
+                });
             });
         });
 
@@ -330,61 +340,63 @@ public class HttpServer {
         });
 
         app.get("json", context -> {
-            Core.app.post(() -> {
+            context.async(() -> {
+                Core.app.post(() -> {
 
-                var data = new HashMap<String, Object>();
+                    var data = new HashMap<String, Object>();
 
-                data.put("stats", getStats());
-                data.put("session", Session.get());
-                data.put("hud", HudUtils.menus.asMap());
-                data.put("buildLogs", controller.apiGateway.buildLogs);
-                data.put("isHub", Config.IS_HUB);
-                data.put("ip", Config.SERVER_IP);
-                data.put("units", Groups.unit.size());
-                data.put("enemies", Vars.state.enemies);
-                data.put("tps", Core.graphics.getFramesPerSecond());
+                    data.put("stats", getStats());
+                    data.put("session", Session.get());
+                    data.put("hud", HudUtils.menus.asMap());
+                    data.put("buildLogs", controller.apiGateway.buildLogs);
+                    data.put("isHub", Config.IS_HUB);
+                    data.put("ip", Config.SERVER_IP);
+                    data.put("units", Groups.unit.size());
+                    data.put("enemies", Vars.state.enemies);
+                    data.put("tps", Core.graphics.getFramesPerSecond());
 
-                var gameStats = new HashMap<String, Object>();
+                    var gameStats = new HashMap<String, Object>();
 
-                gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
-                gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
-                gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
-                gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
-                gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
-                gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
-                gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
-                gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
+                    gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
+                    gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
+                    gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
+                    gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
+                    gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
+                    gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
+                    gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
+                    gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
-                data.put("gameStats", gameStats);
-                data.put("locales", Vars.locales);
+                    data.put("gameStats", gameStats);
+                    data.put("locales", Vars.locales);
 
-                var maps = new ArrayList<HashMap<String, String>>();
-                Vars.maps.all().forEach(map -> {
-                    var tags = new HashMap<String, String>();
-                    map.tags.each((key, value) -> tags.put(key, value));
-                    maps.add(tags);
+                    var maps = new ArrayList<HashMap<String, String>>();
+                    Vars.maps.all().forEach(map -> {
+                        var tags = new HashMap<String, String>();
+                        map.tags.each((key, value) -> tags.put(key, value));
+                        maps.add(tags);
+                    });
+                    data.put("maps",
+                            Vars.maps.all().map(map -> java.util.Map.of(
+                                    "name", map.name(), //
+                                    "author", map.author(), //
+                                    "file", map.file.absolutePath(),
+                                    "tags", map.tags,
+                                    "description", map.description(),
+                                    "width", map.width,
+                                    "height", map.height)).list());
+                    data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
+                    data.put("votes", controller.voteHandler.votes);
+
+                    var settings = new HashMap<String, Object>();
+
+                    Core.settings.keys().forEach(key -> {
+                        settings.put(key, Core.settings.get(key, null));
+                    });
+
+                    data.put("settings", settings);
+
+                    context.json(data);
                 });
-                data.put("maps",
-                        Vars.maps.all().map(map -> java.util.Map.of(
-                                "name", map.name(), //
-                                "author", map.author(), //
-                                "file", map.file.absolutePath(),
-                                "tags", map.tags,
-                                "description", map.description(),
-                                "width", map.width,
-                                "height", map.height)).list());
-                data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-                data.put("votes", controller.voteHandler.votes);
-
-                var settings = new HashMap<String, Object>();
-
-                Core.settings.keys().forEach(key -> {
-                    settings.put(key, Core.settings.get(key, null));
-                });
-
-                data.put("settings", settings);
-
-                context.json(data);
             });
         });
 

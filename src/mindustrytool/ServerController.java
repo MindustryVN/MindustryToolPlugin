@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.pf4j.Plugin;
 
+import arc.Core;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
@@ -91,7 +92,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
 
     @Override
     public void onEvent(Object event) {
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+        Core.app.post(() -> {
 
             if (event instanceof PlayerJoin playerJoin) {
                 eventHandler.onPlayerJoin(playerJoin);

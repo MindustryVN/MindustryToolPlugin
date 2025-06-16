@@ -19,8 +19,11 @@ public class Config {
 
         public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
 
-        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(0, 20,
-                        10, TimeUnit.SECONDS,
+        public static final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(
+                        0,
+                        20,
+                        5,
+                        TimeUnit.SECONDS,
                         new SynchronousQueue<Runnable>());
 
         public static final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors

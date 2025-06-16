@@ -87,8 +87,10 @@ public class HttpServer {
         });
 
         app.get("stats", context -> {
+            context.contentType(ContentType.JSON);
             context.future(() -> {
                 var future = new CompletableFuture<StatsDto>();
+
                 Core.app.post(() -> {
                     future.complete(getStats());
                 });

@@ -87,8 +87,8 @@ public class HttpServer {
 
         app.get("stats", context -> {
             Core.app.post(() -> {
-                context.json(getStats());
                 context.contentType(ContentType.APPLICATION_JSON);
+                context.json(getStats());
             });
         });
 

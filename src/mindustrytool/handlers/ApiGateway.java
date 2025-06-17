@@ -182,7 +182,7 @@ public class ApiGateway {
             try {
                 var result = httpClient.send(req, BodyHandlers.ofString()).body();
                 return JsonUtils.readJsonAsClass(result, ServerDto.class);
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return new ServerDto();
             }

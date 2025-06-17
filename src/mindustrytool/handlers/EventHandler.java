@@ -408,11 +408,13 @@ public class EventHandler {
                 return;
             }
 
-            try {
-                controller.apiGateway.sendChatMessage(chat);
-            } catch (Exception e) {
-                Log.err(e);
-            }
+            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                try {
+                    controller.apiGateway.sendChatMessage(chat);
+                } catch (Exception e) {
+                    Log.err(e);
+                }
+            });
 
             HashMap<String, List<Player>> groupByLocale = new HashMap<>();
 
@@ -481,7 +483,11 @@ public class EventHandler {
                 }
             }, 10, TimeUnit.SECONDS);
 
-            controller.apiGateway.sendChatMessage(chat);
+            Log.info(chat);
+
+            Config.BACKGROUND_SCHEDULER.submit(() -> {
+                controller.apiGateway.sendChatMessage(chat);
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -559,7 +565,11 @@ public class EventHandler {
                             .setName(team.name)//
                             .setColor(team.color.toString()));
 
-            controller.apiGateway.sendChatMessage(chat);
+            Log.info(chat);
+
+            Config.BACKGROUND_SCHEDULER.submit(() -> {
+                controller.apiGateway.sendChatMessage(chat);
+            });
 
             var playerData = controller.apiGateway.setPlayer(request);
 
@@ -664,10 +674,12 @@ public class EventHandler {
 
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
+
         Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 player.sendMessage(
-                        "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait".formatted(name));
+                        "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait"
+                                .formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
                 var data = controller.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");

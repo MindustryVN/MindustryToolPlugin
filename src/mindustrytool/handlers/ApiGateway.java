@@ -64,11 +64,11 @@ public class ApiGateway {
                         .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(logs)))//
                         .build();
 
-                httpClient.sendAsync(request, BodyHandlers.ofString()).whenComplete((_result, error) -> {
-                    if (error != null) {
-                        Log.err("Can not send console message: " + error.getMessage());
-                    }
-                });
+                try {
+                    httpClient.send(request, BodyHandlers.ofString());
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
 
             }
 
@@ -111,12 +111,11 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
                 .build();
 
-        httpClient.sendAsync(request, BodyHandlers.ofString())
-                .whenComplete((_result, error) -> {
-                    if (error != null) {
-                        Log.err("Can not send console message: " + error.getMessage());
-                    }
-                });
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -140,14 +139,11 @@ public class ApiGateway {
                 .POST(HttpRequest.BodyPublishers.ofString(chat))//
                 .build();
 
-        Log.info(chat);
-
-        httpClient.sendAsync(request, BodyHandlers.ofString())
-                .whenComplete((_result, error) -> {
-                    if (error != null) {
-                        Log.err("Can not send console message: " + error.getMessage());
-                    }
-                });
+        try {
+            httpClient.send(request, BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 

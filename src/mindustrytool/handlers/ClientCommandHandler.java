@@ -259,29 +259,31 @@ public class ClientCommandHandler {
         player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
         try {
-            var data = controller.apiGateway.host(id);
-            player.sendMessage("[green]Redirecting");
-            Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
-                    .formatted(player.coloredName(), name));
+            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                var data = controller.apiGateway.host(id);
+                player.sendMessage("[green]Redirecting");
+                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
+                        .formatted(player.coloredName(), name));
 
-            String host = "";
-            int port = 6567;
+                String host = "";
+                int port = 6567;
 
-            var colon = data.lastIndexOf(":");
+                var colon = data.lastIndexOf(":");
 
-            if (colon > 0) {
-                host = data.substring(0, colon);
-                port = Integer.parseInt(data.substring(colon + 1));
-            } else {
-                host = data;
-            }
+                if (colon > 0) {
+                    host = data.substring(0, colon);
+                    port = Integer.parseInt(data.substring(colon + 1));
+                } else {
+                    host = data;
+                }
 
-            final var h = host;
-            final var p = port;
+                final var h = host;
+                final var p = port;
 
-            Groups.player.forEach(target -> {
-                Log.info("Redirecting player " + target.name + " to " + h + ":" + p);
-                Call.connect(target.con, h, p);
+                Groups.player.forEach(target -> {
+                    Log.info("Redirecting player " + target.name + " to " + h + ":" + p);
+                    Call.connect(target.con, h, p);
+                });
             });
         } catch (Exception e) {
             player.sendMessage("Error: Can not load server");

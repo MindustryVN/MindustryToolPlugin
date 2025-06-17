@@ -225,6 +225,9 @@ public abstract class WorkflowNode {
     }
 
     public static void load(List<LoadNodeData> load) {
+        nodes.values().forEach(node -> node.unload());
+        nodes.clear();
+        
         for (var data : load) {
             var node = WorkflowNode.nodeTypes.get(data.getName());
 

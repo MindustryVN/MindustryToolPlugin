@@ -8,8 +8,6 @@ import arc.struct.ObjectMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import mindustry.game.EventType;
-import mindustry.gen.Player;
 
 @Data
 @Accessors(chain = true)
@@ -20,25 +18,22 @@ public abstract class WorkflowNode {
     private int x;
     private int y;
 
-    private final String name;
-    private final String group;
-    private final String color;
+    protected final String name;
+    protected final String group;
+    protected final String color;
 
-    private List<WorkflowConsumer<?>> consumers = new ArrayList<>();
-    private List<WorkflowProducer> producers = new ArrayList<>();
-    private List<WorkflowOutput> outputs = List.of(new WorkflowOutput("Next", "None", 0));
+    protected List<WorkflowConsumer<?>> consumers = new ArrayList<>();
+    protected List<WorkflowProducer> producers = new ArrayList<>();
+    protected List<WorkflowOutput> outputs = List.of(new WorkflowOutput("Next", "None", 0));
 
     private final List<WorkflowParameter<?>> parameters = new ArrayList<>();
 
     public static final ObjectMap<Integer, WorkflowNode> nodes = new ObjectMap<>();
-    public static final ObjectMap<String, WorkflowNode> nodeTypes = new ObjectMap<>();
 
     public WorkflowNode(String name, String group, String color) {
         this.name = name;
         this.group = group;
         this.color = color;
-
-        nodeTypes.put(name, this);
     }
 
     public void init() {
@@ -158,78 +153,14 @@ public abstract class WorkflowNode {
         }
     }
 
-    public class EventListenerWorkflow extends WorkflowNode {
-        private WorkflowParameter<Boolean> beforeParameter = new WorkflowParameter<>("before", Boolean.class, true,
-                true);
-        private WorkflowParameter<String> classParameter = new WorkflowParameter<>("class", String.class, true, "");
-
-        private WorkflowProducer eventProducer = new WorkflowProducer("event",
-                () -> Class.forName(classParameter.value));
-
-        {
-            preInit();
-        }
-
-        private void preInit() {
-            var eventType = new EventType();
-            for (var clazz : eventType.getClass().getDeclaredClasses()) {
-                classParameter.option(clazz.getSimpleName(), clazz.getCanonicalName());
-            }
-        }
-
-        public EventListenerWorkflow() {
-            super("EventListener", "emitter", "#ff33bb");
-        }
-
-        @Override
-        public void init() {
-            Class<?> eventClass;
-            try {
-                eventClass = Class.forName(classParameter.getValue());
-
-                Workflow.on(eventClass, (event, before) -> {
-                    if (before == this.beforeParameter.getValue()) {
-                        next(new WorkflowEmitEvent(0, this.getId()).putValue(eventProducer.name, event));
-                    }
-                });
-
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Invalid class: " + classParameter.getValue());
-            }
-        }
-
-        @Override
-        public int execute(WorkflowEmitEvent event) {
-            return outputs.get(0).getNextId();
-        }
-    }
-
-    public class SendChatWorkflow extends WorkflowNode {
-        private WorkflowConsumer<Player> playerConsumer = new WorkflowConsumer<>("player", Player.class, null);
-        private WorkflowParameter<String> messageParameter = new WorkflowParameter<>("message", String.class, true,
-                null);
-
-        public SendChatWorkflow() {
-            super("SendChat", "action", "#33ff44");
-        }
-
-        @Override
-        public int execute(WorkflowEmitEvent event) {
-            Player player = playerConsumer.consume(event);
-            String message = messageParameter.getValue();
-
-            player.sendMessage(message);
-
-            return -1;
-        }
-    }
-
+    
+    
     public static void load(List<LoadNodeData> load) {
         nodes.values().forEach(node -> node.unload());
         nodes.clear();
         
         for (var data : load) {
-            var node = WorkflowNode.nodeTypes.get(data.getName());
+            var node = Workflow.nodeTypes.get(data.getName());
 
             if (node == null) {
                 throw new IllegalArgumentException("Node type not found: " + data.getName());

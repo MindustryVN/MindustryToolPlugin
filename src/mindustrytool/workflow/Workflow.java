@@ -4,9 +4,12 @@ import arc.func.Cons;
 import arc.func.Cons2;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import mindustrytool.workflow.nodes.EventListenerWorkflow;
+import mindustrytool.workflow.nodes.SendChatWorkflow;
 
 public class Workflow {
     private static final ObjectMap<Object, Seq<Cons2<?, Boolean>>> events = new ObjectMap<>();
+    public static final ObjectMap<String, WorkflowNode> nodeTypes = new ObjectMap<>();
 
     public static <T> Cons2<T, Boolean> on(Class<T> type, Cons2<T, Boolean> listener) {
         events.get(type, () -> new Seq<>(Cons.class)).add(listener);
@@ -49,11 +52,20 @@ public class Workflow {
         }
     }
 
+    public static void init() {
+        add(new EventListenerWorkflow());
+        add(new SendChatWorkflow());
+    }
+
+    private static void add(WorkflowNode node) {
+        nodeTypes.put(node.getName(), node);
+    }
+
     public static void clear() {
         events.clear();
+        nodeTypes.clear();
 
         WorkflowNode.nodes.values().forEach(node -> node.unload());
         WorkflowNode.nodes.clear();
-        WorkflowNode.nodeTypes.clear();
     }
 }

@@ -48,6 +48,7 @@ import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.workflow.LoadNodeData;
+import mindustrytool.workflow.Workflow;
 import mindustrytool.workflow.WorkflowNode;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -374,7 +375,7 @@ public class HttpServer {
         });
 
         app.get("workflow/nodes", context -> {
-            context.json(WorkflowNode.nodeTypes.values().toSeq().list());
+            context.json(Workflow.nodeTypes.values().toSeq().list());
         });
 
         app.post("workflow", context -> {

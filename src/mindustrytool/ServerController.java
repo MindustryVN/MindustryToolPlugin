@@ -60,6 +60,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         apiGateway.init();
         httpServer.init();
 
+        Workflow.init();
+
         Config.BACKGROUND_SCHEDULER.schedule(() -> {
             try {
                 if (!Vars.state.isGame()) {

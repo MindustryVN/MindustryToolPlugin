@@ -96,32 +96,37 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void onEvent(Object event) {
         Core.app.post(() -> {
-            Workflow.fire(event, true);
+            try {
 
-            if (event instanceof PlayerJoin playerJoin) {
-                eventHandler.onPlayerJoin(playerJoin);
-            } else if (event instanceof PlayerLeave playerLeave) {
-                eventHandler.onPlayerLeave(playerLeave);
-                HudUtils.onPlayerLeave(playerLeave);
-            } else if (event instanceof PlayerChatEvent playerChat) {
-                eventHandler.onPlayerChat(playerChat);
-            } else if (event instanceof ServerLoadEvent serverLoad) {
-                eventHandler.onServerLoad(serverLoad);
-            } else if (event instanceof PlayerConnect playerConnect) {
-                eventHandler.onPlayerConnect(playerConnect);
-            } else if (event instanceof BlockBuildEndEvent blockBuild) {
-                eventHandler.onBuildBlockEnd(blockBuild);
-            } else if (event instanceof TapEvent tapEvent) {
-                eventHandler.onTap(tapEvent);
-            } else if (event instanceof MenuOptionChooseEvent menuOption) {
-                HudUtils.onMenuOptionChoose(menuOption);
-            } else if (event instanceof GameOverEvent gameOverEvent) {
-                eventHandler.onGameOver(gameOverEvent);
-            } else {
-                Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
+                Workflow.fire(event, true);
+
+                if (event instanceof PlayerJoin playerJoin) {
+                    eventHandler.onPlayerJoin(playerJoin);
+                } else if (event instanceof PlayerLeave playerLeave) {
+                    eventHandler.onPlayerLeave(playerLeave);
+                    HudUtils.onPlayerLeave(playerLeave);
+                } else if (event instanceof PlayerChatEvent playerChat) {
+                    eventHandler.onPlayerChat(playerChat);
+                } else if (event instanceof ServerLoadEvent serverLoad) {
+                    eventHandler.onServerLoad(serverLoad);
+                } else if (event instanceof PlayerConnect playerConnect) {
+                    eventHandler.onPlayerConnect(playerConnect);
+                } else if (event instanceof BlockBuildEndEvent blockBuild) {
+                    eventHandler.onBuildBlockEnd(blockBuild);
+                } else if (event instanceof TapEvent tapEvent) {
+                    eventHandler.onTap(tapEvent);
+                } else if (event instanceof MenuOptionChooseEvent menuOption) {
+                    HudUtils.onMenuOptionChoose(menuOption);
+                } else if (event instanceof GameOverEvent gameOverEvent) {
+                    eventHandler.onGameOver(gameOverEvent);
+                } else {
+                    Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
+                }
+
+                Workflow.fire(event, false);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            Workflow.fire(event, false);
         });
     }
 

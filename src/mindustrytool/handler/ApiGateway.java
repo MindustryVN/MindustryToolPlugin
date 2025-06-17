@@ -1,4 +1,4 @@
-package mindustrytool.handlers;
+package mindustrytool.handler;
 
 import java.io.IOException;
 import java.net.URI;

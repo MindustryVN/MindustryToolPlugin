@@ -1,4 +1,4 @@
-package mindustrytool.handlers;
+package mindustrytool.handler;
 
 import java.util.HashMap;
 import arc.func.Boolf;

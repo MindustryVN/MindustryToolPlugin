@@ -667,7 +667,7 @@ public class EventHandler {
         Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 player.sendMessage(
-                        "[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
+                        "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait".formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
                 var data = controller.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");

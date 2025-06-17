@@ -97,10 +97,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public void onEvent(Object event) {
         Core.app.post(() -> {
             try {
-
-                Log.info(event);
-
-                // Workflow.fire(event, true);
+                Workflow.fire(event, true);
 
                 if (event instanceof PlayerJoin playerJoin) {
                     eventHandler.onPlayerJoin(playerJoin);
@@ -125,7 +122,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                     Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
                 }
 
-                // Workflow.fire(event, false);
+                Workflow.fire(event, false);
             } catch (Exception e) {
                 e.printStackTrace();
             }

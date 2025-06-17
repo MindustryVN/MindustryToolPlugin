@@ -373,11 +373,11 @@ public class HttpServer {
             context.result();
         });
 
-        app.get("/workflows/nodes", context -> {
+        app.get("workflow/nodes", context -> {
             context.json(WorkflowNode.nodeTypes.values().toSeq().list());
         });
 
-        app.post("workflows", context -> {
+        app.post("workflow", context -> {
             var payload = JsonUtils.readJsonAsClass(context.body(), new TypeReference<List<LoadNodeData>>() {
             });
             WorkflowNode.load(payload);

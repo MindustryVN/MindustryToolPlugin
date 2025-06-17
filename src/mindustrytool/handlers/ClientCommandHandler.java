@@ -285,6 +285,7 @@ public class ClientCommandHandler {
             });
         } catch (Exception e) {
             player.sendMessage("Error: Can not load server");
+            e.printStackTrace();
         }
     }
 

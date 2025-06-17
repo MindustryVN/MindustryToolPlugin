@@ -691,6 +691,7 @@ public class EventHandler {
                 Call.connect(player.con, InetAddress.getByName(host.trim()).getHostAddress(), port);
             } catch (Exception e) {
                 player.sendMessage("Error: Can not load server");
+                e.printStackTrace();
             }
         });
     }

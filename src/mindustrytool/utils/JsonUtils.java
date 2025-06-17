@@ -2,6 +2,7 @@ package mindustrytool.utils;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,13 @@ public class JsonUtils {
     }
 
     public static <T> T readJsonAsClass(String data, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(data, clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Can not parse to json: " + e.getMessage(), e);
+        }
+    }
+    public static <T> T readJsonAsClass(String data, TypeReference<T> clazz) {
         try {
             return objectMapper.readValue(data, clazz);
         } catch (Exception e) {

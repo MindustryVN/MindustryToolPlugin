@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -44,7 +45,10 @@ import mindustrytool.type.StartServerDto;
 import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Utils;
+import mindustrytool.workflow.LoadNodeData;
+import mindustrytool.workflow.WorkflowNode;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
@@ -367,6 +371,17 @@ public class HttpServer {
             Call.sendMessage("[]" + message);
 
             context.result();
+        });
+
+        app.get("/workflows/nodes", context -> {
+            context.json(WorkflowNode.nodeTypes.values().toSeq().list());
+        });
+
+        app.post("workflows", context -> {
+            var payload = JsonUtils.readJsonAsClass(context.body(), new TypeReference<List<LoadNodeData>>() {
+            });
+            WorkflowNode.load(payload);
+            context.json(WorkflowNode.nodes.values().toSeq().list());
         });
 
         app.get("json", context -> {

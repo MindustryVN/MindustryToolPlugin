@@ -28,6 +28,7 @@ import mindustrytool.handler.ServerCommandHandler;
 import mindustrytool.handler.SessionHandler;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.JsonUtils;
+import mindustrytool.workflow.Workflow;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
 public class ServerController extends Plugin implements MindustryToolPlugin {
@@ -95,6 +96,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void onEvent(Object event) {
         Core.app.post(() -> {
+            Workflow.fire(event, true);
+
             if (event instanceof PlayerJoin playerJoin) {
                 eventHandler.onPlayerJoin(playerJoin);
             } else if (event instanceof PlayerLeave playerLeave) {
@@ -117,6 +120,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             } else {
                 Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
             }
+
+            Workflow.fire(event, false);
         });
     }
 
@@ -132,6 +137,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         serverCommandHandler.unload();
         sessionHandler.clear();
 
+        Workflow.clear();
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
         JsonUtils.objectMapper = null;

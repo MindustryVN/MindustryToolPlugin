@@ -98,6 +98,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         Core.app.post(() -> {
             try {
 
+                Log.info(event);
+
                 // Workflow.fire(event, true);
 
                 if (event instanceof PlayerJoin playerJoin) {

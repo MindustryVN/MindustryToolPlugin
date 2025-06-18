@@ -11,6 +11,7 @@ import arc.func.Cons2;
 import arc.struct.Seq;
 import arc.util.Log;
 import lombok.Getter;
+import mindustry.Vars;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -25,7 +26,7 @@ public class Workflow {
     @Getter
     private final HashMap<Integer, WorkflowNode> nodes = new HashMap<>();
 
-    private static final String WORKFLOW_PATH = "workflow/workflow.json";
+    private final String WORKFLOW_PATH = Vars.dataDirectory.child("workflow/workflow.json").absolutePath();
 
     @Getter
     public WorkflowContext context;

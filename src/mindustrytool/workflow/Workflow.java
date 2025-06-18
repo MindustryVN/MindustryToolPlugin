@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.HashMap;
 
 import arc.func.Cons;
@@ -42,7 +41,7 @@ public class Workflow {
         if (!Files.exists(Path.of(WORKFLOW_PATH))) {
             Log.info("Workflow file not found, creating new workflow context.");
             context = new WorkflowContext();
-            context.setCreatedAt(Instant.now());
+            context.setCreatedAt(System.currentTimeMillis());
             writeWorkflowToFile();
             return;
         }
@@ -52,7 +51,7 @@ public class Workflow {
             context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
         } catch (IOException e) {
             context = new WorkflowContext();
-            context.setCreatedAt(Instant.now());
+            context.setCreatedAt(System.currentTimeMillis());
             Log.err("Fail to load workflow from file", e);
         }
     }

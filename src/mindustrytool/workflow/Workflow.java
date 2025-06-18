@@ -39,6 +39,14 @@ public class Workflow {
     }
 
     private void loadWorkflowFromFile() {
+        if (!Files.exists(Path.of(WORKFLOW_PATH))) {
+            Log.info("Workflow file not found, creating new workflow context.");
+            context = new WorkflowContext();
+            context.setCreatedAt(Instant.now());
+            writeWorkflowToFile();
+            return;
+        }
+
         try {
             String content = Files.readString(Path.of(WORKFLOW_PATH));
             context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);

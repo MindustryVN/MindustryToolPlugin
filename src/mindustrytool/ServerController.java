@@ -40,6 +40,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
     public HttpServer httpServer = new HttpServer(this);
     public SessionHandler sessionHandler = new SessionHandler();
+    public Workflow workflow = new Workflow();
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
@@ -59,8 +60,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         eventHandler.init();
         apiGateway.init();
         httpServer.init();
-
-        Workflow.init();
+        workflow.init();
 
         Config.BACKGROUND_SCHEDULER.schedule(() -> {
             try {
@@ -99,7 +99,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public void onEvent(Object event) {
         Core.app.post(() -> {
             try {
-                Workflow.fire(event, true);
+                workflow.fire(event, true);
 
                 if (event instanceof PlayerJoin playerJoin) {
                     eventHandler.onPlayerJoin(playerJoin);
@@ -124,7 +124,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                     Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
                 }
 
-                Workflow.fire(event, false);
+                workflow.fire(event, false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -142,8 +142,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         clientCommandHandler.unload();
         serverCommandHandler.unload();
         sessionHandler.clear();
+        workflow.clear();
 
-        Workflow.clear();
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
         JsonUtils.objectMapper = null;

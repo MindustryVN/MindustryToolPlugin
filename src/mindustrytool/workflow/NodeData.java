@@ -5,20 +5,13 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class LoadNodeData {
+public class NodeData {
     private int id;
     private int x;
     private int y;
     private String name;
-    private List<Parameter> parameters;
     private List<Output> outputs;
     private List<Consumer> consumers;
-
-    @Data
-    public class Parameter {
-        private String name;
-        private Object value;
-    }
 
     @Data
     public class Output {

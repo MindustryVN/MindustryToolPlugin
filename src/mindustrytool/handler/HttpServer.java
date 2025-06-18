@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -36,6 +35,7 @@ import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.PlayerInfoDto;
 import mindustrytool.type.CommandParamDto;
+import mindustrytool.type.WorkflowContext;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.ModDto;
 import mindustrytool.type.ModMetaDto;
@@ -45,11 +45,8 @@ import mindustrytool.type.StartServerDto;
 import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Utils;
-import mindustrytool.workflow.LoadNodeData;
-import mindustrytool.workflow.Workflow;
-import mindustrytool.workflow.WorkflowNode;
+import mindustrytool.workflow.errors.WorkflowError;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
@@ -375,14 +372,19 @@ public class HttpServer {
         });
 
         app.get("workflow/nodes", context -> {
-            context.json(Workflow.nodeTypes.values().toSeq().list());
+            context.json(controller.workflow.getNodeTypes().values().toSeq().list());
         });
 
         app.post("workflow", context -> {
-            var payload = JsonUtils.readJsonAsClass(context.body(), new TypeReference<List<LoadNodeData>>() {
-            });
-            WorkflowNode.load(payload);
-            context.json(WorkflowNode.nodes.values().toSeq().list());
+            var payload = context.bodyAsClass(WorkflowContext.class);
+            try {
+                controller.workflow.load(payload);
+            } catch (WorkflowError e) {
+                Log.err("Failed to load workflow", e);
+                context.status(400).result("Failed to load workflow: " + e.getMessage());
+                return;
+            }
+            context.json(controller.workflow.getNodes().values().toSeq().list());
         });
 
         app.get("json", context -> {

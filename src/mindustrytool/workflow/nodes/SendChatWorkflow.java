@@ -5,9 +5,8 @@ import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatWorkflow extends WorkflowNode {
-    private WorkflowConsumer<Player> playerConsumer = new WorkflowConsumer<>("player", Player.class, null);
-    private WorkflowParameter<String> messageParameter = new WorkflowParameter<>("message", String.class, true,
-            null);
+    private WorkflowConsumer<Player> playerConsumer = new WorkflowConsumer<>("player", Player.class);
+    private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatWorkflow() {
         super("SendChat", "action", "#33ff44");
@@ -16,7 +15,7 @@ public class SendChatWorkflow extends WorkflowNode {
     @Override
     public int execute(WorkflowEmitEvent event) {
         Player player = playerConsumer.consume(event);
-        String message = messageParameter.getValue();
+        String message = messageConsumer.getValue();
 
         player.sendMessage(message);
 

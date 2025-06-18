@@ -6,12 +6,13 @@ import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowNode;
 
 public class EventListenerWorkflow extends WorkflowNode {
-    private WorkflowParameter<Boolean> beforeParameter = new WorkflowParameter<>("before", Boolean.class, true,
-            true);
-    private WorkflowParameter<String> classParameter = new WorkflowParameter<>("class", String.class, true, "");
+    private WorkflowConsumer<Boolean> beforeConsumer = new WorkflowConsumer<>("before", Boolean.class)
+            .defaultValue(true);
+
+    private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class);
 
     private WorkflowProducer eventProducer = new WorkflowProducer("event",
-            () -> Class.forName(classParameter.getValue()));
+            () -> Class.forName(classConsumer.getValue()));
 
     {
         preInit();
@@ -20,7 +21,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     private void preInit() {
         var eventType = new EventType();
         for (var clazz : eventType.getClass().getDeclaredClasses()) {
-            classParameter.option(clazz.getSimpleName(), clazz.getCanonicalName());
+            classConsumer.option(clazz.getSimpleName(), clazz.getCanonicalName());
         }
     }
 
@@ -29,19 +30,20 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     @Override
-    public void init() {
+    public void init(Workflow context) {
         Class<?> eventClass;
         try {
-            eventClass = Class.forName(classParameter.getValue());
+            eventClass = Class.forName(classConsumer.getValue());
 
-            Workflow.on(eventClass, (event, before) -> {
-                if (before == this.beforeParameter.getValue()) {
-                    next(new WorkflowEmitEvent(0, this.getId()).putValue(eventProducer.getName(), event));
+            context.on(eventClass, (event, before) -> {
+                if (before == this.beforeConsumer.asBoolean()) {
+                    next(new WorkflowEmitEvent(0, this.getId(), context)
+                            .putValue(eventProducer.getName(), event));
                 }
             });
 
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Invalid class: " + classParameter.getValue());
+            throw new RuntimeException("Invalid class: " + classConsumer.getValue());
         }
     }
 

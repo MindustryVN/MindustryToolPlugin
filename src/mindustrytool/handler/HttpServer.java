@@ -372,7 +372,7 @@ public class HttpServer {
         });
 
         app.get("workflow/nodes", context -> {
-            context.json(controller.workflow.getContext());
+            context.json(controller.workflow.getNodeTypes());
         });
 
         app.post("workflow", context -> {

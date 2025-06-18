@@ -5,10 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.HashMap;
 
 import arc.func.Cons;
 import arc.func.Cons2;
-import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Log;
 import lombok.Getter;
@@ -19,12 +19,12 @@ import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
 
 public class Workflow {
-    private final ObjectMap<Object, Seq<Cons2<?, Boolean>>> events = new ObjectMap<>();
+    private final HashMap<Object, Seq<Cons2<?, Boolean>>> events = new HashMap<>();
 
     @Getter
-    private final ObjectMap<String, WorkflowNode> nodeTypes = new ObjectMap<>();
+    private final HashMap<String, WorkflowNode> nodeTypes = new HashMap<>();
     @Getter
-    private final ObjectMap<Integer, WorkflowNode> nodes = new ObjectMap<>();
+    private final HashMap<Integer, WorkflowNode> nodes = new HashMap<>();
 
     private static final String WORKFLOW_PATH = "workflow/workflow.json";
 
@@ -134,13 +134,13 @@ public class Workflow {
     }
 
     public <T> Cons2<T, Boolean> on(Class<T> type, Cons2<T, Boolean> listener) {
-        events.get(type, () -> new Seq<>(Cons.class)).add(listener);
+        events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons.class)).add(listener);
 
         return listener;
     }
 
     public <T> boolean remove(Class<T> type, Cons2<T, Boolean> listener) {
-        return events.get(type, () -> new Seq<>(Cons.class)).remove(listener);
+        return events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons.class)).remove(listener);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

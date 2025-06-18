@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class NodeData {
-    private int id;
+    private String id;
     private int x;
     private int y;
     private String name;
@@ -16,7 +16,7 @@ public class NodeData {
     @Data
     public class Output {
         private String name;
-        private int nextId;
+        private String nextId;
     }
 
     @Data

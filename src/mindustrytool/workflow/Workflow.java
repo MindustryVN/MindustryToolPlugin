@@ -24,7 +24,7 @@ public class Workflow {
     @Getter
     private final HashMap<String, WorkflowNode> nodeTypes = new HashMap<>();
     @Getter
-    private final HashMap<Integer, WorkflowNode> nodes = new HashMap<>();
+    private final HashMap<String, WorkflowNode> nodes = new HashMap<>();
 
     private final String WORKFLOW_PATH = Vars.dataDirectory.child("workflow/workflow.json").absolutePath();
 

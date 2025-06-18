@@ -48,7 +48,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     @Override
-    public int execute(WorkflowEmitEvent event) {
+    public String execute(WorkflowEmitEvent event) {
         return outputs.get(0).getNextId();
     }
 }

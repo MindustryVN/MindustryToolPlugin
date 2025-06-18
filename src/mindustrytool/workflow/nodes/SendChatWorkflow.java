@@ -13,12 +13,12 @@ public class SendChatWorkflow extends WorkflowNode {
     }
 
     @Override
-    public int execute(WorkflowEmitEvent event) {
+    public String execute(WorkflowEmitEvent event) {
         Player player = playerConsumer.consume(event);
         String message = messageConsumer.getValue();
 
         player.sendMessage(message);
 
-        return -1;
+        return null;
     }
 }

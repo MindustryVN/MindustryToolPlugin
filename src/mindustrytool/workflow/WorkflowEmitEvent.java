@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class WorkflowEmitEvent {
     private final int step;
-    private final int fromId;
+    private final String fromId;
 
     private final Workflow context;
     private final Map<String, Object> values = new HashMap<>();
@@ -18,13 +18,13 @@ public class WorkflowEmitEvent {
         return this;
     }
 
-    public WorkflowEmitEvent(int step, int fromId, Workflow context) {
+    public WorkflowEmitEvent(int step, String fromId, Workflow context) {
         this.step = step;
         this.fromId = fromId;
         this.context = context;
     }
 
-    public WorkflowEmitEvent next(int fromId) {
+    public WorkflowEmitEvent next(String fromId) {
         return new WorkflowEmitEvent(step + 1, fromId, context);
     }
 }

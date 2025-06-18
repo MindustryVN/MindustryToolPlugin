@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 public abstract class WorkflowNode {
     private static final int MAX_STEP = 500;
 
-    private int id;
+    private String id;
     private int x;
     private int y;
 
@@ -23,7 +23,7 @@ public abstract class WorkflowNode {
 
     protected List<WorkflowConsumer<?>> consumers = new ArrayList<>();
     protected List<WorkflowProducer> producers = new ArrayList<>();
-    protected List<WorkflowOutput> outputs = List.of(new WorkflowOutput("Next", "None", 0));
+    protected List<WorkflowOutput> outputs = List.of(new WorkflowOutput("Next", "None", null));
 
     public void init(Workflow context) {
     }
@@ -38,7 +38,7 @@ public abstract class WorkflowNode {
         this.color = color;
     }
 
-    public abstract int execute(WorkflowEmitEvent event);
+    public abstract String execute(WorkflowEmitEvent event);
 
     public void next(WorkflowEmitEvent event) {
         if (event.getStep() > MAX_STEP) {
@@ -47,7 +47,7 @@ public abstract class WorkflowNode {
 
         var nextId = execute(event);
 
-        if (nextId == -1) {
+        if (nextId == null) {
             return;
         }
 
@@ -77,6 +77,14 @@ public abstract class WorkflowNode {
             producers.add(this);
         }
 
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class WorkflowOutput {
+        private final String name;
+        private final String description;
+        private String nextId;
     }
 
     @Data

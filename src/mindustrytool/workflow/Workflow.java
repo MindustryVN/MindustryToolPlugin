@@ -59,6 +59,10 @@ public class Workflow {
 
     private void writeWorkflowToFile() {
         try {
+            if (!Files.exists(Path.of(WORKFLOW_PATH))) {
+                Files.createDirectories(Path.of(WORKFLOW_PATH).getParent());
+            }
+
             Files.writeString(Path.of(WORKFLOW_PATH), JsonUtils.toJsonString(context));
         } catch (IOException e) {
             Log.err("Fail to write workflow to file", e);

@@ -28,7 +28,8 @@ public class Workflow {
 
     private static final String WORKFLOW_PATH = "workflow/workflow.json";
 
-    public WorkflowContext current;
+    @Getter
+    public WorkflowContext context;
 
     public void init() {
         add(new EventListenerWorkflow());
@@ -40,17 +41,17 @@ public class Workflow {
     private void loadWorkflowFromFile() {
         try {
             String content = Files.readString(Path.of(WORKFLOW_PATH));
-            current = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
+            context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
         } catch (IOException e) {
-            current = new WorkflowContext();
-            current.setCreatedAt(Instant.now());
+            context = new WorkflowContext();
+            context.setCreatedAt(Instant.now());
             Log.err("Fail to load workflow from file", e);
         }
     }
 
     private void writeWorkflowToFile() {
         try {
-            Files.writeString(Path.of(WORKFLOW_PATH), JsonUtils.toJsonString(current));
+            Files.writeString(Path.of(WORKFLOW_PATH), JsonUtils.toJsonString(context));
         } catch (IOException e) {
             Log.err("Fail to write workflow to file", e);
         }
@@ -67,7 +68,7 @@ public class Workflow {
     }
 
     public void load(WorkflowContext context) {
-        current = context;
+        this.context = context;
         writeWorkflowToFile();
 
         nodes.clear();

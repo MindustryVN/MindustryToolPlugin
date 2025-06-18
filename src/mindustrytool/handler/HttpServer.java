@@ -372,7 +372,7 @@ public class HttpServer {
         });
 
         app.get("workflow/nodes", context -> {
-            context.json(controller.workflow.getNodeTypes().values().toSeq().list());
+            context.json(controller.workflow.getContext());
         });
 
         app.post("workflow", context -> {
@@ -384,7 +384,7 @@ public class HttpServer {
                 context.status(400).result("Failed to load workflow: " + e.getMessage());
                 return;
             }
-            context.json(controller.workflow.getNodes().values().toSeq().list());
+            context.json(controller.workflow.getContext());
         });
 
         app.get("json", context -> {

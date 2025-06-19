@@ -139,14 +139,12 @@ public class Workflow {
                                 + " on node: " + node.getName());
                     }
 
-                    Log.info("Set consumer value: " + consumer.getName() + " to " + consumer.getValue());
-
                     newOutput.setValue(consumer.getValue());
                 });
 
                 nodes.put(newNode.getId(), newNode);
 
-                node.init(this);
+                newNode.init(this);
 
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);

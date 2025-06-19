@@ -120,8 +120,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                     HudUtils.onMenuOptionChoose(menuOption);
                 } else if (event instanceof GameOverEvent gameOverEvent) {
                     eventHandler.onGameOver(gameOverEvent);
-                } else {
-                    Log.warn("Unhandled event: " + event.getClass().getSimpleName() + " " + event);
                 }
 
                 workflow.fire(event, false);

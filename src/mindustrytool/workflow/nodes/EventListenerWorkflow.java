@@ -19,8 +19,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     private void preInit() {
-        var eventType = new EventType();
-        for (var clazz : eventType.getClass().getDeclaredClasses()) {
+        for (var clazz : EventType.class.getDeclaredClasses()) {
             classConsumer.option(clazz.getSimpleName(), clazz.getName());
         }
     }

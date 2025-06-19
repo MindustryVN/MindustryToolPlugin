@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-import arc.func.Cons;
 import arc.func.Cons2;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -154,13 +153,13 @@ public class Workflow {
     }
 
     public <T> Cons2<T, Boolean> on(Class<T> type, Cons2<T, Boolean> listener) {
-        events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons.class)).add(listener);
+        events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons2.class)).add(listener);
 
         return listener;
     }
 
     public <T> boolean remove(Class<T> type, Cons2<T, Boolean> listener) {
-        return events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons.class)).remove(listener);
+        return events.computeIfAbsent(type, (_ignore) -> new Seq<>(Cons2.class)).remove(listener);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

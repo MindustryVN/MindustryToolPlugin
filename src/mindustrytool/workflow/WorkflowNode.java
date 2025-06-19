@@ -7,7 +7,6 @@ import java.util.function.Function;
 import arc.util.Log;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
 
@@ -111,18 +110,31 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    @RequiredArgsConstructor
     public class WorkflowConsumer<T> {
         private final String name;
         private final Class<T> type;
+
         private final List<WorkflowConsumerOption> options = new ArrayList<>();
 
+        private WorkflowConsumerUnit unit;
         private boolean required = true;
         private String value;
         private T defaultValue;
 
+        public WorkflowConsumer(String name, Class<T> type) {
+            this.name = name;
+            this.type = type;
+
+            consumers.add(this);
+        }
+
         public WorkflowConsumer<T> notRequired() {
             this.required = false;
+            return this;
+        }
+
+        public WorkflowConsumer<T> unit(WorkflowConsumerUnit unit) {
+            this.unit = unit;
             return this;
         }
 
@@ -169,12 +181,15 @@ public abstract class WorkflowNode {
             return this;
         }
 
-        {
-            consumers.add(this);
-        }
-
         public WorkflowConsumer<T> option(String name, String value) {
             options.add(new WorkflowConsumerOption(name, value));
+            return this;
+        }
+
+        public WorkflowConsumer<T> options(Class<? extends Enum<?>> enumClass) {
+            for (var enumConstant : enumClass.getEnumConstants()) {
+                options.add(new WorkflowConsumerOption(enumConstant.name(), enumConstant.name()));
+            }
             return this;
         }
 

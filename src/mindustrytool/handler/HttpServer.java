@@ -467,7 +467,7 @@ public class HttpServer {
         });
 
         app.exception(Exception.class, (exception, context) -> {
-            Log.err(exception);
+            Log.err("Unhandled api exception", exception);
 
             try {
                 var result = java.util.Map.of("message",

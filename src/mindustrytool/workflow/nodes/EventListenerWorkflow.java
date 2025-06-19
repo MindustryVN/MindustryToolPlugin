@@ -33,20 +33,14 @@ public class EventListenerWorkflow extends WorkflowNode {
 
     @Override
     public void init(Workflow context) {
-        Class<?> eventClass;
-        try {
-            eventClass = Class.forName(classConsumer.getValue());
+        Class<?> eventClass = classConsumer.asClass();
 
-            context.on(eventClass, (event, before) -> {
-                if (before == this.beforeConsumer.asBoolean()) {
-                    next(new WorkflowEmitEvent(0, this.getId(), context)
-                            .putValue(eventProducer.getName(), event));
-                }
-            });
-
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Invalid class: " + classConsumer.getValue());
-        }
+        context.on(eventClass, (event, before) -> {
+            if (before == this.beforeConsumer.asBoolean()) {
+                next(new WorkflowEmitEvent(0, this.getId(), context)
+                        .putValue(eventProducer.getName(), event));
+            }
+        });
     }
 
     @Override

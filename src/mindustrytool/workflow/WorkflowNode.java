@@ -113,6 +113,14 @@ public abstract class WorkflowNode {
             return this;
         }
 
+        public Class<?> asClass() {
+            try {
+                return Class.forName(value);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid class: " + value);
+            }
+        }
+
         public Boolean asBoolean() {
             return Boolean.parseBoolean(value);
         }

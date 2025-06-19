@@ -14,11 +14,11 @@ public class MathRandomWorkflow extends WorkflowNode {
     }
 
     @Override
-    public String execute(WorkflowEmitEvent event) {
+    public void execute(WorkflowEmitEvent event) {
 
         event.getValues().put(numberProducer.getVariableName(), numberProducer.getProduce().apply(event));
 
-        return outputs.get(0).getNextId();
+        event.next();
     }
 
 }

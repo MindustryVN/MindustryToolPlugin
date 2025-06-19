@@ -8,15 +8,13 @@ public class SendChatWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatWorkflow() {
-        super("SendChat", "action", "#33ff44", 1);
+        super("SendChat", "action", "#84CC16", 1);
     }
 
     @Override
-    public String execute(WorkflowEmitEvent event) {
+    public void execute(WorkflowEmitEvent event) {
         String message = messageConsumer.getValue();
 
         Call.sendMessage(message);
-
-        return null;
     }
 }

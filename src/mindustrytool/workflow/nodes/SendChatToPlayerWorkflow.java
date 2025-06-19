@@ -9,16 +9,14 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatToPlayerWorkflow() {
-        super("SendChatToPlayer", "action", "#33ff44", 1);
+        super("SendChatToPlayer", "action", "#84CC16", 1);
     }
 
     @Override
-    public String execute(WorkflowEmitEvent event) {
+    public void execute(WorkflowEmitEvent event) {
         Player player = playerConsumer.consume(event);
         String message = messageConsumer.getValue();
 
         player.sendMessage(message);
-
-        return null;
     }
 }

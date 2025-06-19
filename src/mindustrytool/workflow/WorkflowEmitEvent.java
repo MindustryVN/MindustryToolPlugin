@@ -3,12 +3,14 @@ package mindustrytool.workflow;
 import java.util.HashMap;
 import java.util.Map;
 
+import arc.util.Log;
 import lombok.Data;
 
 @Data
 public class WorkflowEmitEvent {
     private final int step;
-    private final String fromId;
+    private final WorkflowNode current;
+    private static final int MAX_STEP = 5000;
 
     private final Workflow context;
     private final Map<String, Object> values = new HashMap<>();
@@ -18,17 +20,36 @@ public class WorkflowEmitEvent {
         return this;
     }
 
-    private WorkflowEmitEvent(int step, String fromId, Workflow context) {
+    private WorkflowEmitEvent(int step, WorkflowNode currentNode, Workflow context) {
         this.step = step;
-        this.fromId = fromId;
+        this.current = currentNode;
         this.context = context;
     }
 
-    public static WorkflowEmitEvent create(WorkflowNode node, Workflow context) {
-        return new WorkflowEmitEvent(0, node.getId(), context);
+    public void next() {
+        next(current.nextId());
     }
 
-    public WorkflowEmitEvent next(String fromId) {
-        return new WorkflowEmitEvent(step + 1, fromId, context);
+    public void next(String nextId) {
+        if (step > MAX_STEP) {
+            throw new StackOverflowError("Max stack exceeded");
+        }
+
+        if (nextId == null) {
+            Log.debug("No next node to execute, step: %s, current: %s", step, current.getId());
+            return;
+        }
+
+        var nextNode = context.getNodes().get(nextId);
+
+        if (nextNode == null) {
+            throw new IllegalStateException("Node not found, id: " + nextId);
+        }
+
+        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context));
+    }
+
+    public static WorkflowEmitEvent create(WorkflowNode current, Workflow context) {
+        return new WorkflowEmitEvent(0, current, context);
     }
 }

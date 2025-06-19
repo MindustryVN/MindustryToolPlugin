@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import arc.util.Log;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -12,7 +11,6 @@ import mindustrytool.workflow.errors.WorkflowError;
 @Data
 @Accessors(chain = true)
 public abstract class WorkflowNode {
-    private static final int MAX_STEP = 500;
 
     private String id;
     private int x;
@@ -41,32 +39,20 @@ public abstract class WorkflowNode {
         this.inputs = inputs;
     }
 
-    public abstract String execute(WorkflowEmitEvent event);
-
-    public void next(WorkflowEmitEvent event) {
-        if (event.getStep() > MAX_STEP) {
-            throw new StackOverflowError("Max stack exceeded");
-        }
-
-        var nextId = execute(event);
-
-        Log.debug("Executing node: %s(%s), nextId: %s", this.name, this.id, nextId);
-
-        if (nextId == null) {
-            return;
-        }
-
-        var nextNode = event.getContext().getNodes().get(nextId);
-
-        if (nextNode == null) {
-            throw new IllegalStateException("Node not found, id: " + nextId);
-        }
-
-        nextNode.next(event.next(id));
+    public void execute(WorkflowEmitEvent event) {
+        event.next(outputs.get(0).getNextId());
     }
 
     public void defaultOneOutput() {
         new WorkflowOutput("Next", "None");
+    }
+
+    public String nextId() {
+        if (outputs.isEmpty()) {
+            throw new WorkflowError("No outputs defined for node: " + name);
+        }
+
+        return outputs.get(0).getNextId();
     }
 
     @Data

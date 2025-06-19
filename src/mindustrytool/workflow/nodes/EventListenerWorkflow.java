@@ -43,14 +43,10 @@ public class EventListenerWorkflow extends WorkflowNode {
 
         context.on(eventClass, (event, before) -> {
             if (before == this.beforeConsumer.asBoolean()) {
-                next(WorkflowEmitEvent.create(this, context)
-                        .putValue(eventProducer.getName(), event));
+                WorkflowEmitEvent.create(this, context)
+                        .putValue(eventProducer.getName(), event)
+                        .next();
             }
         });
-    }
-
-    @Override
-    public String execute(WorkflowEmitEvent event) {
-        return outputs.get(0).getNextId();
     }
 }

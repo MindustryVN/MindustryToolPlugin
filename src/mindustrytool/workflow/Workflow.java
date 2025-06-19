@@ -166,6 +166,8 @@ public class Workflow {
 
                 newNode.init(this);
 
+                Log.debug("Node loaded: " + newNode);
+
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);
             }
@@ -217,16 +219,21 @@ public class Workflow {
     }
 
     public void scheduleAtFixedRate(Runnable runnable, long delay, long period) {
+        Log.debug("Schedule task at fixed rate: " + runnable.getClass().getName() + " delay: " + delay
+                + " period: " + period);
         scheduledTasks
                 .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(runnable, delay, period, TimeUnit.MILLISECONDS));
     }
 
     public void scheduleWithFixedDelay(Runnable runnable, long initialDelay, long delay) {
+        Log.debug("Schedule task with fixed delay: " + runnable.getClass().getName() + " initialDelay: "
+                + initialDelay + " delay: " + delay);
         scheduledTasks.add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(runnable, initialDelay, delay,
                 TimeUnit.MILLISECONDS));
     }
 
     public void schedule(Runnable runnable, long delay) {
+        Log.debug("Schedule task: " + runnable.getClass().getName() + " delay: " + delay);
         scheduledTasks.add(Config.BACKGROUND_SCHEDULER.schedule(runnable, delay, TimeUnit.MILLISECONDS));
     }
 

@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class NodeDataConsumer {
-    private final String name;
+    private String name;
     private String value;
 }

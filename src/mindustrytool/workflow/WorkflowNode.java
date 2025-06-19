@@ -123,7 +123,33 @@ public abstract class WorkflowNode {
         }
 
         public Boolean asBoolean() {
-            return Boolean.parseBoolean(value);
+            try {
+
+                return Boolean.parseBoolean(value);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid boolean value: " + value + " " + e.getMessage(), e);
+            }
+        }
+
+        public Long asLong() {
+            try {
+                return Long.parseLong(value);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid long value: " + value + " " + e.getMessage(), e);
+            }
+        }
+
+        @SuppressWarnings("rawtypes")
+        public T asEnum() {
+            if (!type.isEnum()) {
+                throw new WorkflowError("Type is not an enum: " + type.getName());
+            }
+
+            try {
+                return (T) Enum.valueOf((Class<? extends Enum>) type, value);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid enum value: " + value + " for type: " + type.getName(), e);
+            }
         }
 
         public WorkflowConsumer<T> defaultValue(T value) {

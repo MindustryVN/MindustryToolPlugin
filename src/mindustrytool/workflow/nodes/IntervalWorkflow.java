@@ -1,0 +1,49 @@
+package mindustrytool.workflow.nodes;
+
+import java.util.concurrent.TimeUnit;
+
+import mindustrytool.Config;
+import mindustrytool.workflow.Workflow;
+import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowNode;
+
+public class IntervalWorkflow extends WorkflowNode {
+    private enum IntervalType {
+        FIXED_RATE, DELAY
+    }
+
+    private WorkflowConsumer<Long> intervalConsumer = new WorkflowConsumer<>("interval", Long.class)
+            .defaultValue(1000L);
+
+    private WorkflowConsumer<Long> delayConsumer = new WorkflowConsumer<>("delay", Long.class)
+            .defaultValue(1000L);
+
+    private WorkflowConsumer<IntervalType> typeConsumer = new WorkflowConsumer<>("type", IntervalType.class)
+            .defaultValue(IntervalType.DELAY);
+
+    public IntervalWorkflow() {
+        super("Interval", "emitter", "#ff33bb", 0);
+
+        defaultOneOutput();
+    }
+
+    @Override
+    public void init(Workflow context) {
+        if (typeConsumer.asEnum() == IntervalType.FIXED_RATE) {
+            Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> {
+                next(new WorkflowEmitEvent(0, this.getId(), context));
+            }, 0, intervalConsumer.asLong(), TimeUnit.SECONDS);
+            return;
+        }
+
+        Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+            next(new WorkflowEmitEvent(0, this.getId(), context));
+        }, delayConsumer.asLong(), intervalConsumer.asLong(), TimeUnit.SECONDS);
+    }
+
+    @Override
+    public String execute(WorkflowEmitEvent event) {
+        return outputs.get(0).getNextId();
+    }
+
+}

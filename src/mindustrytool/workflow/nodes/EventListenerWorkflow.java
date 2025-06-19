@@ -4,6 +4,7 @@ import mindustry.game.EventType;
 import mindustrytool.workflow.Workflow;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowNode;
+import mindustrytool.workflow.errors.WorkflowError;
 
 public class EventListenerWorkflow extends WorkflowNode {
     private WorkflowConsumer<Boolean> beforeConsumer = new WorkflowConsumer<>("before", Boolean.class)
@@ -12,7 +13,13 @@ public class EventListenerWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class);
 
     private WorkflowProducer eventProducer = new WorkflowProducer("event",
-            () -> Class.forName(classConsumer.getValue()));
+            (context) -> {
+                try {
+                    return Class.forName(classConsumer.getValue());
+                } catch (ClassNotFoundException e) {
+                    throw new WorkflowError("Invalid class: " + classConsumer.getValue() + " " + e.getMessage(), e);
+                }
+            });
 
     {
         preInit();

@@ -15,6 +15,7 @@ import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
+import mindustrytool.workflow.nodes.IntervalWorkflow;
 import mindustrytool.workflow.nodes.SendChatToPlayerWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
 
@@ -35,6 +36,7 @@ public class Workflow {
         register(new EventListenerWorkflow());
         register(new SendChatToPlayerWorkflow());
         register(new SendChatWorkflow());
+        register(new IntervalWorkflow());
 
         loadWorkflowFromFile();
     }

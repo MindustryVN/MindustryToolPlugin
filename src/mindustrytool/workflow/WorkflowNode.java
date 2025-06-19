@@ -2,6 +2,7 @@ package mindustrytool.workflow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import arc.util.Log;
 import lombok.AllArgsConstructor;
@@ -51,7 +52,7 @@ public abstract class WorkflowNode {
 
         var nextId = execute(event);
 
-        Log.debug("Executing node: %s(%s), nextId: %s",this.name, this.id, nextId); 
+        Log.debug("Executing node: %s(%s), nextId: %s", this.name, this.id, nextId);
 
         if (nextId == null) {
             return;
@@ -78,12 +79,17 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    @AllArgsConstructor
-    public class WorkflowProducer {
+    public class WorkflowProducer<T> {
         private final String name;
-        private final ESupplier<Class<?>> type;
+        private final Function<WorkflowEmitEvent, Class<?>> produce;
 
-        {
+        private String alternativeName;
+
+        public WorkflowProducer(String name, Function<WorkflowEmitEvent, Class<?>> produce) {
+            this.name = name;
+            this.produce = produce;
+            this.alternativeName = name;
+
             producers.add(this);
         }
 
@@ -96,7 +102,10 @@ public abstract class WorkflowNode {
         private final String description;
         private String nextId;
 
-        {
+        public WorkflowOutput(String name, String description) {
+            this.name = name;
+            this.description = description;
+
             outputs.add(this);
         }
     }

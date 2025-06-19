@@ -3,6 +3,7 @@ package mindustrytool.workflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import arc.util.Log;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,8 @@ public abstract class WorkflowNode {
         }
 
         var nextId = execute(event);
+
+        Log.debug("Executing node: %s(%s), nextId: %s",this.name, this.id, nextId); 
 
         if (nextId == null) {
             return;

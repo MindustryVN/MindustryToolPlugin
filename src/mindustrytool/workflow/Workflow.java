@@ -86,13 +86,13 @@ public class Workflow {
     }
 
     public void load(WorkflowContext context) {
+        Log.info("Load context: " + context);
+
         nodes.values().forEach(node -> node.unload(this));
         nodes.clear();
 
         this.context = context;
         writeWorkflowToFile();
-
-        Log.info("Load workflow: " + context);
 
         for (var data : context.getNodes()) {
             var node = nodeTypes.get(data.getName());
@@ -134,17 +134,23 @@ public class Workflow {
                                     "Node consumer not found: " + consumer.getName() + " on node: "
                                             + node.getName()));
 
+                    if (newOutput.isRequired() && consumer.getValue() == null) {
+                        throw new WorkflowError("Node consumer value is required: " + consumer.getName()
+                                + " on node: " + node.getName());
+                    }
+
                     newOutput.setValue(consumer.getValue());
                 });
 
                 nodes.put(newNode.getId(), newNode);
+
                 node.init(this);
 
-            } catch (InstantiationException | IllegalAccessException | WorkflowError
-                    | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);
             }
         }
+        Log.info("Context loaded: " + nodes.values());
     }
 
     public <T> Cons2<T, Boolean> on(Class<T> type, Cons2<T, Boolean> listener) {

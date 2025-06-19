@@ -99,6 +99,11 @@ public class ApiGateway {
 
         try {
             var result = httpClient.send(request, BodyHandlers.ofString()).body();
+
+            if (result == null || result.isEmpty()) {
+                throw new RuntimeException("Received empty response from server");
+            }
+
             return JsonUtils.readJsonAsClass(result, MindustryPlayerDto.class);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

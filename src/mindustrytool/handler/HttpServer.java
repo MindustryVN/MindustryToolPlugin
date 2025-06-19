@@ -470,7 +470,8 @@ public class HttpServer {
             Log.err(exception);
 
             try {
-                var result = java.util.Map.of("message", exception.getMessage());
+                var result = java.util.Map.of("message",
+                        exception.getMessage() == null ? "Unknown error" : exception.getMessage());
                 context.status(500).json(result);
             } catch (Exception e) {
                 Log.err("Failed to create error response", e);

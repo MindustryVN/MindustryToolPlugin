@@ -98,7 +98,7 @@ public class Workflow {
     }
 
     public void load(WorkflowContext context) {
-        Log.info("Load context: " + context);
+        Log.info("Load workflow context: " + context);
 
         nodes.values().forEach(node -> node.unload(this));
         nodes.clear();
@@ -170,7 +170,7 @@ public class Workflow {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);
             }
         }
-        Log.info("Context loaded: " + nodes.values());
+        Log.info("Context loaded");
     }
 
     public <T> Cons2<T, Boolean> on(Class<T> type, Cons2<T, Boolean> listener) {

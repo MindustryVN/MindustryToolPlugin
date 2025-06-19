@@ -16,6 +16,7 @@ import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
+import mindustrytool.workflow.nodes.SendChatToPlayerWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
 
 public class Workflow {
@@ -32,8 +33,9 @@ public class Workflow {
     public WorkflowContext context;
 
     public void init() {
-        add(new EventListenerWorkflow());
-        add(new SendChatWorkflow());
+        register(new EventListenerWorkflow());
+        register(new SendChatToPlayerWorkflow());
+        register(new SendChatWorkflow());
 
         loadWorkflowFromFile();
     }
@@ -69,7 +71,11 @@ public class Workflow {
         }
     }
 
-    private void add(WorkflowNode node) {
+    private void register(WorkflowNode node) {
+        if (nodeTypes.containsKey(node.getName())) {
+            throw new IllegalStateException("Node already registered: " + node.getName());
+        }
+
         nodeTypes.put(node.getName(), node);
     }
 

@@ -86,10 +86,13 @@ public class Workflow {
     }
 
     public void load(WorkflowContext context) {
+        nodes.values().forEach(node -> node.unload(this));
+        nodes.clear();
+
         this.context = context;
         writeWorkflowToFile();
 
-        nodes.clear();
+        Log.info("Load workflow: " + context);
 
         for (var data : context.getNodes()) {
             var node = nodeTypes.get(data.getName());
@@ -135,6 +138,7 @@ public class Workflow {
                 });
 
                 nodes.put(newNode.getId(), newNode);
+                node.init(this);
 
             } catch (InstantiationException | IllegalAccessException | WorkflowError
                     | InvocationTargetException e) {

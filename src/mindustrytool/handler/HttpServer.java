@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +30,6 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.io.MapIO;
-import mindustry.maps.Map;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
@@ -389,7 +389,7 @@ public class HttpServer {
                 controller.workflow.load(payload);
             } catch (WorkflowError e) {
                 Log.err("Failed to load workflow", e);
-                context.status(400).result("Failed to load workflow: " + e.getMessage());
+                context.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
                 return;
             }
             context.json(controller.workflow.getContext());
@@ -509,7 +509,7 @@ public class HttpServer {
     }
 
     private StatsDto getStats() {
-        Map map = Vars.state.map;
+        var map = Vars.state.map;
         String mapName = map != null ? map.name() : "";
         List<ModDto> mods = Vars.mods == null //
                 ? List.of()
@@ -552,7 +552,7 @@ public class HttpServer {
     public byte[] mapPreview() {
         Pixmap pix = null;
         try {
-            Map map = Vars.state.map;
+            var map = Vars.state.map;
 
             if (map != null) {
                 pix = MapIO.generatePreview(Vars.world.tiles);

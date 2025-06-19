@@ -379,6 +379,10 @@ public class HttpServer {
             context.json(controller.workflow.getContext().getCreatedAt());
         });
 
+        app.get("workflow", context -> {
+            context.json(controller.workflow.getContext());
+        });
+
         app.post("workflow", context -> {
             var payload = context.bodyAsClass(WorkflowContext.class);
             try {

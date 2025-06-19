@@ -10,11 +10,11 @@ public class IntervalWorkflow extends WorkflowNode {
         FIXED_RATE, DELAY
     }
 
-    private WorkflowConsumer<Long> intervalConsumer = new WorkflowConsumer<>("interval", Long.class)
+    private WorkflowConsumer<Long> delayConsumer = new WorkflowConsumer<>("delay", Long.class)
             .unit(WorkflowConsumerUnit.SECOND)
             .defaultValue(1000L);
 
-    private WorkflowConsumer<Long> delayConsumer = new WorkflowConsumer<>("delay", Long.class)
+    private WorkflowConsumer<Long> intervalConsumer = new WorkflowConsumer<>("interval", Long.class)
             .unit(WorkflowConsumerUnit.SECOND)
             .defaultValue(1000L);
 

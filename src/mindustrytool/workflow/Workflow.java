@@ -178,7 +178,7 @@ public class Workflow {
 
     /** Fires a non-enum event by class. */
     public <T> void fire(T type, boolean before) {
-        Log.info(type.getClass().getName() + " fired: " + type);
+        Log.debug(type.getClass().getName() + " fired: " + type);
 
         fire(type.getClass(), type, before);
     }

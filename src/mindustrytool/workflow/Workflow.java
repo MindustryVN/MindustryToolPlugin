@@ -4,13 +4,18 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import arc.func.Cons2;
 import arc.struct.Seq;
 import arc.util.Log;
 import lombok.Getter;
 import mindustry.Vars;
+import mindustrytool.Config;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -26,6 +31,7 @@ public class Workflow {
     private final HashMap<String, WorkflowNode> nodeTypes = new HashMap<>();
     @Getter
     private final HashMap<String, WorkflowNode> nodes = new HashMap<>();
+    private final List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
     private final String WORKFLOW_PATH = Vars.dataDirectory.child("workflow/workflow.json").absolutePath();
 
@@ -92,6 +98,14 @@ public class Workflow {
 
         nodes.values().forEach(node -> node.unload(this));
         nodes.clear();
+        events.clear();
+
+        scheduledTasks.forEach(task -> {
+            if (!task.isCancelled()) {
+                task.cancel(true);
+            }
+        });
+        scheduledTasks.clear();
 
         this.context = context;
         writeWorkflowToFile();
@@ -196,6 +210,16 @@ public class Workflow {
                 items[i].get(type, before);
             }
         }
+    }
+
+    public void scheduleAtFixedRate(Runnable runnable, long delay, long period) {
+        scheduledTasks
+                .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(runnable, delay, period, TimeUnit.MILLISECONDS));
+    }
+
+    public void scheduleWithFixedDelay(Runnable runnable, long initialDelay, long delay) {
+        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(runnable, initialDelay, delay,
+                TimeUnit.MILLISECONDS));
     }
 
 }

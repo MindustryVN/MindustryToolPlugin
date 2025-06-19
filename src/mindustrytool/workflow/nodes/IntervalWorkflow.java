@@ -1,8 +1,5 @@
 package mindustrytool.workflow.nodes;
 
-import java.util.concurrent.TimeUnit;
-
-import mindustrytool.Config;
 import mindustrytool.workflow.Workflow;
 import mindustrytool.workflow.WorkflowConsumerUnit;
 import mindustrytool.workflow.WorkflowEmitEvent;
@@ -34,15 +31,15 @@ public class IntervalWorkflow extends WorkflowNode {
     @Override
     public void init(Workflow context) {
         if (typeConsumer.asEnum() == IntervalType.FIXED_RATE) {
-            Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> {
+            context.scheduleAtFixedRate(() -> {
                 next(new WorkflowEmitEvent(0, this.getId(), context));
-            }, 0, intervalConsumer.asLong(), TimeUnit.SECONDS);
+            }, 0, intervalConsumer.asLong());
             return;
         }
 
-        Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+        context.scheduleWithFixedDelay(() -> {
             next(new WorkflowEmitEvent(0, this.getId(), context));
-        }, delayConsumer.asLong(), intervalConsumer.asLong(), TimeUnit.SECONDS);
+        }, delayConsumer.asLong(), intervalConsumer.asLong());
     }
 
     @Override

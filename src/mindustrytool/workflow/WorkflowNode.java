@@ -117,7 +117,7 @@ public abstract class WorkflowNode {
             try {
                 return Class.forName(value);
             } catch (Exception e) {
-                throw new RuntimeException("Invalid class: " + value);
+                throw new RuntimeException("Invalid class: " + value + " " + e.getMessage());
             }
         }
 

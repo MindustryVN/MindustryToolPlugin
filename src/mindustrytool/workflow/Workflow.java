@@ -21,8 +21,10 @@ import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
+import mindustrytool.workflow.nodes.MathRandomWorkflow;
 import mindustrytool.workflow.nodes.SendChatToPlayerWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
+import mindustrytool.workflow.nodes.WaitWorkflow;
 
 public class Workflow {
     private final HashMap<Object, Seq<Cons2<?, Boolean>>> events = new HashMap<>();
@@ -43,6 +45,8 @@ public class Workflow {
         register(new SendChatToPlayerWorkflow());
         register(new SendChatWorkflow());
         register(new IntervalWorkflow());
+        register(new WaitWorkflow());
+        register(new MathRandomWorkflow());
 
         loadWorkflowFromFile();
     }

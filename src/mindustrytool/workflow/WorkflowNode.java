@@ -83,14 +83,14 @@ public abstract class WorkflowNode {
     @Data
     public class WorkflowProducer<T> {
         private final String name;
-        private final Function<WorkflowEmitEvent, Class<?>> produce;
+        private final Function<WorkflowEmitEvent, T> produce;
 
-        private String alternativeName;
+        private String variableName;
 
-        public WorkflowProducer(String name, Function<WorkflowEmitEvent, Class<?>> produce) {
+        public WorkflowProducer(String name, Function<WorkflowEmitEvent, T> produce) {
             this.name = name;
             this.produce = produce;
-            this.alternativeName = name;
+            this.variableName = name;
 
             producers.add(this);
         }

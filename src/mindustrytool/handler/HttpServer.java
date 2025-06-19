@@ -469,10 +469,13 @@ public class HttpServer {
         app.exception(Exception.class, (exception, context) -> {
             Log.err(exception);
 
-            var result = java.util.Map.of("message", exception.getMessage());
-
-            context.status(500)
-                    .json(result);
+            try {
+                var result = java.util.Map.of("message", exception.getMessage());
+                context.status(500).json(result);
+            } catch (Exception e) {
+                Log.err("Failed to create error response", e);
+                context.status(500).json("Failed to create error response");
+            }
         });
 
         if (!ServerController.isUnloaded) {

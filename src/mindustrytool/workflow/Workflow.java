@@ -51,6 +51,7 @@ public class Workflow {
         try {
             String content = Files.readString(Path.of(WORKFLOW_PATH));
             context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
+            load(context);
         } catch (IOException e) {
             context = new WorkflowContext();
             context.setCreatedAt(System.currentTimeMillis());

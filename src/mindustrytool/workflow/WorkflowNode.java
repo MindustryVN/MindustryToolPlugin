@@ -16,6 +16,7 @@ public abstract class WorkflowNode {
     private String id;
     private int x;
     private int y;
+    private int inputs = 1;
 
     protected final String name;
     protected final String group;
@@ -23,7 +24,7 @@ public abstract class WorkflowNode {
 
     protected List<WorkflowConsumer<?>> consumers = new ArrayList<>();
     protected List<WorkflowProducer> producers = new ArrayList<>();
-    protected List<WorkflowOutput> outputs = List.of(new WorkflowOutput("Next", "None", null));
+    protected List<WorkflowOutput> outputs = new ArrayList<>();
 
     public void init(Workflow context) {
     }
@@ -32,10 +33,11 @@ public abstract class WorkflowNode {
         // Unload logic if needed
     }
 
-    public WorkflowNode(String name, String group, String color) {
+    public WorkflowNode(String name, String group, String color, int inputs) {
         this.name = name;
         this.group = group;
         this.color = color;
+        this.inputs = inputs;
     }
 
     public abstract String execute(WorkflowEmitEvent event);
@@ -58,6 +60,10 @@ public abstract class WorkflowNode {
         }
 
         nextNode.next(event.next(id));
+    }
+
+    public void defaultOneOutput() {
+        new WorkflowOutput("Next", "None", null);
     }
 
     @Data
@@ -85,6 +91,10 @@ public abstract class WorkflowNode {
         private final String name;
         private final String description;
         private String nextId;
+
+        {
+            outputs.add(this);
+        }
     }
 
     @Data

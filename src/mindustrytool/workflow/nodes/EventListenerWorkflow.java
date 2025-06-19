@@ -26,7 +26,9 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     public EventListenerWorkflow() {
-        super("EventListener", "emitter", "#ff33bb");
+        super("EventListener", "emitter", "#ff33bb", 0);
+
+        defaultOneOutput();
     }
 
     @Override

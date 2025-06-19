@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import arc.util.Log;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -67,14 +66,18 @@ public abstract class WorkflowNode {
     }
 
     public void defaultOneOutput() {
-        new WorkflowOutput("Next", "None", null);
+        new WorkflowOutput("Next", "None");
     }
 
     @Data
-    @AllArgsConstructor
     public class WorkflowConsumerOption {
         private final String label;
         private final String value;
+
+        public WorkflowConsumerOption(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
     }
 
     @Data
@@ -95,7 +98,6 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    @AllArgsConstructor
     public class WorkflowOutput {
         private final String name;
         private final String description;

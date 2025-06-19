@@ -139,6 +139,8 @@ public class Workflow {
                                 + " on node: " + node.getName());
                     }
 
+                    Log.info("Set consumer value: " + consumer.getName() + " to " + consumer.getValue());
+
                     newOutput.setValue(consumer.getValue());
                 });
 

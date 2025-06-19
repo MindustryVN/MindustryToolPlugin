@@ -384,7 +384,6 @@ public class HttpServer {
         });
 
         app.post("workflow", context -> {
-            Log.info(context.body());
             var payload = context.bodyAsClass(WorkflowContext.class);
             try {
                 controller.workflow.load(payload);

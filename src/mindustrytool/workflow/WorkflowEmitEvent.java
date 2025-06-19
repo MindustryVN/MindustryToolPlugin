@@ -18,10 +18,14 @@ public class WorkflowEmitEvent {
         return this;
     }
 
-    public WorkflowEmitEvent(int step, String fromId, Workflow context) {
+    private WorkflowEmitEvent(int step, String fromId, Workflow context) {
         this.step = step;
         this.fromId = fromId;
         this.context = context;
+    }
+
+    public static WorkflowEmitEvent create(WorkflowNode node, Workflow context) {
+        return new WorkflowEmitEvent(0, node.getId(), context);
     }
 
     public WorkflowEmitEvent next(String fromId) {

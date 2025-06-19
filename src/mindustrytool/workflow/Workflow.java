@@ -222,4 +222,8 @@ public class Workflow {
                 TimeUnit.MILLISECONDS));
     }
 
+    public void schedule(Runnable runnable, long delay) {
+        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.schedule(runnable, delay, TimeUnit.MILLISECONDS));
+    }
+
 }

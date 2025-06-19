@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import mindustrytool.workflow.errors.WorkflowError;
 
 @Data
 @Accessors(chain = true)
@@ -117,7 +118,7 @@ public abstract class WorkflowNode {
             try {
                 return Class.forName(value);
             } catch (Exception e) {
-                throw new RuntimeException("Invalid class: " + value + " " + e.getMessage());
+                throw new WorkflowError("Invalid class: " + value + " " + e.getMessage(), e);
             }
         }
 

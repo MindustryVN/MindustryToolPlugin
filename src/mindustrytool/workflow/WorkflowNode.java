@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
 
@@ -124,6 +125,7 @@ public abstract class WorkflowNode {
     }
 
     @Data
+    @ToString(exclude = { "options" })
     public class WorkflowConsumer<T> {
         private final String name;
         private final Class<T> type;

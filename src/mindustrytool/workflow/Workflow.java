@@ -95,7 +95,7 @@ public class Workflow {
     }
 
     public void load(WorkflowContext context) {
-        Log.info("Load workflow context: " + context);
+        Log.info("Load workflow context" + context);
 
         nodes.values().forEach(node -> node.unload(this));
         nodes.clear();

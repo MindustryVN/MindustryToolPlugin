@@ -294,11 +294,9 @@ public abstract class WorkflowNode {
 
                 var firstDot = path.indexOf('.');
 
-                if (firstDot > 0) {
-                    path = path.substring(firstDot);
-                }
-
-                var variable = access(event.getValues().get(path.substring(0, firstDot)), path.substring(firstDot + 1));
+                var variable = firstDot != -1
+                        ? access(event.getValues().get(path.substring(0, firstDot)), path.substring(firstDot + 1))
+                        : event.getValues().get(path);
 
                 result.append(value, lastEnd, match.start());
                 result.append(variable);

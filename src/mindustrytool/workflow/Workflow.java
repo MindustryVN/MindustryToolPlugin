@@ -162,6 +162,18 @@ public class Workflow {
                     newOutput.setValue(consumer.getValue());
                 });
 
+                data.getProducers().forEach(nullProducer -> {
+                    var newOutput = newNode.getProducers()
+                            .stream()
+                            .filter(nn -> nn.getName().equals(nullProducer.getName()))
+                            .findFirst()
+                            .orElseThrow(() -> new WorkflowError(
+                                    "Node producer not found: " + nullProducer.getName() + " on node: "
+                                            + node.getName()));
+
+                    newOutput.setVariableName(nullProducer.getVariableName());
+                });
+
                 nodes.put(newNode.getId(), newNode);
 
                 newNode.init(this);

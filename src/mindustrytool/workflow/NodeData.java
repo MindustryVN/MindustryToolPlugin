@@ -12,4 +12,5 @@ public class NodeData {
     private String name;
     private List<NodeDataOutput> outputs;
     private List<NodeDataConsumer> consumers;
+    private List<NodeDataProducer> producers;
 }

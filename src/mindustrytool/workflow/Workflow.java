@@ -51,12 +51,11 @@ public class Workflow {
             register(new WaitWorkflow());
             register(new MathRandomWorkflow());
 
-            loadWorkflowFromFile();
-
             WORKFLOW_DIR.mkdirs();
-            WORKFLOW_DATA_FILE.file().createNewFile();
             WORKFLOW_FILE.file().createNewFile();
+            WORKFLOW_DATA_FILE.file().createNewFile();
 
+            loadWorkflowFromFile();
         } catch (Exception e) {
             e.printStackTrace();
         }

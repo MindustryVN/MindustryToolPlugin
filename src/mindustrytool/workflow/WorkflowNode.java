@@ -244,6 +244,10 @@ public abstract class WorkflowNode {
         }
 
         public T access(Object value, String path) {
+            if (value == null) {
+                return null;
+            }
+
             var fields = path.split("\\.");
 
             if (fields.length == 0) {
@@ -283,7 +287,14 @@ public abstract class WorkflowNode {
 
             for (var match : matcher.results().toList()) {
                 String path = match.group(1);
-                var variable = access(event, path);
+
+                var firstDot = path.indexOf('.');
+
+                if (firstDot > 0) {
+                    path = path.substring(firstDot);
+                }
+
+                var variable = access(event.getValues().get(path.substring(0, firstDot)), path);
 
                 result.append(value, lastEnd, match.start());
                 result.append(variable);

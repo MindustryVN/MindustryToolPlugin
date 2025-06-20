@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import arc.util.Log;
-import lombok.Data;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
+@ToString
+@Getter
 public class WorkflowEmitEvent {
     private final int step;
     private final WorkflowNode current;

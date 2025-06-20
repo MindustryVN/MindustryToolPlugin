@@ -54,6 +54,7 @@ public class Workflow {
             loadWorkflowFromFile();
 
             WORKFLOW_DIR.mkdirs();
+            WORKFLOW_DATA_FILE.file().createNewFile();
 
         } catch (Exception e) {
             e.printStackTrace();

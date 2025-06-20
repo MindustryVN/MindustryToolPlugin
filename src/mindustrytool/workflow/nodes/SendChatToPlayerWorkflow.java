@@ -8,7 +8,8 @@ import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatToPlayerWorkflow extends WorkflowNode {
     private WorkflowConsumer<Player> playerConsumer = new WorkflowConsumer<>("player", Player.class);
-    private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
+    private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class)
+            .defaultValue("Hello");
 
     public SendChatToPlayerWorkflow() {
         super("SendChatToPlayer", WorkflowGroup.ACTION, WorkflowColor.LIME, 1);

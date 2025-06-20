@@ -11,7 +11,8 @@ public class EventListenerWorkflow extends WorkflowNode {
     private WorkflowConsumer<Boolean> beforeConsumer = new WorkflowConsumer<>("before", Boolean.class)
             .defaultValue(true);
 
-    private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class);
+    private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class)
+            .produce(new ConsumerProducer<>().setVariableName("event"));
 
     {
         preInit();

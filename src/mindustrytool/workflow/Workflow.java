@@ -43,17 +43,21 @@ public class Workflow {
     public WorkflowContext context;
 
     public void init() {
-        register(new EventListenerWorkflow());
-        register(new SendChatToPlayerWorkflow());
-        register(new SendChatWorkflow());
-        register(new IntervalWorkflow());
-        register(new WaitWorkflow());
-        register(new MathRandomWorkflow());
+        try {
+            register(new EventListenerWorkflow());
+            register(new SendChatToPlayerWorkflow());
+            register(new SendChatWorkflow());
+            register(new IntervalWorkflow());
+            register(new WaitWorkflow());
+            register(new MathRandomWorkflow());
 
-        loadWorkflowFromFile();
+            loadWorkflowFromFile();
 
-        WORKFLOW_DIR.mkdirs();
+            WORKFLOW_DIR.mkdirs();
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public JsonNode readWorkflowData() {

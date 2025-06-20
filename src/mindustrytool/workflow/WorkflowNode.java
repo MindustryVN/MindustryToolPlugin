@@ -306,7 +306,6 @@ public abstract class WorkflowNode {
 
                 if (firstDot != -1) {
                     var key = path.substring(0, firstDot);
-                    path = path.substring(firstDot + 1);
                     var obj = event.getValues().get(key);
 
                     if (obj == null) {

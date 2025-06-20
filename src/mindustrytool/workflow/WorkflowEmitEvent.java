@@ -25,6 +25,8 @@ public class WorkflowEmitEvent {
         this.step = step;
         this.current = currentNode;
         this.context = context;
+
+        Log.debug(this);
     }
 
     public void next() {

@@ -20,7 +20,7 @@ public class WorkflowEmitEvent {
         return this;
     }
 
-    private WorkflowEmitEvent(int step, WorkflowNode currentNode, Workflow context) {
+    private WorkflowEmitEvent(int step, WorkflowNode currentNode, Workflow context, Map<String, Object> values) {
         this.step = step;
         this.current = currentNode;
         this.context = context;
@@ -46,10 +46,10 @@ public class WorkflowEmitEvent {
             throw new IllegalStateException("Node not found, id: " + nextId);
         }
 
-        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context));
+        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, values));
     }
 
     public static WorkflowEmitEvent create(WorkflowNode current, Workflow context) {
-        return new WorkflowEmitEvent(0, current, context);
+        return new WorkflowEmitEvent(0, current, context, new HashMap<>());
     }
 }

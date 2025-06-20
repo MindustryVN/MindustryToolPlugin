@@ -15,8 +15,10 @@ import mindustrytool.workflow.errors.WorkflowError;
 @Accessors(chain = true)
 public abstract class WorkflowNode {
 
-    // Use {{ }} for variable
-    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}");
+    // Use {{variableName0.awda-_wda}} for variable
+    // Variable name should able to contain dot(.) to access nested object, a-z A-Z
+    // 0-9 _ -
+    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");
 
     private String id;
     private int x;

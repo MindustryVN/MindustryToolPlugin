@@ -17,6 +17,7 @@ public class WorkflowEmitEvent {
 
     public WorkflowEmitEvent putValue(String name, Object value) {
         values.put(name, value);
+        Log.debug("Add variable: " + name + ": " + value);
         return this;
     }
 

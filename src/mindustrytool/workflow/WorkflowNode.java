@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -56,13 +58,16 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    public class WorkflowConsumerOption {
-        private final String label;
-        private final String value;
+    public class WorkflowOutput {
+        private final String name;
+        private final String description;
+        private String nextId;
 
-        public WorkflowConsumerOption(String label, String value) {
-            this.label = label;
-            this.value = value;
+        public WorkflowOutput(String name, String description) {
+            this.name = name;
+            this.description = description;
+
+            outputs.add(this);
         }
     }
 
@@ -80,21 +85,33 @@ public abstract class WorkflowNode {
 
             producers.add(this);
         }
-
     }
 
     @Data
-    public class WorkflowOutput {
-        private final String name;
-        private final String description;
-        private String nextId;
+    public class WorkflowConsumerOption {
+        private final String label;
+        private final String value;
 
-        public WorkflowOutput(String name, String description) {
-            this.name = name;
-            this.description = description;
+        @JsonSerialize(using = ClassSerializer.class)
+        private Class<?> produceType;
 
-            outputs.add(this);
+        public WorkflowConsumerOption(String label, String value, Class<?> produceType) {
+            this.label = label;
+            this.value = value;
+            this.produceType = produceType;
         }
+
+        public WorkflowConsumerOption(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    @Data
+    public class ConsumerProducer<T> {
+        @JsonSerialize(using = ClassSerializer.class)
+        private Class<?> produceType;
+        private String variableName;
     }
 
     @Data
@@ -108,6 +125,7 @@ public abstract class WorkflowNode {
         private boolean required = true;
         private String value;
         private T defaultValue;
+        private ConsumerProducer<?> produce;
 
         public WorkflowConsumer(String name, Class<T> type) {
             this.name = name;
@@ -118,6 +136,11 @@ public abstract class WorkflowNode {
 
         public WorkflowConsumer<T> notRequired() {
             this.required = false;
+            return this;
+        }
+
+        public WorkflowConsumer<T> produce(ConsumerProducer<?> producer) {
+            this.produce = producer;
             return this;
         }
 
@@ -171,6 +194,11 @@ public abstract class WorkflowNode {
 
         public WorkflowConsumer<T> option(String name, String value) {
             options.add(new WorkflowConsumerOption(name, value));
+            return this;
+        }
+
+        public WorkflowConsumer<T> option(String name, String value, Class<?> produceType) {
+            options.add(new WorkflowConsumerOption(name, value, produceType));
             return this;
         }
 

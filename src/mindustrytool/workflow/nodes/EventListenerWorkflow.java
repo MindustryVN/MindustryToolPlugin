@@ -2,7 +2,9 @@ package mindustrytool.workflow.nodes;
 
 import mindustry.game.EventType;
 import mindustrytool.workflow.Workflow;
+import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class EventListenerWorkflow extends WorkflowNode {
@@ -22,7 +24,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     public EventListenerWorkflow() {
-        super("EventListener", "emitter", WorkflowColors.CYAN, 0);
+        super("EventListener", WorkflowGroup.EMITTER, WorkflowColor.CYAN, 0);
 
         defaultOneOutput();
     }

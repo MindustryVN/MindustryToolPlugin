@@ -1,6 +1,6 @@
-package mindustrytool.workflow.nodes;
+package mindustrytool.workflow;
 
-public class WorkflowColors {
+public class WorkflowColor {
     public static final String GREEN = "#009F75";
     public static final String YELLOW = "#FFF000";
     public static final String RED = "#EF4444";

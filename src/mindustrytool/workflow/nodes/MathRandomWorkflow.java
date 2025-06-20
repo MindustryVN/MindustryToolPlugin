@@ -1,6 +1,8 @@
 package mindustrytool.workflow.nodes;
 
+import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class MathRandomWorkflow extends WorkflowNode {
@@ -8,7 +10,7 @@ public class MathRandomWorkflow extends WorkflowNode {
             (context) -> Math.random());
 
     public MathRandomWorkflow() {
-        super("MathRandom", "Math", WorkflowColors.PURPLE, 1);
+        super("MathRandom", WorkflowGroup.MATH, WorkflowColor.PURPLE, 1);
 
         defaultOneOutput();
     }

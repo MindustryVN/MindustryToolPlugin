@@ -1,7 +1,9 @@
 package mindustrytool.workflow.nodes;
 
 import mindustry.gen.Player;
+import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatToPlayerWorkflow extends WorkflowNode {
@@ -9,7 +11,7 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatToPlayerWorkflow() {
-        super("SendChatToPlayer", "action", WorkflowColors.LIME, 1);
+        super("SendChatToPlayer", WorkflowGroup.ACTION, WorkflowColor.LIME, 1);
     }
 
     @Override

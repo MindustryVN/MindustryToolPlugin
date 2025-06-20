@@ -1,8 +1,10 @@
 package mindustrytool.workflow.nodes;
 
 import mindustrytool.workflow.Workflow;
+import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowConsumerUnit;
 import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class IntervalWorkflow extends WorkflowNode {
@@ -23,7 +25,7 @@ public class IntervalWorkflow extends WorkflowNode {
             .defaultValue(IntervalType.DELAY);
 
     public IntervalWorkflow() {
-        super("Interval", "emitter", WorkflowColors.CYAN, 0);
+        super("Interval", WorkflowGroup.EMITTER, WorkflowColor.CYAN, 0);
 
         defaultOneOutput();
     }

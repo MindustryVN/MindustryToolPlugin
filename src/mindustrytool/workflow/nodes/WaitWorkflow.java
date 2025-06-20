@@ -1,7 +1,9 @@
 package mindustrytool.workflow.nodes;
 
+import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowConsumerUnit;
 import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class WaitWorkflow extends WorkflowNode {
@@ -10,7 +12,7 @@ public class WaitWorkflow extends WorkflowNode {
             .defaultValue(1000L);
 
     public WaitWorkflow() {
-        super("Wait", "time", WorkflowColors.CYAN, 1);
+        super("Wait", WorkflowGroup.TIME, WorkflowColor.CYAN, 1);
 
         defaultOneOutput();
     }

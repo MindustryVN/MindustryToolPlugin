@@ -13,7 +13,7 @@ public class SendChatWorkflow extends WorkflowNode {
 
     @Override
     public void execute(WorkflowEmitEvent event) {
-        String message = messageConsumer.getValue();
+        String message = messageConsumer.asString(event);
 
         Call.sendMessage(message);
     }

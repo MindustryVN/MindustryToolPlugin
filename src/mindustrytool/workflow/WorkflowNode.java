@@ -3,6 +3,7 @@ package mindustrytool.workflow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -13,6 +14,9 @@ import mindustrytool.workflow.errors.WorkflowError;
 @Data
 @Accessors(chain = true)
 public abstract class WorkflowNode {
+
+    // Use {{ }} for variable
+    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)\\}\\}");
 
     private String id;
     private int x;
@@ -89,7 +93,10 @@ public abstract class WorkflowNode {
 
     @Data
     public class WorkflowConsumerOption {
+        @JsonSerialize
         private final String label;
+
+        @JsonSerialize
         private final String value;
 
         @JsonSerialize(using = ClassSerializer.class)
@@ -109,6 +116,7 @@ public abstract class WorkflowNode {
 
     @Data
     public class ConsumerProducer<T> {
+
         @JsonSerialize(using = ClassSerializer.class)
         private Class<?> produceType;
         private String variableName;
@@ -125,7 +133,7 @@ public abstract class WorkflowNode {
         private boolean required = true;
         private String value;
         private T defaultValue;
-        private ConsumerProducer<?> produce;
+        private ConsumerProducer<?> produce = new ConsumerProducer<>();
 
         public WorkflowConsumer(String name, Class<T> type) {
             this.name = name;
@@ -232,6 +240,51 @@ public abstract class WorkflowNode {
             }
 
             return (T) result;
+        }
+
+        public T access(Object value, String path) {
+            var fields = path.split("\\.");
+
+            if (fields.length == 0) {
+                return (T) value;
+            }
+
+            Object result = value;
+
+            for (int index = 0; index < fields.length; index++) {
+                try {
+                    result = result.getClass().getDeclaredField(fields[index]).get(result);
+                } catch (IllegalArgumentException //
+                        | IllegalAccessException //
+                        | NoSuchFieldException
+                        | SecurityException e//
+                ) {
+                    throw new IllegalStateException(
+                            "Field not found: " + fields[index] + " of " + path + " on value " + result, e);
+                }
+            }
+            return (T) result;
+        }
+
+        public String asString(WorkflowEmitEvent event) {
+            var matcher = VARIABLE_PATTERN.matcher(color);
+
+            if (!matcher.matches()) {
+                return value;
+            }
+
+            var result = new StringBuilder();
+
+            for (var match : matcher.results().toList()) {
+                var path = match.group(1);
+                var variable = access(event, path);
+
+                result.append(value.substring(0, match.start()));
+                result.append(variable);
+                result.append(value.substring(match.end()));
+            }
+
+            return result.toString();
         }
     }
 }

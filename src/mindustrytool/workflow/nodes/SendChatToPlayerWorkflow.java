@@ -15,7 +15,7 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
     @Override
     public void execute(WorkflowEmitEvent event) {
         Player player = playerConsumer.consume(event);
-        String message = messageConsumer.getValue();
+        String message = messageConsumer.asString(event);
 
         player.sendMessage(message);
     }

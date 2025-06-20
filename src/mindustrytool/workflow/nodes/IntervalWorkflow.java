@@ -23,7 +23,7 @@ public class IntervalWorkflow extends WorkflowNode {
             .defaultValue(IntervalType.DELAY);
 
     public IntervalWorkflow() {
-        super("Interval", "emitter", "#ff33bb", 0);
+        super("Interval", "emitter", WorkflowColors.CYAN, 0);
 
         defaultOneOutput();
     }

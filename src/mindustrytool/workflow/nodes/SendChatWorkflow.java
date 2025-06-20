@@ -8,7 +8,7 @@ public class SendChatWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatWorkflow() {
-        super("SendChat", "action", "#84CC16", 1);
+        super("SendChat", "action", WorkflowColors.LIME, 1);
     }
 
     @Override

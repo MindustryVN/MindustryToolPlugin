@@ -9,7 +9,7 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
     private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class);
 
     public SendChatToPlayerWorkflow() {
-        super("SendChatToPlayer", "action", "#84CC16", 1);
+        super("SendChatToPlayer", "action", WorkflowColors.LIME, 1);
     }
 
     @Override

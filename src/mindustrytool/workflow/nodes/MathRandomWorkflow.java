@@ -8,7 +8,7 @@ public class MathRandomWorkflow extends WorkflowNode {
             (context) -> Math.random());
 
     public MathRandomWorkflow() {
-        super("MathRandom", "Math", "#aa33ff", 1);
+        super("MathRandom", "Math", WorkflowColors.PURPLE, 1);
 
         defaultOneOutput();
     }

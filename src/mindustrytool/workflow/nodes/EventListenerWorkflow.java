@@ -32,7 +32,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     public EventListenerWorkflow() {
-        super("EventListener", "emitter", "#ff33bb", 0);
+        super("EventListener", "emitter", WorkflowColors.CYAN, 0);
 
         defaultOneOutput();
     }

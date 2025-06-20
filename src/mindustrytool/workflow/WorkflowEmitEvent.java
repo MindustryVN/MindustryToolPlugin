@@ -7,7 +7,7 @@ import arc.util.Log;
 import lombok.Getter;
 import lombok.ToString;
 
-@ToString
+@ToString(exclude = { "context" })
 @Getter
 public class WorkflowEmitEvent {
     private final int step;

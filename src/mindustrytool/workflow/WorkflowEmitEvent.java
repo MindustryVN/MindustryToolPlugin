@@ -10,12 +10,12 @@ import lombok.ToString;
 @ToString(exclude = { "context" })
 @Getter
 public class WorkflowEmitEvent {
-    private final int step;
-    private final WorkflowNode current;
     private static final int MAX_STEP = 5000;
 
+    private final int step;
+    private final WorkflowNode current;
+    private final Map<String, Object> values;
     private final Workflow context;
-    private final Map<String, Object> values = new HashMap<>();
 
     public WorkflowEmitEvent putValue(String name, Object value) {
         values.put(name, value);
@@ -27,6 +27,7 @@ public class WorkflowEmitEvent {
         this.step = step;
         this.current = currentNode;
         this.context = context;
+        this.values = values;
 
         Log.debug(this);
     }

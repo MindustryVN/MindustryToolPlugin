@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import arc.util.Log;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -249,6 +250,7 @@ public abstract class WorkflowNode {
 
         public T access(Object value, String path) {
             if (value == null) {
+                Log.debug("Trying to access null value: " + path);
                 return null;
             }
 
@@ -262,6 +264,7 @@ public abstract class WorkflowNode {
 
             for (int index = 0; index < fields.length; index++) {
                 try {
+                    Log.debug("Trying to access field: " + fields[index] + " of " + path + " on value " + result);
                     result = result.getClass().getDeclaredField(fields[index]).get(result);
                 } catch (IllegalAccessException e) {
                     throw new WorkflowError("Can not access field: " + fields[index] + " of " + path + " on value "
@@ -292,14 +295,36 @@ public abstract class WorkflowNode {
             for (var match : matcher.results().toList()) {
                 String path = match.group(1);
 
+                result.append(value, lastEnd, match.start());
+
                 var firstDot = path.indexOf('.');
 
-                var variable = firstDot != -1
-                        ? access(event.getValues().get(path.substring(0, firstDot)), path.substring(firstDot + 1))
-                        : event.getValues().get(path);
+                if (firstDot != -1) {
+                    var key = path.substring(0, firstDot);
+                    path = path.substring(firstDot + 1);
+                    var obj = event.getValues().get(key);
 
-                result.append(value, lastEnd, match.start());
-                result.append(variable);
+                    if (obj == null) {
+                        Log.debug("Variable not found: " + key);
+                    }
+
+                    var variable = access(obj, path.substring(firstDot + 1));
+
+                    if (variable == null) {
+                        Log.debug("Variable not found: " + path);
+                    }
+
+                    result.append(variable);
+
+                } else {
+                    var variable = event.getValues().get(path);
+
+                    if (variable == null) {
+                        Log.debug("Variable not found: " + path);
+                    }
+
+                    result.append(variable);
+                }
 
                 lastEnd = match.end();
             }

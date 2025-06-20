@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import arc.util.Log;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -16,7 +15,6 @@ import mindustrytool.workflow.errors.WorkflowError;
 @Accessors(chain = true)
 public abstract class WorkflowNode {
 
-    // Use {{variableName0.awda-_wda}} for variable
     // Variable name should able to contain dot(.) to access nested object, a-z A-Z
     // 0-9 _ -
     public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");
@@ -270,25 +268,28 @@ public abstract class WorkflowNode {
         }
 
         public String asString(WorkflowEmitEvent event) {
-            var matcher = VARIABLE_PATTERN.matcher(color);
+            var matcher = VARIABLE_PATTERN.matcher(value);
 
-            Log.debug("Event: " + event + " value: " + value + " match: " + matcher.matches());
-
-            if (!matcher.matches()) {
+            if (!matcher.find()) {
                 return value;
             }
 
+            matcher.reset();
+
             var result = new StringBuilder();
+            int lastEnd = 0;
 
             for (var match : matcher.results().toList()) {
-                var path = match.group(1);
+                String path = match.group(1);
                 var variable = access(event, path);
 
-                result.append(value.substring(0, match.start()));
+                result.append(value, lastEnd, match.start());
                 result.append(variable);
-                result.append(value.substring(match.end()));
+
+                lastEnd = match.end();
             }
 
+            result.append(value.substring(lastEnd));
             return result.toString();
         }
     }

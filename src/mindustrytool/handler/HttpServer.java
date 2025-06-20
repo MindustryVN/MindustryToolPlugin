@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import arc.Core;
@@ -380,10 +381,15 @@ public class HttpServer {
         });
 
         app.get("workflow", context -> {
-            context.json(controller.workflow.getContext());
+            context.json(controller.workflow.readWorkflowData());
         });
 
         app.post("workflow", context -> {
+            var payload = context.bodyAsClass(JsonNode.class);
+            controller.workflow.writeWorkflowData(payload);
+        });
+
+        app.post("workflow/load", context -> {
             var payload = context.bodyAsClass(WorkflowContext.class);
             try {
                 controller.workflow.load(payload);

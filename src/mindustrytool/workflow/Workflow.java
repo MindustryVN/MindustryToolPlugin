@@ -1,15 +1,15 @@
 package mindustrytool.workflow;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import arc.files.Fi;
 import arc.func.Cons2;
 import arc.struct.Seq;
 import arc.util.Log;
@@ -35,7 +35,9 @@ public class Workflow {
     private final HashMap<String, WorkflowNode> nodes = new HashMap<>();
     private final List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
-    private final String WORKFLOW_PATH = Vars.dataDirectory.child("workflow/workflow.json").absolutePath();
+    private final Fi WORKFLOW_DIR = Vars.dataDirectory.child("workflow");
+    private final Fi WORKFLOW_FILE = WORKFLOW_DIR.child("workflow.json");
+    private final Fi WORKFLOW_DATA_FILE = WORKFLOW_DIR.child("workflow_data.json");
 
     @Getter
     public WorkflowContext context;
@@ -49,38 +51,27 @@ public class Workflow {
         register(new MathRandomWorkflow());
 
         loadWorkflowFromFile();
+
+        WORKFLOW_DIR.mkdirs();
+
+    }
+
+    public JsonNode readWorkflowData() {
+        return JsonUtils.readJson(WORKFLOW_DATA_FILE.readString());
+    }
+
+    public void writeWorkflowData(JsonNode data) {
+        WORKFLOW_DATA_FILE.writeString(JsonUtils.toJsonString(data));
     }
 
     private void loadWorkflowFromFile() {
-        if (!Files.exists(Path.of(WORKFLOW_PATH))) {
-            Log.info("Workflow file not found, creating new workflow context.");
-            context = new WorkflowContext();
-            context.setCreatedAt(System.currentTimeMillis());
-            writeWorkflowToFile();
-            return;
-        }
-
-        try {
-            String content = Files.readString(Path.of(WORKFLOW_PATH));
-            context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
-            load(context);
-        } catch (IOException e) {
-            context = new WorkflowContext();
-            context.setCreatedAt(System.currentTimeMillis());
-            Log.err("Fail to load workflow from file", e);
-        }
+        String content = WORKFLOW_FILE.readString();
+        context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
+        load(context);
     }
 
     private void writeWorkflowToFile() {
-        try {
-            if (!Files.exists(Path.of(WORKFLOW_PATH))) {
-                Files.createDirectories(Path.of(WORKFLOW_PATH).getParent());
-            }
-
-            Files.writeString(Path.of(WORKFLOW_PATH), JsonUtils.toJsonString(context));
-        } catch (IOException e) {
-            Log.err("Fail to write workflow to file", e);
-        }
+        WORKFLOW_FILE.writeString(JsonUtils.toJsonString(context));
     }
 
     private void register(WorkflowNode node) {

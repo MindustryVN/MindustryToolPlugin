@@ -12,7 +12,7 @@ public class EventListenerWorkflow extends WorkflowNode {
             .defaultValue(true);
 
     private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class)
-            .produce(new ConsumerProducer<>().setVariableName("event"));
+            .produce(new ConsumerProducer<>().setVariableName("event").setProduceType(Class.class));
 
     {
         preInit();

@@ -1,6 +1,7 @@
 package mindustrytool.workflow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -260,6 +261,8 @@ public abstract class WorkflowNode {
                 return (T) value;
             }
 
+            Log.debug("Fields: " + Arrays.toString(fields));
+
             Object result = value;
 
             for (int index = 0; index < fields.length; index++) {
@@ -294,6 +297,8 @@ public abstract class WorkflowNode {
 
             for (var match : matcher.results().toList()) {
                 String path = match.group(1);
+
+                Log.debug("Resolving variable: " + path);
 
                 result.append(value, lastEnd, match.start());
 

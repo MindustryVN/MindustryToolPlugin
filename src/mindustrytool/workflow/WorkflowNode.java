@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import arc.util.Log;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -270,6 +271,8 @@ public abstract class WorkflowNode {
 
         public String asString(WorkflowEmitEvent event) {
             var matcher = VARIABLE_PATTERN.matcher(color);
+
+            Log.debug("Event: " + event + " value: " + value + " match: " + matcher.matches());
 
             if (!matcher.matches()) {
                 return value;

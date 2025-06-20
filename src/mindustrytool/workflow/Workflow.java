@@ -151,6 +151,7 @@ public class Workflow {
                     }
 
                     newOutput.setValue(consumer.getValue());
+                    newOutput.getProduce().setVariableName(consumer.getProduce().getVariableName());
                 });
 
                 data.getProducers().forEach(nullProducer -> {

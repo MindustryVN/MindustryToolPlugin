@@ -134,11 +134,13 @@ public abstract class WorkflowNode {
         private boolean required = true;
         private String value;
         private T defaultValue;
-        private ConsumerProducer<?> produce = new ConsumerProducer<>();
+        private ConsumerProducer<?> produce;
 
         public WorkflowConsumer(String name, Class<T> type) {
             this.name = name;
             this.type = type;
+
+            this.produce = new ConsumerProducer<>().setVariableName(name);
 
             consumers.add(this);
         }

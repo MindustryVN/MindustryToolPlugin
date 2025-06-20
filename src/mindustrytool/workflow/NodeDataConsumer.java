@@ -6,4 +6,6 @@ import lombok.Data;
 public class NodeDataConsumer {
     private String name;
     private String value;
+
+    private NodeDataProduce produce;
 }

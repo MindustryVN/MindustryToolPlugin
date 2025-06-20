@@ -255,13 +255,15 @@ public abstract class WorkflowNode {
             for (int index = 0; index < fields.length; index++) {
                 try {
                     result = result.getClass().getDeclaredField(fields[index]).get(result);
-                } catch (IllegalArgumentException //
-                        | IllegalAccessException //
-                        | NoSuchFieldException
-                        | SecurityException e//
-                ) {
-                    throw new IllegalStateException(
+                } catch (IllegalAccessException e) {
+                    throw new WorkflowError("Can not access field: " + fields[index] + " of " + path + " on value "
+                            + result, e);
+                } catch (NoSuchFieldException e) {
+                    throw new WorkflowError(
                             "Field not found: " + fields[index] + " of " + path + " on value " + result, e);
+                } catch (SecurityException e) {
+                    throw new WorkflowError(
+                            "Can not access field: " + fields[index] + " of " + path + " on value " + result, e);
                 }
             }
             return (T) result;

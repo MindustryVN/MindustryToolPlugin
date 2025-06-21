@@ -27,7 +27,6 @@ import mindustrytool.handler.RtvVoteHandler;
 import mindustrytool.handler.ServerCommandHandler;
 import mindustrytool.handler.SessionHandler;
 import mindustrytool.utils.HudUtils;
-import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.Workflow;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
@@ -144,7 +143,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
 
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
-        JsonUtils.objectMapper = null;
 
         Log.info("Server controller stopped");
     }

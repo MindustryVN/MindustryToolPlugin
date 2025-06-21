@@ -93,7 +93,9 @@ public class HttpServer {
             config.registerPlugin(new RouteOverviewPlugin());
 
             config.requestLogger.http((context, ms) -> {
-                Log.debug("[" + context.method().name() + "] " + Math.round(ms) + "ms " + context.fullUrl());
+                if (!context.fullUrl().contains("stats")) {
+                    Log.debug("[" + context.method().name() + "] " + Math.round(ms) + "ms " + context.fullUrl());
+                }
             });
         });
 

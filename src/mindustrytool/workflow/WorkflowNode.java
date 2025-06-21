@@ -24,8 +24,6 @@ public abstract class WorkflowNode {
     public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");
 
     private String id;
-    private int x;
-    private int y;
     private int inputs = 1;
 
     protected final String name;

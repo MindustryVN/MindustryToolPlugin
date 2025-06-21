@@ -126,37 +126,42 @@ public class Workflow {
             try {
                 var newNode = (WorkflowNode) constructors[0].newInstance();
 
-                newNode.setId(data.getId())
-                        .setX(data.getX())
-                        .setY(data.getY());
+                newNode.setId(data.getId());
 
-                data.getOutputs().forEach(output -> {
+                data.getState().getOutputs().entrySet().forEach(entry -> {
+                    var name = entry.getKey();
+                    var nextId = entry.getValue();
                     var newOutput = newNode.getOutputs()
                             .stream()
-                            .filter(nn -> nn.getName().equals(output.getName()))
+                            .filter(nn -> nn.getName().equals(name))
                             .findFirst()
                             .orElseThrow(() -> new WorkflowError(
-                                    "Node output not found: " + output.getName() + " on node: " + node.getName()));
+                                    "Node output not found: " + name + " on node: " + node.getName()));
 
-                    newOutput.setNextId(output.getNextId());
+                    newOutput.setNextId(nextId);
                 });
 
-                data.getFields().forEach(fields -> {
+                data.getState().getFields().entrySet().forEach(entry -> {
+                    var name = entry.getKey();
+                    var value = entry.getValue();
                     var newOutput = newNode.getFields()
                             .stream()
-                            .filter(nn -> nn.getName().equals(fields.getName()))
+                            .filter(nn -> nn.getName().equals(name))
                             .findFirst()
                             .orElseThrow(() -> new WorkflowError(
-                                    "Node fields not found: " + fields.getName() + " on node: "
+                                    "Node fields not found: " + name + " on node: "
                                             + node.getName()));
 
-                    if (newOutput.getConsumer().isRequired() && fields.getConsumer().getValue() == null) {
-                        throw new WorkflowError("Node fields value is required: " + fields.getName()
+                    if (newOutput.getConsumer().isRequired() && value.getConsumer() == null) {
+                        throw new WorkflowError("Node fields value is required: " + name
                                 + " on node: " + node.getName());
                     }
 
-                    newOutput.getConsumer().setValue(fields.getConsumer().getValue());
-                    newOutput.getProducer().setVariableName(fields.getProduce().getVariableName());
+                    newOutput.getConsumer().setValue(value.getConsumer());
+
+                    if (value.getVariableName() != null) {
+                        newOutput.getProducer().setVariableName(value.getVariableName());
+                    }
                 });
 
                 nodes.put(newNode.getId(), newNode);

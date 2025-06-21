@@ -57,9 +57,9 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void init() {
 
+        httpServer.init();
         eventHandler.init();
         apiGateway.init();
-        httpServer.init();
         workflow.init();
 
         Config.BACKGROUND_SCHEDULER.schedule(() -> {

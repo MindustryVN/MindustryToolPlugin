@@ -11,6 +11,5 @@ public class NodeData {
     private int y;
     private String name;
     private List<NodeDataOutput> outputs;
-    private List<NodeDataConsumer> consumers;
-    private List<NodeDataProducer> producers;
+    private List<NodeDataField> fields;
 }

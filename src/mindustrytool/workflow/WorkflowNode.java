@@ -3,14 +3,12 @@ package mindustrytool.workflow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import arc.util.Log;
 import lombok.Data;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
 
@@ -31,8 +29,7 @@ public abstract class WorkflowNode {
     protected final String group;
     protected final String color;
 
-    protected List<WorkflowConsumer<?>> consumers = new ArrayList<>();
-    protected List<WorkflowProducer> producers = new ArrayList<>();
+    protected List<WorkflowField<?, ?>> fields = new ArrayList<>();
     protected List<WorkflowOutput> outputs = new ArrayList<>();
 
     public void init(Workflow context) {
@@ -80,23 +77,7 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    public class WorkflowProducer<T> {
-        private final String name;
-        private final Function<WorkflowEmitEvent, T> produce;
-
-        private String variableName;
-
-        public WorkflowProducer(String name, Function<WorkflowEmitEvent, T> produce) {
-            this.name = name;
-            this.produce = produce;
-            this.variableName = name;
-
-            producers.add(this);
-        }
-    }
-
-    @Data
-    public class WorkflowConsumerOption {
+    public class WorkflowFieldOption {
         @JsonSerialize
         private final String label;
 
@@ -106,20 +87,20 @@ public abstract class WorkflowNode {
         @JsonSerialize(using = ClassSerializer.class)
         private Class<?> produceType;
 
-        public WorkflowConsumerOption(String label, String value, Class<?> produceType) {
+        public WorkflowFieldOption(String label, String value, Class<?> produceType) {
             this.label = label;
             this.value = value;
             this.produceType = produceType;
         }
 
-        public WorkflowConsumerOption(String label, String value) {
+        public WorkflowFieldOption(String label, String value) {
             this.label = label;
             this.value = value;
         }
     }
 
     @Data
-    public class ConsumerProducer<T> {
+    public class FieldProducer<T> {
 
         @JsonSerialize(using = ClassSerializer.class)
         private Class<?> produceType;
@@ -127,39 +108,20 @@ public abstract class WorkflowNode {
     }
 
     @Data
-    @ToString(exclude = { "options" })
-    public class WorkflowConsumer<T> {
-        private final String name;
+    public class FieldConsumer<T> {
         private final Class<T> type;
-
-        private final List<WorkflowConsumerOption> options = new ArrayList<>();
-
-        private WorkflowConsumerUnit unit;
+        private WorkflowUnit unit;
         private boolean required = true;
         private String value;
         private T defaultValue;
-        private ConsumerProducer<?> produce;
+        private final List<WorkflowFieldOption> options = new ArrayList<>();
 
-        public WorkflowConsumer(String name, Class<T> type) {
-            this.name = name;
-            this.type = type;
-
-            this.produce = new ConsumerProducer<>().setVariableName(name);
-
-            consumers.add(this);
-        }
-
-        public WorkflowConsumer<T> notRequired() {
+        public FieldConsumer<T> notRequired() {
             this.required = false;
             return this;
         }
 
-        public WorkflowConsumer<T> produce(ConsumerProducer<?> producer) {
-            this.produce = producer;
-            return this;
-        }
-
-        public WorkflowConsumer<T> unit(WorkflowConsumerUnit unit) {
+        public FieldConsumer<T> unit(WorkflowUnit unit) {
             this.unit = unit;
             return this;
         }
@@ -202,24 +164,24 @@ public abstract class WorkflowNode {
             }
         }
 
-        public WorkflowConsumer<T> defaultValue(T value) {
+        public FieldConsumer<T> defaultValue(T value) {
             this.defaultValue = value;
             return this;
         }
 
-        public WorkflowConsumer<T> option(String name, String value) {
-            options.add(new WorkflowConsumerOption(name, value));
+        public FieldConsumer<T> option(String name, String value) {
+            options.add(new WorkflowFieldOption(name, value));
             return this;
         }
 
-        public WorkflowConsumer<T> option(String name, String value, Class<?> produceType) {
-            options.add(new WorkflowConsumerOption(name, value, produceType));
+        public FieldConsumer<T> option(String name, String value, Class<?> produceType) {
+            options.add(new WorkflowFieldOption(name, value, produceType));
             return this;
         }
 
-        public WorkflowConsumer<T> options(Class<? extends Enum<?>> enumClass) {
+        public FieldConsumer<T> options(Class<? extends Enum<?>> enumClass) {
             for (var enumConstant : enumClass.getEnumConstants()) {
-                options.add(new WorkflowConsumerOption(enumConstant.name(), enumConstant.name()));
+                options.add(new WorkflowFieldOption(enumConstant.name(), enumConstant.name()));
             }
             return this;
         }
@@ -335,6 +297,29 @@ public abstract class WorkflowNode {
 
             result.append(value.substring(lastEnd));
             return result.toString();
+        }
+    }
+
+    @Data
+    public class WorkflowField<C, P> {
+        private final String name;
+
+        private FieldProducer<P> producer;
+        private FieldConsumer<C> consumer;
+
+        public WorkflowField(String name, Class<C> type) {
+            this.name = name;
+            fields.add(this);
+        }
+
+        public WorkflowField<C, P> produce(FieldProducer producer) {
+            this.producer = producer;
+            return this;
+        }
+
+        public WorkflowField<C, P> consume(FieldConsumer<C> consumer) {
+            this.consumer = consumer;
+            return this;
         }
     }
 }

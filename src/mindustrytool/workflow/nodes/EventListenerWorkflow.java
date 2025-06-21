@@ -8,11 +8,13 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class EventListenerWorkflow extends WorkflowNode {
-    private WorkflowConsumer<Boolean> beforeConsumer = new WorkflowConsumer<>("before", Boolean.class)
-            .defaultValue(true);
+    private WorkflowField beforeField = new WorkflowField<>("before", Boolean.class)
+            .consume(new FieldConsumer<>(Boolean.class)
+                    .defaultValue(true));
 
-    private WorkflowConsumer<String> classConsumer = new WorkflowConsumer<>("class", String.class)
-            .produce(new ConsumerProducer<>().setVariableName("event").setProduceType(Class.class));
+    private WorkflowField classField = new WorkflowField<>("class", Class.class)
+            .consume(new FieldConsumer<>(Class.class))
+            .produce(new FieldProducer().setVariableName("event").setProduceType(Class.class));
 
     {
         preInit();
@@ -20,7 +22,7 @@ public class EventListenerWorkflow extends WorkflowNode {
 
     private void preInit() {
         for (var clazz : EventType.class.getDeclaredClasses()) {
-            classConsumer.option(clazz.getSimpleName(), clazz.getName(), clazz);
+            classField.getConsumer().option(clazz.getSimpleName(), clazz.getName(), clazz);
         }
     }
 
@@ -32,12 +34,12 @@ public class EventListenerWorkflow extends WorkflowNode {
 
     @Override
     public void init(Workflow context) {
-        Class<?> eventClass = classConsumer.asClass();
+        Class<?> eventClass = classField.getConsumer().asClass();
 
         context.on(eventClass, (event, before) -> {
-            if (before == this.beforeConsumer.asBoolean()) {
+            if (before == this.beforeField.getConsumer().asBoolean()) {
                 WorkflowEmitEvent.create(this, context)
-                        .putValue(classConsumer.getProduce().getVariableName(), event)
+                        .putValue(classField.getProducer().getVariableName(), event)
                         .next();
             }
         });

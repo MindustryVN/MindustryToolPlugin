@@ -141,34 +141,22 @@ public class Workflow {
                     newOutput.setNextId(output.getNextId());
                 });
 
-                data.getConsumers().forEach(consumer -> {
-                    var newOutput = newNode.getConsumers()
+                data.getFields().forEach(fields -> {
+                    var newOutput = newNode.getFields()
                             .stream()
-                            .filter(nn -> nn.getName().equals(consumer.getName()))
+                            .filter(nn -> nn.getName().equals(fields.getName()))
                             .findFirst()
                             .orElseThrow(() -> new WorkflowError(
-                                    "Node consumer not found: " + consumer.getName() + " on node: "
+                                    "Node fields not found: " + fields.getName() + " on node: "
                                             + node.getName()));
 
-                    if (newOutput.isRequired() && consumer.getValue() == null) {
-                        throw new WorkflowError("Node consumer value is required: " + consumer.getName()
+                    if (newOutput.getConsumer().isRequired() && fields.getConsumer().getValue() == null) {
+                        throw new WorkflowError("Node fields value is required: " + fields.getName()
                                 + " on node: " + node.getName());
                     }
 
-                    newOutput.setValue(consumer.getValue());
-                    newOutput.getProduce().setVariableName(consumer.getProduce().getVariableName());
-                });
-
-                data.getProducers().forEach(nullProducer -> {
-                    var newOutput = newNode.getProducers()
-                            .stream()
-                            .filter(nn -> nn.getName().equals(nullProducer.getName()))
-                            .findFirst()
-                            .orElseThrow(() -> new WorkflowError(
-                                    "Node producer not found: " + nullProducer.getName() + " on node: "
-                                            + node.getName()));
-
-                    newOutput.setVariableName(nullProducer.getVariableName());
+                    newOutput.getConsumer().setValue(fields.getConsumer().getValue());
+                    newOutput.getProducer().setVariableName(fields.getProduce().getVariableName());
                 });
 
                 nodes.put(newNode.getId(), newNode);

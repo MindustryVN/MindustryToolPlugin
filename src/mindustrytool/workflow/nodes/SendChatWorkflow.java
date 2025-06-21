@@ -7,8 +7,9 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatWorkflow extends WorkflowNode {
-    private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class)
-            .defaultValue("Hello");
+    private WorkflowField<String, Object> messageField = new WorkflowField<>("message", String.class)
+            .consume(new FieldConsumer<>(String.class)
+                    .defaultValue("Hello"));
 
     public SendChatWorkflow() {
         super("SendChat", WorkflowGroup.ACTION, WorkflowColor.LIME, 1);
@@ -16,7 +17,7 @@ public class SendChatWorkflow extends WorkflowNode {
 
     @Override
     public void execute(WorkflowEmitEvent event) {
-        String message = messageConsumer.asString(event);
+        String message = messageField.getConsumer().asString(event);
 
         Call.sendMessage(message);
     }

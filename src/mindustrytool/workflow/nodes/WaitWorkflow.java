@@ -1,15 +1,16 @@
 package mindustrytool.workflow.nodes;
 
 import mindustrytool.workflow.WorkflowColor;
-import mindustrytool.workflow.WorkflowConsumerUnit;
+import mindustrytool.workflow.WorkflowUnit;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class WaitWorkflow extends WorkflowNode {
-    private WorkflowConsumer<Long> secondConsumer = new WorkflowConsumer<>("second", Long.class)
-            .unit(WorkflowConsumerUnit.SECOND)
-            .defaultValue(1000L);
+    private WorkflowField secondField = new WorkflowField<>("second", Long.class)
+            .consume(new FieldConsumer<>(Long.class)
+                    .unit(WorkflowUnit.SECOND)
+                    .defaultValue(1000L));
 
     public WaitWorkflow() {
         super("Wait", WorkflowGroup.TIME, WorkflowColor.CYAN, 1);
@@ -21,7 +22,7 @@ public class WaitWorkflow extends WorkflowNode {
     public void execute(WorkflowEmitEvent event) {
         event.getContext().schedule(() -> {
             event.next();
-        }, secondConsumer.asLong());
+        }, secondField.getConsumer().asLong());
     }
 
 }

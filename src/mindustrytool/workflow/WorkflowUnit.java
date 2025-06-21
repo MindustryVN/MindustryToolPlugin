@@ -1,5 +1,5 @@
 package mindustrytool.workflow;
 
-public enum WorkflowConsumerUnit {
+public enum WorkflowUnit {
     SECOND
 }

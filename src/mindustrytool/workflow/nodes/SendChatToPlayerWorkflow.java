@@ -7,9 +7,11 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatToPlayerWorkflow extends WorkflowNode {
-    private WorkflowConsumer<Player> playerConsumer = new WorkflowConsumer<>("player", Player.class);
-    private WorkflowConsumer<String> messageConsumer = new WorkflowConsumer<>("message", String.class)
-            .defaultValue("Hello");
+    private WorkflowField<Player, Object> playerField = new WorkflowField<>("player", Player.class)
+            .consume(new FieldConsumer<>(Player.class));
+    
+    private WorkflowField messageField = new WorkflowField<>("message", String.class)
+            .consume(new FieldConsumer<>(String.class).defaultValue("Hello"));
 
     public SendChatToPlayerWorkflow() {
         super("SendChatToPlayer", WorkflowGroup.ACTION, WorkflowColor.LIME, 1);
@@ -17,8 +19,8 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
 
     @Override
     public void execute(WorkflowEmitEvent event) {
-        Player player = playerConsumer.consume(event);
-        String message = messageConsumer.asString(event);
+        Player player = playerField.getConsumer().consume(event);
+        String message = messageField.getConsumer().asString(event);
 
         player.sendMessage(message);
     }

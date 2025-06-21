@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import arc.util.Log;
@@ -23,6 +24,7 @@ public abstract class WorkflowNode {
     // 0-9 _ -
     public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{([^{}]+)\\}\\}");
 
+    @JsonIgnore
     private String id;
     private int inputs = 1;
 
@@ -67,6 +69,8 @@ public abstract class WorkflowNode {
     public class WorkflowOutput {
         private final String name;
         private final String description;
+
+        @JsonIgnore
         private String nextId;
 
         public WorkflowOutput(String name, String description) {

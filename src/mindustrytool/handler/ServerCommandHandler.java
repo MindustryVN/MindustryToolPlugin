@@ -50,6 +50,8 @@ public class ServerCommandHandler {
 
     public void unload() {
         registeredCommands.forEach(command -> handler.removeCommand(command));
+
+        Log.info("Server command unloaded");
     }
 
     public void registerCommands(CommandHandler handler) {

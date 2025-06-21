@@ -49,6 +49,8 @@ public class ClientCommandHandler {
 
     public void unload() {
         registeredCommands.forEach(command -> handler.removeCommand(command));
+
+        Log.info("Client command unloaded");
     }
 
     public void registerCommands(CommandHandler handler) {

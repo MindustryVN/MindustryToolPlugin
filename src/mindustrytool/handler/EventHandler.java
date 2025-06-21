@@ -193,6 +193,8 @@ public class EventHandler {
         if (updateServerCore != null) {
             updateServerCore.cancel(true);
         }
+
+        Log.info("Event handler unloaded");
     }
 
     public void onGameOver(GameOverEvent event) {
@@ -485,7 +487,7 @@ public class EventHandler {
 
             Log.info(chat);
 
-            Config.BACKGROUND_SCHEDULER.submit(() -> {
+            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 controller.apiGateway.sendChatMessage(chat);
             });
         } catch (Exception e) {
@@ -567,7 +569,7 @@ public class EventHandler {
 
             Log.info(chat);
 
-            Config.BACKGROUND_SCHEDULER.submit(() -> {
+            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 controller.apiGateway.sendChatMessage(chat);
             });
 

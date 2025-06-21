@@ -91,6 +91,16 @@ public class Workflow {
         events.clear();
         nodeTypes.clear();
         nodes.clear();
+
+        scheduledTasks.forEach(task -> {
+            if (!task.isCancelled()) {
+                task.cancel(true);
+            }
+        });
+
+        scheduledTasks.clear();
+
+        Log.info("Workflow unloaded");
     }
 
     public void load(WorkflowContext context) {

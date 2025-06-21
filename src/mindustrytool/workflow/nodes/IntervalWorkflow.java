@@ -38,12 +38,11 @@ public class IntervalWorkflow extends WorkflowNode {
         if (typeField.getConsumer().asEnum() == IntervalType.FIXED_RATE) {
             context.scheduleAtFixedRate(() -> {
                 WorkflowEmitEvent.create(this, context).next();
-            }, 0, intervalField.getConsumer().asLong());
-            return;
+            }, delayField.getConsumer().asLong(), intervalField.getConsumer().asLong());
+        } else {
+            context.scheduleWithFixedDelay(() -> {
+                WorkflowEmitEvent.create(this, context).next();
+            }, delayField.getConsumer().asLong(), intervalField.getConsumer().asLong());
         }
-
-        context.scheduleWithFixedDelay(() -> {
-            WorkflowEmitEvent.create(this, context).next();
-        }, delayField.getConsumer().asLong(), intervalField.getConsumer().asLong());
     }
 }

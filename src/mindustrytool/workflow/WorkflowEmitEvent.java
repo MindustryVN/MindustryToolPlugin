@@ -42,7 +42,7 @@ public class WorkflowEmitEvent {
         }
 
         if (nextId == null) {
-            Log.debug("No next node to execute, step: %s, current: %s", step, current.getId());
+            Log.debug("No next node to execute, step: @, current: @", step, current.getId());
             return;
         }
 

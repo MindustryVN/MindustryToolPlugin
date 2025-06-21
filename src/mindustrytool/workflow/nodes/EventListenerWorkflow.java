@@ -14,7 +14,7 @@ public class EventListenerWorkflow extends WorkflowNode {
 
     private WorkflowField classField = new WorkflowField<>("class", Class.class)
             .consume(new FieldConsumer<>(Class.class))
-            .produce(new FieldProducer().setVariableName("event").setProduceType(Class.class));
+            .produce(new FieldProducer("event").setProduceType(Class.class));
 
     {
         preInit();

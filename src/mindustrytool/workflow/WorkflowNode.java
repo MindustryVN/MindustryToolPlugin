@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import arc.util.Log;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
 
@@ -99,12 +102,18 @@ public abstract class WorkflowNode {
         }
     }
 
-    @Data
+    @ToString
+    @Setter
+    @Getter
     public class FieldProducer<T> {
 
         @JsonSerialize(using = ClassSerializer.class)
         private Class<?> produceType;
         private String variableName;
+
+        public FieldProducer(String variableName) {
+            this.variableName = variableName;
+        }
     }
 
     @Data

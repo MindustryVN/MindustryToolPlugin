@@ -49,6 +49,7 @@ import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.workflow.Workflow;
+import mindustrytool.workflow.WorkflowEvent;
 import mindustrytool.workflow.errors.WorkflowError;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -480,7 +481,7 @@ public class HttpServer {
         app.sse("workflow/events", context -> {
             context.keepAlive();
 
-            Consumer<Object> listener = (Object event) -> context.sendEvent(event);
+            Consumer<WorkflowEvent> listener = (WorkflowEvent event) -> context.sendEvent(event);
             Workflow.getWorkflowEventConsumers().add(listener);
 
             context.onClose(() -> Workflow.getWorkflowEventConsumers().remove(listener));

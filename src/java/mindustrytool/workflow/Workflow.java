@@ -50,13 +50,13 @@ public class Workflow {
 
     public final ServerController controller;
 
-    private static List<Consumer<Object>> workflowEventConsumers = new ArrayList<>();
+    private static List<Consumer<WorkflowEvent>> workflowEventConsumers = new ArrayList<>();
 
-    public static List<Consumer<Object>> getWorkflowEventConsumers() {
+    public static List<Consumer<WorkflowEvent>> getWorkflowEventConsumers() {
         return workflowEventConsumers;
     }
 
-    public static void sendWorkflowEvent(Object event) {
+    public static void sendWorkflowEvent(WorkflowEvent event) {
         workflowEventConsumers.forEach(consumer -> consumer.accept(event));
     }
 

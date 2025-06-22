@@ -8,7 +8,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -16,6 +15,7 @@ import arc.files.Fi;
 import arc.func.Cons2;
 import arc.struct.Seq;
 import arc.util.Log;
+import io.javalin.http.sse.SseClient;
 import lombok.Getter;
 import mindustry.Vars;
 import mindustrytool.Config;
@@ -52,14 +52,14 @@ public class Workflow {
 
     public final ServerController controller;
 
-    private static Queue<Consumer<WorkflowEvent>> workflowEventConsumers = new ConcurrentLinkedQueue<>();
+    private static Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
-    public static Queue<Consumer<WorkflowEvent>> getWorkflowEventConsumers() {
+    public static Queue<SseClient> getWorkflowEventConsumers() {
         return workflowEventConsumers;
     }
 
     public static void sendWorkflowEvent(WorkflowEvent event) {
-        workflowEventConsumers.forEach(consumer -> consumer.accept(event));
+        workflowEventConsumers.forEach(consumer -> consumer.sendEvent(event));
     }
 
     public Workflow(ServerController controller) {

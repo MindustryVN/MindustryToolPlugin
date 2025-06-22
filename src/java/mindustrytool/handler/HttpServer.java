@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -49,7 +48,6 @@ import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.workflow.Workflow;
-import mindustrytool.workflow.WorkflowEvent;
 import mindustrytool.workflow.errors.WorkflowError;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -478,13 +476,11 @@ public class HttpServer {
             });
         });
 
-        app.sse("workflow/events", context -> {
-            context.keepAlive();
+        app.sse("workflow/events", client -> {
+            client.keepAlive();
+            client.onClose(() -> Workflow.getWorkflowEventConsumers().remove(client));
 
-            Consumer<WorkflowEvent> listener = (WorkflowEvent event) -> context.sendEvent(event);
-            Workflow.getWorkflowEventConsumers().add(listener);
-
-            context.onClose(() -> Workflow.getWorkflowEventConsumers().remove(listener));
+            Workflow.getWorkflowEventConsumers().add(client);
         });
 
         app.exception(Exception.class, (exception, context) -> {

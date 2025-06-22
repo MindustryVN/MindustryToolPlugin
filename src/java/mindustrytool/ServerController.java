@@ -32,14 +32,14 @@ import mindustrytoolpluginloader.MindustryToolPlugin;
 
 public class ServerController extends Plugin implements MindustryToolPlugin {
 
-    public ApiGateway apiGateway = new ApiGateway(this);
-    public RtvVoteHandler voteHandler = new RtvVoteHandler();
-    public EventHandler eventHandler = new EventHandler(this);
-    public ClientCommandHandler clientCommandHandler = new ClientCommandHandler(this);
-    public ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
-    public HttpServer httpServer = new HttpServer(this);
-    public SessionHandler sessionHandler = new SessionHandler();
-    public Workflow workflow = new Workflow(this);
+    public final ApiGateway apiGateway = new ApiGateway(this);
+    public final RtvVoteHandler voteHandler = new RtvVoteHandler();
+    public final EventHandler eventHandler = new EventHandler(this);
+    public final ClientCommandHandler clientCommandHandler = new ClientCommandHandler(this);
+    public final ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
+    public final HttpServer httpServer = new HttpServer(this);
+    public final SessionHandler sessionHandler = new SessionHandler();
+    public final Workflow workflow = new Workflow(this);
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;

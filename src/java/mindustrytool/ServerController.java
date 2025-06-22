@@ -63,6 +63,11 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     }
 
     @Override
+    public void start() {
+        Log.info("Server controller started: " + this);
+    }
+
+    @Override
     public void init() {
 
         httpServer.init();
@@ -153,6 +158,11 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         HudUtils.menus.invalidateAll();
         HudUtils.menus = null;
 
-        Log.info("Server controller stopped");
+        Log.info("Server controller stopped: " + this);
+    }
+
+    @Override
+    public void delete() {
+        Log.info("Server controller deleted: " + this);
     }
 }

@@ -80,6 +80,7 @@ public class HttpServer {
 
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)//
                         .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)//
+                        .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
             }));

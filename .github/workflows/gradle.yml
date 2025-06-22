@@ -18,7 +18,7 @@ jobs:
            run: ./gradlew jar
 
          - name: Run tests
-           run: ./gradlew test --tests "*"
+           run: ./gradlew test --stacktrace --info
 
          - name: Upload built jar file
            uses: actions/upload-artifact@v4

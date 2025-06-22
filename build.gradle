@@ -83,7 +83,7 @@ test {
 
     testLogging {
         events "passed", "skipped", "failed"
-        exceptionFormat "full"        // shows stack traces
+        exceptionFormat "full"  
         showCauses true
         showExceptions true
         showStackTraces true

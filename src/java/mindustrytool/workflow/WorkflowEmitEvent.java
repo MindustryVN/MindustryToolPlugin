@@ -32,6 +32,9 @@ public class WorkflowEmitEvent {
         this.context = context;
         this.values = values;
 
+        values.put("@time", System.currentTimeMillis());
+        values.put("@step", 0);
+
         Log.debug(this);
     }
 

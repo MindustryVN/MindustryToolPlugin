@@ -50,6 +50,8 @@ dependencies{
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
     annotationProcessor 'org.pf4j:pf4j:3.13.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 tasks.withType(JavaCompile) {
@@ -68,4 +70,8 @@ jar{
         include "plugin.properties"
         include "META-INF/plugin.properties"
     }
+}
+
+test {
+    useJUnitPlatform()
 }

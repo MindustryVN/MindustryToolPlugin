@@ -14,6 +14,8 @@ jobs:
           java-version: 17
       - name: Build plugin jar
         run: ./gradlew jar
+      - name: Run tests
+        run: ./gradlew test
       - name: Upload built jar file
         uses: actions/upload-artifact@v4
         with:

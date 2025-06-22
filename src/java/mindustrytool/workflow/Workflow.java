@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -16,6 +17,7 @@ import arc.util.Log;
 import lombok.Getter;
 import mindustry.Vars;
 import mindustrytool.Config;
+import mindustrytool.ServerController;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -44,6 +46,22 @@ public class Workflow {
 
     @Getter
     public WorkflowContext context;
+
+    public final ServerController controller;
+
+    private static List<Consumer<Object>> workflowEventConsumers = new ArrayList<>();
+
+    public static List<Consumer<Object>> getWorkflowEventConsumers() {
+        return workflowEventConsumers;
+    }
+
+    public static void sendWorkflowEvent(Object event) {
+        workflowEventConsumers.forEach(consumer -> consumer.accept(event));
+    }
+
+    public Workflow(ServerController controller) {
+        this.controller = controller;
+    }
 
     public void init() {
         try {

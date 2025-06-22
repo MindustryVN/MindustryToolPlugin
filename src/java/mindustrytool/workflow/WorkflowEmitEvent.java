@@ -20,6 +20,9 @@ public class WorkflowEmitEvent {
     public WorkflowEmitEvent putValue(String name, Object value) {
         values.put(name, value);
         Log.debug("Add variable: " + name + ": " + value);
+
+        Workflow.sendWorkflowEvent(new WorkflowEvent(current.getId(), "SET", Map.of(name, value)));
+
         return this;
     }
 
@@ -53,9 +56,12 @@ public class WorkflowEmitEvent {
         }
 
         nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, values));
+        Workflow.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "EMIT", null));
     }
 
     public static WorkflowEmitEvent create(WorkflowNode current, Workflow context) {
+        Workflow.sendWorkflowEvent(new WorkflowEvent(current.getId(), "EMIT", null));
+
         return new WorkflowEmitEvent(0, current, context, new HashMap<>());
     }
 }

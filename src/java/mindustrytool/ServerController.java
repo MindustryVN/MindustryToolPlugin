@@ -39,7 +39,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
     public HttpServer httpServer = new HttpServer(this);
     public SessionHandler sessionHandler = new SessionHandler();
-    public Workflow workflow = new Workflow();
+    public Workflow workflow = new Workflow(this);
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;

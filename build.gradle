@@ -36,7 +36,6 @@ ext{
 dependencies{
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:server:$mindustryVersion"
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
 

@@ -39,7 +39,7 @@ public class ApiGateway {
 
     public ApiGateway(ServerController controller) {
         this.controller = controller;
-        Log.info("Api gateway handler created");
+        Log.info("Api gateway handler created: " + this);
     }
 
     private final HttpClient httpClient = HttpClient.newBuilder()//

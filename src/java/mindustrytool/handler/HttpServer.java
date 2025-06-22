@@ -63,7 +63,7 @@ public class HttpServer {
 
     public HttpServer(ServerController controller) {
         this.controller = controller;
-        Log.info("Http server created");
+        Log.info("Http server created: " + this);
     }
 
     public void init() {

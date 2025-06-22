@@ -61,7 +61,7 @@ public class EventHandler {
 
     public EventHandler(ServerController controller) {
         this.controller = controller;
-        Log.info("Event handler created");
+        Log.info("Event handler created: " + this);
     }
 
     private List<ServerResponseData> servers = new ArrayList<>();

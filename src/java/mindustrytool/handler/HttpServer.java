@@ -102,13 +102,13 @@ public class HttpServer {
 
         app.get("stats", context -> {
             context.future(() -> {
-                var future = new CompletableFuture<StatsDto>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
                     var stats = getStats();
                     context.contentType(ContentType.APPLICATION_JSON);
                     context.json(stats);
-                    future.complete(stats);
+                    future.complete(null);
                 });
 
                 return future;
@@ -117,12 +117,12 @@ public class HttpServer {
 
         app.get("image", context -> {
             context.future(() -> {
-                var future = new CompletableFuture<byte[]>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
                     var mapPreview = mapPreview();
                     context.contentType(ContentType.IMAGE_PNG).result(mapPreview);
-                    future.complete(mapPreview);
+                    future.complete(null);
                 });
 
                 return future;
@@ -198,7 +198,7 @@ public class HttpServer {
 
         app.get("players", context -> {
             context.future(() -> {
-                var future = new CompletableFuture<List<PlayerDto>>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
                     var players = new ArrayList<Player>();
@@ -219,7 +219,7 @@ public class HttpServer {
                                             .setName(player.team().name)))
                             .collect(Collectors.toList()));
                     context.json(result);
-                    future.complete(result);
+                    future.complete(null);
                 });
                 return future;
             });
@@ -250,7 +250,7 @@ public class HttpServer {
             }
 
             context.future(() -> {
-                var future = new CompletableFuture<List<PlayerInfoDto>>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
 
@@ -276,7 +276,7 @@ public class HttpServer {
                             .toList();
 
                     context.json(result);
-                    future.complete(result);
+                    future.complete(null);
                 });
                 return future;
             });
@@ -284,7 +284,7 @@ public class HttpServer {
 
         app.get("kicks", context -> {
             context.future(() -> {
-                var future = new CompletableFuture<HashMap<Object, Object>>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
                     var result = new HashMap<>();
@@ -295,7 +295,7 @@ public class HttpServer {
                     }
 
                     context.json(result);
-                    future.complete(result);
+                    future.complete(null);
                 });
 
                 return future;
@@ -407,7 +407,7 @@ public class HttpServer {
 
         app.get("json", context -> {
             context.future(() -> {
-                var future = new CompletableFuture<HashMap<String, Object>>();
+                var future = new CompletableFuture<>();
 
                 Core.app.post(() -> {
 
@@ -469,7 +469,7 @@ public class HttpServer {
                     data.put("settings", settings);
 
                     context.json(data);
-                    future.complete(data);
+                    future.complete(null);
                 });
 
                 return future;

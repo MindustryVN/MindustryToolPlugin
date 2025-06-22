@@ -19,7 +19,6 @@ import io.javalin.http.sse.SseClient;
 import lombok.Getter;
 import mindustry.Vars;
 import mindustrytool.Config;
-import mindustrytool.ServerController;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -51,8 +50,6 @@ public class Workflow {
     @Getter
     public WorkflowContext context;
 
-    public final ServerController controller;
-
     private static Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
     public static Queue<SseClient> getWorkflowEventConsumers() {
@@ -61,10 +58,6 @@ public class Workflow {
 
     public static void sendWorkflowEvent(WorkflowEvent event) {
         workflowEventConsumers.forEach(consumer -> consumer.sendEvent(event));
-    }
-
-    public Workflow(ServerController controller) {
-        this.controller = controller;
     }
 
     public void init() {

@@ -52,7 +52,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         serverCommandHandler = new ServerCommandHandler(this);
         sessionHandler = new SessionHandler();
         httpServer = new HttpServer(this);
-        workflow = new Workflow(this);
+        workflow = new Workflow();
 
         Log.info("Server controller created: " + this);
     }

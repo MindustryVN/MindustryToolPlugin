@@ -5,18 +5,13 @@ version '1.0'
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
+
+sourceSets.main.java.srcDirs = ["src"]
+
 sourceSets {
     main {
-        java {
-            srcDirs = ['src/java']
-        }
         resources {
             srcDir 'src/mindustrytool/resources'
-        }
-    }
-    test {
-        java {
-            srcDirs = ['src/test/java']
         }
     }
 }
@@ -55,9 +50,6 @@ dependencies{
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
     annotationProcessor 'org.pf4j:pf4j:3.13.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.0'
 }
 
 tasks.withType(JavaCompile) {
@@ -76,8 +68,4 @@ jar{
         include "plugin.properties"
         include "META-INF/plugin.properties"
     }
-}
-
-test {
-    useJUnitPlatform()
 }

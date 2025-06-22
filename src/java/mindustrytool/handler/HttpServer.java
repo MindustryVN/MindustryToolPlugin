@@ -595,6 +595,7 @@ public class HttpServer {
     public void unload() {
         if (app != null) {
             app.stop();
+            app = null;
             Log.info("Jetty server stopped");
         }
         Log.info("Stop http server");

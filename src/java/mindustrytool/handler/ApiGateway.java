@@ -156,6 +156,7 @@ public class ApiGateway {
 
     public void sendBuildLog(BuildLogDto buildLog) {
         if (!buildLogs.offer(buildLog)) {
+            buildLogs.clear();
             Log.warn("Build log queue is full. Dropping log.");
         }
     }

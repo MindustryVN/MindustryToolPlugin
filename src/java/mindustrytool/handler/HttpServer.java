@@ -478,6 +478,7 @@ public class HttpServer {
 
         app.sse("workflow/events", client -> {
             client.keepAlive();
+            client.sendComment("connected");
             client.onClose(() -> controller.workflow.getWorkflowEventConsumers().remove(client));
 
             controller.workflow.getWorkflowEventConsumers().add(client);

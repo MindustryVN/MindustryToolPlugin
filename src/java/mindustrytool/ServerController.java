@@ -32,19 +32,28 @@ import mindustrytoolpluginloader.MindustryToolPlugin;
 
 public class ServerController extends Plugin implements MindustryToolPlugin {
 
-    public final ApiGateway apiGateway = new ApiGateway(this);
-    public final RtvVoteHandler voteHandler = new RtvVoteHandler();
-    public final EventHandler eventHandler = new EventHandler(this);
-    public final ClientCommandHandler clientCommandHandler = new ClientCommandHandler(this);
-    public final ServerCommandHandler serverCommandHandler = new ServerCommandHandler(this);
-    public final HttpServer httpServer = new HttpServer(this);
-    public final SessionHandler sessionHandler = new SessionHandler();
-    public final Workflow workflow = new Workflow(this);
+    public final ApiGateway apiGateway;
+    public final RtvVoteHandler voteHandler;
+    public final EventHandler eventHandler;
+    public final ClientCommandHandler clientCommandHandler;
+    public final ServerCommandHandler serverCommandHandler;
+    public final HttpServer httpServer;
+    public final SessionHandler sessionHandler;
+    public final Workflow workflow;
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
 
     public ServerController() {
+        apiGateway = new ApiGateway(this);
+        voteHandler = new RtvVoteHandler();
+        eventHandler = new EventHandler(this);
+        clientCommandHandler = new ClientCommandHandler(this);
+        serverCommandHandler = new ServerCommandHandler(this);
+        sessionHandler = new SessionHandler();
+        httpServer = new HttpServer(this);
+        workflow = new Workflow(this);
+
         Log.info("Server controller created");
     }
 

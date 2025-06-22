@@ -110,11 +110,12 @@ public abstract class WorkflowNode {
     public class FieldProducer<T> {
 
         @JsonSerialize(using = ClassSerializer.class)
-        private Class<?> produceType;
+        private Class<T> produceType;
         private String variableName;
 
-        public FieldProducer(String variableName) {
+        public FieldProducer(String variableName, Class<T> produceType) {
             this.variableName = variableName;
+            this.produceType = produceType;
         }
     }
 

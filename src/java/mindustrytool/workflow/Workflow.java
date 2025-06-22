@@ -28,6 +28,7 @@ import mindustrytool.workflow.nodes.WaitWorkflow;
 
 public class Workflow {
     private final HashMap<Object, Seq<Cons2<?, Boolean>>> events = new HashMap<>();
+    public final ExpressionParser expressionParser = new ExpressionParser();
 
     @Getter
     private final HashMap<String, WorkflowNode> nodeTypes = new HashMap<>();

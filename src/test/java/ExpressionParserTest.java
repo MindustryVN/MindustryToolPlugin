@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ExpressionParserTest {
     ExpressionParser parser = new ExpressionParser();
-    private final Map<String, Double> vars = Map.of(
+    private final Map<String, Object> vars = Map.of(
             "a", 10.0,
             "b", 20.0,
             "c", 3.0,

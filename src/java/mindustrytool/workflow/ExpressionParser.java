@@ -85,6 +85,7 @@ public class ExpressionParser {
                     output.add(scanner.next());
                 } else {
                     String token = scanner.next();
+
                     if (UNARY_OPERATORS.containsKey(token)) {
                         ops.push(token);
                     } else if (BINARY_OPERATORS.containsKey(token)) {
@@ -149,34 +150,34 @@ public class ExpressionParser {
         return output;
     }
 
-    public double evaluate(String expr, Map<String, Double> vars) {
+    public Object evaluate(String expr, Map<String, Object> vars) {
         Queue<String> rpn = toExpressionQueue(expr);
-        Stack<Double> stack = new Stack<>();
+        Stack<Object> stack = new Stack<>();
 
         for (String token : rpn) {
             if (BINARY_OPERATORS.containsKey(token)) {
-                double b = stack.pop();
-                double a = stack.pop();
+                double b = (double) stack.pop();
+                double a = (double) stack.pop();
                 stack.push(BINARY_OPERATORS.get(token).apply(a, b));
             } else if (UNARY_OPERATORS.containsKey(token)) {
-                double a = stack.pop();
+                double a = (double) stack.pop();
                 stack.push(UNARY_OPERATORS.get(token).apply(a));
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
             } else if (token.equals("vec2")) {
-                double y = stack.pop();
-                double x = stack.pop();
+                double y = (double) stack.pop();
+                double x = (double) stack.pop();
                 stack.push(Math.sqrt(x * x + y * y));
             } else if (token.equals("array")) {
-                List<Double> values = new ArrayList<>();
+                List<Object> values = new ArrayList<>();
                 while (!stack.isEmpty())
                     values.add(stack.pop());
                 stack.push((double) values.size()); // Just return size for demo
             } else if (token.equals("map")) {
-                Map<String, Double> map = new HashMap<>();
+                Map<String, Object> map = new HashMap<>();
                 while (stack.size() >= 2) {
-                    double val = stack.pop();
-                    String key = String.valueOf(stack.pop().intValue());
+                    Object val = stack.pop();
+                    String key = String.valueOf(stack.pop());
                     map.put(key, val);
                 }
                 stack.push((double) map.size()); // Just return size for demo

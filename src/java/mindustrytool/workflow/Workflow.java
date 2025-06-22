@@ -75,6 +75,16 @@ public class Workflow {
             WORKFLOW_FILE.file().createNewFile();
             WORKFLOW_DATA_FILE.file().createNewFile();
 
+            Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
+                    () -> {
+                        try {
+                            workflowEventConsumers.forEach(client -> client.sendComment("heart-beat"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }, 0, 2,
+                    TimeUnit.SECONDS);
+
             loadWorkflowFromFile();
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package mindustrytool.workflow.nodes;
 
 import mindustry.gen.Call;
+import mindustry.gen.Player;
 import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
@@ -8,6 +9,9 @@ import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.WorkflowUnit;
 
 public class DisplayLabelWorkflow extends WorkflowNode {
+    private WorkflowField<Player, Void> playerField = new WorkflowField<Player, Void>("player")
+            .consume(new FieldConsumer<>(Player.class).notRequired());
+
     private WorkflowField<String, Void> messageField = new WorkflowField<String, Void>("message")
             .consume(new FieldConsumer<>(String.class)
                     .defaultValue("Hello"));
@@ -31,11 +35,16 @@ public class DisplayLabelWorkflow extends WorkflowNode {
 
     @Override
     public void execute(WorkflowEmitEvent event) {
+        Player player = playerField.getConsumer().consume(event);
         String message = messageField.getConsumer().asString(event);
         Float x = xField.getConsumer().asFloat(event);
         Float y = yField.getConsumer().asFloat(event);
         Float duration = durationField.getConsumer().asFloat(event);
 
-        Call.label(message, duration, x, y);
+        if (player == null) {
+            Call.label(message, duration, x, y);
+        } else {
+            Call.label(player.con, message, duration, x, y);
+        }
     }
 }

@@ -86,7 +86,7 @@ public class HttpServer {
 
             int maxThreads = 20;
             int minThreads = 1;
-            int idleTimeoutMillis = 10000;
+            int idleTimeoutMillis = 20000;
 
             config.useVirtualThreads = true;
             config.jetty.threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMillis);

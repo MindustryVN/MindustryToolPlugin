@@ -203,7 +203,8 @@ public class Workflow {
 
                 nodes.put(newNode.getId(), newNode);
 
-                Log.debug("Node loaded: " + newNode.getName() + ":" + newNode.getId() + " " + newNode.getOutputs());
+                Log.debug("Node loaded: " + newNode.getName() + ":" + newNode.getId() + " "
+                        + data.getState().getOutputs());
 
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);

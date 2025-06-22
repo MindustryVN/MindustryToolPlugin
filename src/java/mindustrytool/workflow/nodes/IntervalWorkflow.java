@@ -12,17 +12,17 @@ public class IntervalWorkflow extends WorkflowNode {
         FIXED_RATE, DELAY
     }
 
-    private WorkflowField delayField = new WorkflowField<>("delay", Long.class)
+    private WorkflowField<Long, Void> delayField = new WorkflowField<Long, Void>("delay")
             .consume(new FieldConsumer<>(Long.class)
                     .unit(WorkflowUnit.SECOND)
                     .defaultValue(1000L));
 
-    private WorkflowField intervalField = new WorkflowField<>("interval", Long.class)
+    private WorkflowField<Long, Void> intervalField = new WorkflowField<Long, Void>("interval")
             .consume(new FieldConsumer<>(Long.class)
                     .unit(WorkflowUnit.SECOND)
                     .defaultValue(1000L));
 
-    private WorkflowField typeField = new WorkflowField<>("type", IntervalType.class)
+    private WorkflowField<IntervalType, Void> typeField = new WorkflowField<IntervalType, Void>("type")
             .consume(new FieldConsumer<>(IntervalType.class)
                     .options(IntervalType.class)
                     .defaultValue(IntervalType.DELAY));

@@ -319,12 +319,12 @@ public abstract class WorkflowNode {
         private FieldProducer<P> producer;
         private FieldConsumer<C> consumer;
 
-        public WorkflowField(String name, Class<C> type) {
+        public WorkflowField(String name) {
             this.name = name;
             fields.add(this);
         }
 
-        public WorkflowField<C, P> produce(FieldProducer producer) {
+        public WorkflowField<C, P> produce(FieldProducer<P> producer) {
             this.producer = producer;
             return this;
         }

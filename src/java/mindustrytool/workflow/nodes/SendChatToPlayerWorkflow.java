@@ -7,10 +7,10 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatToPlayerWorkflow extends WorkflowNode {
-    private WorkflowField<Player, Object> playerField = new WorkflowField<>("player", Player.class)
+    private WorkflowField<Player,Void> playerField = new WorkflowField<Player, Void>("player")
             .consume(new FieldConsumer<>(Player.class));
-    
-    private WorkflowField messageField = new WorkflowField<>("message", String.class)
+
+    private WorkflowField messageField = new WorkflowField("message")
             .consume(new FieldConsumer<>(String.class).defaultValue("Hello"));
 
     public SendChatToPlayerWorkflow() {

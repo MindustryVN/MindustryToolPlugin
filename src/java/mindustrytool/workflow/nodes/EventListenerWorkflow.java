@@ -8,11 +8,11 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class EventListenerWorkflow extends WorkflowNode {
-    private WorkflowField beforeField = new WorkflowField<>("before", Boolean.class)
+    private WorkflowField<Boolean, Void> beforeField = new WorkflowField<Boolean, Void>("before")
             .consume(new FieldConsumer<>(Boolean.class)
                     .defaultValue(true));
 
-    private WorkflowField classField = new WorkflowField<>("class", Class.class)
+    private WorkflowField<Class, Void> classField = new WorkflowField<Class, Void>("class")
             .consume(new FieldConsumer<>(Class.class))
             .produce(new FieldProducer("event", Class.class));
 

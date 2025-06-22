@@ -11,6 +11,8 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import mindustrytool.workflow.errors.WorkflowError;
+
 public class ExpressionParser {
     private final Map<String, Integer> PRECEDENCE = new HashMap<>();
     private final Map<String, BiFunction<Double, Double, Double>> BINARY_OPERATORS = new HashMap<>();
@@ -151,6 +153,10 @@ public class ExpressionParser {
     }
 
     public Object evaluate(String expr, Map<String, Object> vars) {
+        return evaluate(Object.class, expr, vars);
+    }
+
+    public <T> T evaluate(Class<T> type, String expr, Map<String, Object> vars) {
         Queue<String> rpn = toExpressionQueue(expr);
         Stack<Object> stack = new Stack<>();
 
@@ -188,6 +194,17 @@ public class ExpressionParser {
                 stack.push(Double.parseDouble(token));
             }
         }
-        return stack.pop();
+        var result = stack.pop();
+
+        if (result == null) {
+            throw new WorkflowError("Null result of expression: " + expr);
+        }
+
+        try {
+            return type.cast(result);
+        } catch (ClassCastException e) {
+            throw new WorkflowError("Invalid result type of expression: " + expr + ", result type: "
+                    + result.getClass().getSimpleName() + ", expected type: " + type.getSimpleName(), e);
+        }
     }
 }

@@ -6,7 +6,7 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowNode;
 
 public class MathRandomWorkflow extends WorkflowNode {
-    private final WorkflowField numberProducer = new WorkflowField<>("number", Object.class)
+    private final WorkflowField<Void, Double> numberProducer = new WorkflowField<Void, Double>("number")
             .produce(new FieldProducer<Double>("number", Double.class));
 
     public MathRandomWorkflow() {

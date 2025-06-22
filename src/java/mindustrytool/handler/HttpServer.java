@@ -398,12 +398,12 @@ public class HttpServer {
             var payload = context.bodyAsClass(WorkflowContext.class);
             try {
                 controller.workflow.load(payload);
+                context.json(controller.workflow.getContext());
             } catch (WorkflowError e) {
                 Log.err("Failed to load workflow", e);
                 context.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
                 return;
             }
-            context.json(controller.workflow.getContext());
         });
 
         app.get("json", context -> {

@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -50,9 +52,9 @@ public class Workflow {
 
     public final ServerController controller;
 
-    private static List<Consumer<WorkflowEvent>> workflowEventConsumers = new ArrayList<>();
+    private static Queue<Consumer<WorkflowEvent>> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
-    public static List<Consumer<WorkflowEvent>> getWorkflowEventConsumers() {
+    public static Queue<Consumer<WorkflowEvent>> getWorkflowEventConsumers() {
         return workflowEventConsumers;
     }
 

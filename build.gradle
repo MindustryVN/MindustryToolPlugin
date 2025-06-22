@@ -80,4 +80,12 @@ jar{
 
 test {
     useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"        // shows stack traces
+        showCauses true
+        showExceptions true
+        showStackTraces true
+    }
 }

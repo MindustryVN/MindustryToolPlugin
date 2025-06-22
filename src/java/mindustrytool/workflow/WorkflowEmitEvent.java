@@ -37,8 +37,8 @@ public class WorkflowEmitEvent {
 
         putDefaultValues(values);
 
-        Log.debug("step: " + step + " current: " + current.getName() + ":" + currentNode.getId() + " context: "
-                + context);
+        Log.debug("step: " + step + " current: " + current.getName() + ":" + currentNode.getId() + " values: "
+                + values);
     }
 
     public static void putDefaultValues(Map<String, Object> values) {

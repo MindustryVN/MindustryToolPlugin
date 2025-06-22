@@ -22,7 +22,7 @@ public class DisplayLabelWorkflow extends WorkflowNode {
 
     private WorkflowField<Float, Void> durationField = new WorkflowField<Float, Void>("duration")
             .consume(new FieldConsumer<>(Float.class)
-                    .unit(WorkflowUnit.MILLISECONDS)
+                    .unit(WorkflowUnit.MILLISECOND)
                     .defaultValue(0f));
 
     public DisplayLabelWorkflow() {

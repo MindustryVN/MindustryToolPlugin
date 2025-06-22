@@ -477,12 +477,12 @@ public class HttpServer {
             });
         });
 
-        // app.sse("workflow/events", client -> {
-        //     client.keepAlive();
-        //     client.onClose(() -> Workflow.getWorkflowEventConsumers().remove(client));
+        app.sse("workflow/events", client -> {
+            client.keepAlive();
+            client.onClose(() -> Workflow.getWorkflowEventConsumers().remove(client));
 
-        //     Workflow.getWorkflowEventConsumers().add(client);
-        // });
+            Workflow.getWorkflowEventConsumers().add(client);
+        });
 
         app.exception(Exception.class, (exception, context) -> {
             Log.err("Unhandled api exception", exception);

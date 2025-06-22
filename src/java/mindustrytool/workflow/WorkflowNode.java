@@ -199,6 +199,14 @@ public abstract class WorkflowNode {
         }
 
         public T consume(WorkflowEmitEvent event) {
+            if (value == null && isRequired()) {
+                throw new WorkflowError("Field is required but not set: " + name);
+            }
+
+            if (value == null) {
+                return null;
+            }
+
             var fields = value.split(".");
 
             if (fields.length == 0) {

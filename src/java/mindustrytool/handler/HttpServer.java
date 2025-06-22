@@ -478,8 +478,9 @@ public class HttpServer {
         });
 
         app.sse("workflow/events", context -> {
-            Consumer<Object> listener = (Object event) -> context.sendEvent(event);
+            context.keepAlive();
 
+            Consumer<Object> listener = (Object event) -> context.sendEvent(event);
             Workflow.getWorkflowEventConsumers().add(listener);
 
             context.onClose(() -> Workflow.getWorkflowEventConsumers().remove(listener));

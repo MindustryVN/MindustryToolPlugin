@@ -3,7 +3,6 @@ package test.java;
 import org.junit.jupiter.api.Test;
 
 import mindustrytool.workflow.ExpressionParser;
-
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 

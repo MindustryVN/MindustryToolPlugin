@@ -23,6 +23,7 @@ import mindustrytool.ServerController;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
+import mindustrytool.workflow.nodes.DisplayLabelWorkflow;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
@@ -75,6 +76,7 @@ public class Workflow {
             register(new WaitWorkflow());
             register(new MathRandomWorkflow());
             register(new IfWorkflow());
+            register(new DisplayLabelWorkflow());
 
             WORKFLOW_DIR.mkdirs();
             WORKFLOW_FILE.file().createNewFile();

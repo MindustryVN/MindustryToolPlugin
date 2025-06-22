@@ -14,7 +14,7 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
             .consume(new FieldConsumer<>(String.class).defaultValue("Hello"));
 
     public SendChatToPlayerWorkflow() {
-        super("SendChatToPlayer", WorkflowGroup.ACTION, WorkflowColor.LIME, 1);
+        super("SendChatToPlayer", WorkflowGroup.DISPLAY, WorkflowColor.LIME, 1);
     }
 
     @Override

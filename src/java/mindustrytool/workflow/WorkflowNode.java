@@ -257,6 +257,33 @@ public abstract class WorkflowNode {
             return (T) result;
         }
 
+        public Double asDouble(WorkflowEmitEvent event) {
+            var string = asString(event);
+            try {
+                return Double.parseDouble(string);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid double value: " + string + " " + e.getMessage(), e);
+            }
+        }
+
+        public Long asLong(WorkflowEmitEvent event) {
+            var string = asString(event);
+            try {
+                return Long.parseLong(string);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid long value: " + string + " " + e.getMessage(), e);
+            }
+        }
+
+        public Float asFloat(WorkflowEmitEvent event) {
+            var string = asString(event);
+            try {
+                return Float.parseFloat(string);
+            } catch (Exception e) {
+                throw new WorkflowError("Invalid float value: " + string + " " + e.getMessage(), e);
+            }
+        }
+
         public String asString(WorkflowEmitEvent event) {
             var matcher = VARIABLE_PATTERN.matcher(value);
 

@@ -6,4 +6,6 @@ public class WorkflowGroup {
     public static final String MATH = "math";
     public static final String ACTION = "action";
     public static final String FLOW = "flow";
+    public static final String DISPLAY = "display";
+
 }

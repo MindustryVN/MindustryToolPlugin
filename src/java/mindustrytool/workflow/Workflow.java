@@ -203,14 +203,17 @@ public class Workflow {
 
                 nodes.put(newNode.getId(), newNode);
 
-                newNode.init(this);
-
                 Log.debug("Node loaded: " + newNode.getName() + ":" + newNode.getId() + " " + newNode.getOutputs());
 
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new WorkflowError("Can not create new node: " + node.getClass().getSimpleName(), e);
             }
         }
+
+        for (var node : nodes.values()) {
+            node.init(this);
+        }
+
         Log.info("Context loaded");
     }
 

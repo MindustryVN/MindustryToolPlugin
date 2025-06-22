@@ -13,7 +13,7 @@ public class PlayerDto {
     private String locale;
     private String ip;
     private TeamDto team;
-    
+
     @JsonProperty("isAdmin")
     private boolean isAdmin;
     private Long joinedAt;

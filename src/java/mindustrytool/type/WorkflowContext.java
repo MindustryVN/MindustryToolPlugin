@@ -3,7 +3,6 @@ package mindustrytool.type;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import lombok.Data;
 import mindustrytool.workflow.NodeData;
 

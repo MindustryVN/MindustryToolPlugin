@@ -47,7 +47,6 @@ import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
-import mindustrytool.workflow.Workflow;
 import mindustrytool.workflow.errors.WorkflowError;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;

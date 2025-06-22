@@ -1,6 +1,5 @@
 package mindustrytool.workflow;
 
-
 import lombok.Data;
 
 @Data

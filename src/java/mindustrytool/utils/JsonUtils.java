@@ -31,6 +31,7 @@ public class JsonUtils {
             throw new RuntimeException("Can not parse to json: " + e.getMessage(), e);
         }
     }
+
     public static <T> T readJsonAsClass(String data, TypeReference<T> clazz) {
         try {
             return objectMapper.readValue(data, clazz);

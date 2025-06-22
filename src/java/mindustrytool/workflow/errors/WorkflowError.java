@@ -18,5 +18,5 @@ public class WorkflowError extends RuntimeException {
     public WorkflowError(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
-    
+
 }

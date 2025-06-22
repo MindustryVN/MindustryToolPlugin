@@ -1,9 +1,8 @@
 package mindustrytool.workflow;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
@@ -11,11 +10,12 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import arc.util.Log;
 import mindustrytool.workflow.errors.WorkflowError;
 
 public class ExpressionParser {
     private final Map<String, Integer> PRECEDENCE = new HashMap<>();
-    private final Map<String, BiFunction<Double, Double, Double>> BINARY_OPERATORS = new HashMap<>();
+    private final Map<String, BiFunction<Double, Double, Object>> BINARY_OPERATORS = new HashMap<>();
     private final Map<String, Function<Double, Double>> UNARY_OPERATORS = new HashMap<>();
 
     public ExpressionParser() {
@@ -46,12 +46,12 @@ public class ExpressionParser {
         BINARY_OPERATORS.put("/", (a, b) -> a / b);
         BINARY_OPERATORS.put("%", (a, b) -> a % b);
         BINARY_OPERATORS.put("idiv", (a, b) -> (double) ((int) (a / b)));
-        BINARY_OPERATORS.put("==", (a, b) -> a.equals(b) ? 1.0 : 0.0);
-        BINARY_OPERATORS.put("!=", (a, b) -> !a.equals(b) ? 1.0 : 0.0);
-        BINARY_OPERATORS.put("<", (a, b) -> a < b ? 1.0 : 0.0);
-        BINARY_OPERATORS.put("><", (a, b) -> a > b ? 1.0 : 0.0);
-        BINARY_OPERATORS.put("<=", (a, b) -> a <= b ? 1.0 : 0.0);
-        BINARY_OPERATORS.put(">=", (a, b) -> a >= b ? 1.0 : 0.0);
+        BINARY_OPERATORS.put("==", (a, b) -> a.equals(b));
+        BINARY_OPERATORS.put("!=", (a, b) -> !a.equals(b));
+        BINARY_OPERATORS.put("<", (a, b) -> a < b);
+        BINARY_OPERATORS.put("><", (a, b) -> a > b);
+        BINARY_OPERATORS.put("<=", (a, b) -> a <= b);
+        BINARY_OPERATORS.put(">=", (a, b) -> a >= b);
         BINARY_OPERATORS.put("and", (a, b) -> (double) (a.intValue() & b.intValue()));
         BINARY_OPERATORS.put("or", (a, b) -> (double) (a.intValue() | b.intValue()));
         BINARY_OPERATORS.put("xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
@@ -77,11 +77,57 @@ public class ExpressionParser {
         UNARY_OPERATORS.put("length", a -> Math.abs(a));
     }
 
-    private Queue<String> toExpressionQueue(String expr) {
+    private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {
+        var matcher = WorkflowNode.VARIABLE_PATTERN.matcher(expr);
+        var builder = new StringBuilder();
+        int lastEnd = 0;
+
+        for (var match : matcher.results().toList()) {
+            String path = match.group(1);
+
+            Log.debug("Resolving variable: " + path);
+
+            builder.append(expr, lastEnd, match.start());
+
+            var firstDot = path.indexOf('.');
+
+            if (firstDot != -1) {
+                var key = path.substring(0, firstDot);
+                var obj = variables.get(key);
+
+                if (obj == null) {
+                    Log.debug("Variable not found: " + key);
+                }
+
+                var variable = access(obj, path.substring(firstDot + 1));
+
+                if (variable == null) {
+                    Log.debug("Variable not found: " + path);
+                }
+
+                builder.append(variable);
+
+            } else {
+                var variable = variables.get(path);
+
+                if (variable == null) {
+                    Log.debug("Variable not found: " + path);
+                }
+
+                builder.append(variable);
+            }
+
+            lastEnd = match.end();
+        }
+
+        builder.append(expr.substring(lastEnd));
+
+        var parameter = builder.toString();
+
         Stack<String> ops = new Stack<>();
         Queue<String> output = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(expr)) {
+        try (Scanner scanner = new Scanner(parameter)) {
             while (scanner.hasNext()) {
                 if (scanner.hasNextDouble()) {
                     output.add(scanner.next());
@@ -105,40 +151,6 @@ public class ExpressionParser {
                         if (!ops.isEmpty() && UNARY_OPERATORS.containsKey(ops.peek())) {
                             output.add(ops.pop());
                         }
-                    } else if (token.contains("[")) {
-                        int start = token.indexOf('[');
-                        int end = token.lastIndexOf(']');
-                        String type = token.substring(0, start);
-                        String contents = token.substring(start + 1, end);
-                        switch (type) {
-                            case "array":
-                                String[] nums = contents.split(",");
-                                for (String n : nums)
-                                    output.add(n.trim());
-                                output.add("array");
-                                break;
-                            case "vec2":
-                                String[] xy = contents.split(",");
-                                output.add(xy[0].trim());
-                                output.add(xy[1].trim());
-                                output.add("vec2");
-                                break;
-                            case "string":
-                                output.add("\"" + contents + "\"");
-                                break;
-                            case "map":
-                                String[] pairs = contents.split(",");
-                                for (int i = 0; i < pairs.length; i += 2) {
-                                    String key = pairs[i].trim();
-                                    String value = (i + 1 < pairs.length) ? pairs[i + 1].trim() : "0";
-                                    output.add(key);
-                                    output.add(value);
-                                }
-                                output.add("map");
-                                break;
-                            default:
-                                throw new RuntimeException("Unknown type: " + type);
-                        }
                     } else {
                         output.add(token);
                     }
@@ -152,12 +164,13 @@ public class ExpressionParser {
         return output;
     }
 
-    public Object evaluate(String expr, Map<String, Object> vars) {
-        return evaluate(Object.class, expr, vars);
+    public Object evaluate(String expr, Map<String, Object> variables) {
+        return evaluate(Object.class, expr, variables);
     }
 
-    public <T> T evaluate(Class<T> type, String expr, Map<String, Object> vars) {
-        Queue<String> rpn = toExpressionQueue(expr);
+    public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
+        Map<String, Object> vars = new HashMap<>();
+        Queue<String> rpn = toExpressionQueue(expr, variables);
         Stack<Object> stack = new Stack<>();
 
         for (String token : rpn) {
@@ -170,30 +183,12 @@ public class ExpressionParser {
                 stack.push(UNARY_OPERATORS.get(token).apply(a));
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
-            } else if (token.equals("vec2")) {
-                double y = (double) stack.pop();
-                double x = (double) stack.pop();
-                stack.push(Math.sqrt(x * x + y * y));
-            } else if (token.equals("array")) {
-                List<Object> values = new ArrayList<>();
-                while (!stack.isEmpty())
-                    values.add(stack.pop());
-                stack.push((double) values.size()); // Just return size for demo
-            } else if (token.equals("map")) {
-                Map<String, Object> map = new HashMap<>();
-                while (stack.size() >= 2) {
-                    Object val = stack.pop();
-                    String key = String.valueOf(stack.pop());
-                    map.put(key, val);
-                }
-                stack.push((double) map.size()); // Just return size for demo
-            } else if (token.startsWith("\"")) {
-                System.out.println("Parsed string: " + token.substring(1, token.length() - 1));
-                stack.push(0.0);
-            } else if (WorkflowNode.VARIABLE_PATTERN.matcher(token).matches()) {
-                vars.get(token);
             } else {
-                stack.push(Double.parseDouble(token));
+                try {
+                    stack.push(Double.parseDouble(token));
+                } catch (Exception e) {
+                    throw new WorkflowError("Invalid token: " + token, e);
+                }
             }
         }
         var result = stack.pop();
@@ -208,5 +203,39 @@ public class ExpressionParser {
             throw new WorkflowError("Invalid result type of expression: " + expr + ", result type: "
                     + result.getClass().getSimpleName() + ", expected type: " + type.getSimpleName(), e);
         }
+    }
+
+    public static <T> T access(Object value, String path) {
+        if (value == null) {
+            Log.debug("Trying to access null value: " + path);
+            return null;
+        }
+
+        var fields = path.split("\\.");
+
+        if (fields.length == 0) {
+            return (T) value;
+        }
+
+        Log.debug("Fields: " + Arrays.toString(fields));
+
+        Object result = value;
+
+        for (int index = 0; index < fields.length; index++) {
+            try {
+                Log.debug("Trying to access field: " + fields[index] + " of " + path + " on value " + result);
+                result = result.getClass().getDeclaredField(fields[index]).get(result);
+            } catch (IllegalAccessException e) {
+                throw new WorkflowError("Can not access field: " + fields[index] + " of " + path + " on value "
+                        + result, e);
+            } catch (NoSuchFieldException e) {
+                throw new WorkflowError(
+                        "Field not found: " + fields[index] + " of " + path + " on value " + result, e);
+            } catch (SecurityException e) {
+                throw new WorkflowError(
+                        "Can not access field: " + fields[index] + " of " + path + " on value " + result, e);
+            }
+        }
+        return (T) result;
     }
 }

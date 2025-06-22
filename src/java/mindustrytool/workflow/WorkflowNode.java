@@ -1,7 +1,6 @@
 package mindustrytool.workflow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -231,40 +230,6 @@ public abstract class WorkflowNode {
             return (T) result;
         }
 
-        public T access(Object value, String path) {
-            if (value == null) {
-                Log.debug("Trying to access null value: " + path);
-                return null;
-            }
-
-            var fields = path.split("\\.");
-
-            if (fields.length == 0) {
-                return (T) value;
-            }
-
-            Log.debug("Fields: " + Arrays.toString(fields));
-
-            Object result = value;
-
-            for (int index = 0; index < fields.length; index++) {
-                try {
-                    Log.debug("Trying to access field: " + fields[index] + " of " + path + " on value " + result);
-                    result = result.getClass().getDeclaredField(fields[index]).get(result);
-                } catch (IllegalAccessException e) {
-                    throw new WorkflowError("Can not access field: " + fields[index] + " of " + path + " on value "
-                            + result, e);
-                } catch (NoSuchFieldException e) {
-                    throw new WorkflowError(
-                            "Field not found: " + fields[index] + " of " + path + " on value " + result, e);
-                } catch (SecurityException e) {
-                    throw new WorkflowError(
-                            "Can not access field: " + fields[index] + " of " + path + " on value " + result, e);
-                }
-            }
-            return (T) result;
-        }
-
         public Double asDouble(WorkflowEmitEvent event) {
             var string = asString(event);
             try {
@@ -321,7 +286,7 @@ public abstract class WorkflowNode {
                         Log.debug("Variable not found: " + key);
                     }
 
-                    var variable = access(obj, path.substring(firstDot + 1));
+                    var variable = ExpressionParser.access(obj, path.substring(firstDot + 1));
 
                     if (variable == null) {
                         Log.debug("Variable not found: " + path);

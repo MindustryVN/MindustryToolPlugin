@@ -477,7 +477,7 @@ public class HttpServer {
             });
         });
 
-        app.sse("/workflow/events", context -> {
+        app.sse("workflow/events", context -> {
             Consumer<Object> listener = (Object event) -> context.sendEvent(event);
 
             Workflow.getWorkflowEventConsumers().add(listener);

@@ -1,11 +1,14 @@
 package mindustrytool.workflow;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import arc.util.Log;
 import lombok.Getter;
 import lombok.ToString;
+import mindustry.gen.Groups;
 
 @ToString(exclude = { "context" })
 @Getter
@@ -32,10 +35,28 @@ public class WorkflowEmitEvent {
         this.context = context;
         this.values = values;
 
+        putDefaultValues(values);
+
+        Log.debug(this);
+    }
+
+    public static void putDefaultValues(Map<String, Object> values) {
+
         values.put("@time", System.currentTimeMillis());
         values.put("@step", 0);
 
-        Log.debug(this);
+        Calendar calendar = Calendar.getInstance();
+
+        values.put("@seconds", calendar.get(Calendar.SECOND));
+        values.put("@minutes", calendar.get(Calendar.MINUTE));
+        values.put("@hours", calendar.get(Calendar.HOUR));
+        values.put("@day", calendar.get(Calendar.DAY_OF_MONTH));
+        values.put("@month", calendar.get(Calendar.MONTH));
+        values.put("@year", calendar.get(Calendar.YEAR));
+
+        values.put("@datetime", new Date().toString());
+        values.put("@players", Groups.player);
+
     }
 
     public void next() {

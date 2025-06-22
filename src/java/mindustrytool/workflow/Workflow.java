@@ -22,6 +22,7 @@ import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
+import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
 import mindustrytool.workflow.nodes.MathRandomWorkflow;
 import mindustrytool.workflow.nodes.SendChatToPlayerWorkflow;
@@ -71,6 +72,7 @@ public class Workflow {
             register(new IntervalWorkflow());
             register(new WaitWorkflow());
             register(new MathRandomWorkflow());
+            register(new IfWorkflow());
 
             WORKFLOW_DIR.mkdirs();
             WORKFLOW_FILE.file().createNewFile();

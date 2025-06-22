@@ -15,6 +15,8 @@ public class SendChatToPlayerWorkflow extends WorkflowNode {
 
     public SendChatToPlayerWorkflow() {
         super("SendChatToPlayer", WorkflowGroup.DISPLAY, WorkflowColor.LIME, 1);
+
+        defaultOneOutput();
     }
 
     @Override

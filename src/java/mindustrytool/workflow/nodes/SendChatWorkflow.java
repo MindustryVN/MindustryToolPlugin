@@ -13,6 +13,8 @@ public class SendChatWorkflow extends WorkflowNode {
 
     public SendChatWorkflow() {
         super("SendChat", WorkflowGroup.DISPLAY, WorkflowColor.LIME, 1);
+
+        defaultOneOutput();
     }
 
     @Override

@@ -31,6 +31,8 @@ public class DisplayLabelWorkflow extends WorkflowNode {
 
     public DisplayLabelWorkflow() {
         super("DisplayLabel", WorkflowGroup.DISPLAY, WorkflowColor.LIME, 1);
+
+        defaultOneOutput();
     }
 
     @Override

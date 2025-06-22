@@ -78,7 +78,7 @@ public class Workflow {
             Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
                     () -> {
                         try {
-                            workflowEventConsumers.forEach(client -> client.sendComment("heart-beat"));
+                            workflowEventConsumers.forEach(client -> client.sendComment("heartbeat"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

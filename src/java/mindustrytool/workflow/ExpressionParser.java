@@ -49,7 +49,7 @@ public class ExpressionParser {
         BINARY_OPERATORS.put("==", (a, b) -> a.equals(b));
         BINARY_OPERATORS.put("!=", (a, b) -> !a.equals(b));
         BINARY_OPERATORS.put("<", (a, b) -> a < b);
-        BINARY_OPERATORS.put("><", (a, b) -> a > b);
+        BINARY_OPERATORS.put(">", (a, b) -> a > b);
         BINARY_OPERATORS.put("<=", (a, b) -> a <= b);
         BINARY_OPERATORS.put(">=", (a, b) -> a >= b);
         BINARY_OPERATORS.put("and", (a, b) -> (double) (a.intValue() & b.intValue()));

@@ -190,6 +190,8 @@ public class ExpressionParser {
             } else if (token.startsWith("\"")) {
                 System.out.println("Parsed string: " + token.substring(1, token.length() - 1));
                 stack.push(0.0);
+            } else if (WorkflowNode.VARIABLE_PATTERN.matcher(token).matches()) {
+                vars.get(token);
             } else {
                 stack.push(Double.parseDouble(token));
             }

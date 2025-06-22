@@ -1,5 +1,3 @@
-package test;
-
 package test.java;
 
 import org.junit.jupiter.api.Test;
@@ -8,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ExpressionParserTest {
     private final Map<String, Double> vars = Map.of(
-        "a", 10.0,
-        "b", 20.0,
-        "c", 3.0,
-        "d", 2.0
-    );
+            "a", 10.0,
+            "b", 20.0,
+            "c", 3.0,
+            "d", 2.0);
 
-    @Test void testArithmetic() {
+    @Test
+    void testArithmetic() {
         assertEquals(30.0, ExpressionParser.evaluate("a + b", vars));
         assertEquals(10.0, ExpressionParser.evaluate("b - a", vars));
         assertEquals(20.0, ExpressionParser.evaluate("a * d", vars));
@@ -23,7 +21,8 @@ public class ExpressionParserTest {
         assertEquals(0.0, ExpressionParser.evaluate("b % a", vars));
     }
 
-    @Test void testComparison() {
+    @Test
+    void testComparison() {
         assertEquals(1.0, ExpressionParser.evaluate("a == 10", vars));
         assertEquals(1.0, ExpressionParser.evaluate("a != b", vars));
         assertEquals(1.0, ExpressionParser.evaluate("a < b", vars));
@@ -32,7 +31,8 @@ public class ExpressionParserTest {
         assertEquals(1.0, ExpressionParser.evaluate("b >= 20", vars));
     }
 
-    @Test void testBitwise() {
+    @Test
+    void testBitwise() {
         assertEquals(2.0, ExpressionParser.evaluate("a and d", vars));
         assertEquals(10.0, ExpressionParser.evaluate("a or d", vars));
         assertEquals(8.0, ExpressionParser.evaluate("a xor d", vars));
@@ -41,7 +41,8 @@ public class ExpressionParserTest {
         assertEquals(-11.0, ExpressionParser.evaluate("flip(a)", vars));
     }
 
-    @Test void testUnaryFunctions() {
+    @Test
+    void testUnaryFunctions() {
         assertEquals(10.0, ExpressionParser.evaluate("abs(-a)", vars));
         assertEquals(Math.log(10), (Double) ExpressionParser.evaluate("log(10)", vars), 0.0001);
         assertEquals(3.0, ExpressionParser.evaluate("log10(1000)", vars));
@@ -58,7 +59,8 @@ public class ExpressionParserTest {
         assertEquals(16.0, ExpressionParser.evaluate("square(4)", vars));
     }
 
-    @Test void testStructures() {
+    @Test
+    void testStructures() {
         assertEquals(List.of(1.0, 2.0, 3.0, 4.0, 5.0), ExpressionParser.evaluate("array[1,2,3,4,5]", vars));
         assertEquals(5.0, ExpressionParser.evaluate("vec2[3,4]", vars));
         assertEquals("This is a string", ExpressionParser.evaluate("string[This is a string]", vars));

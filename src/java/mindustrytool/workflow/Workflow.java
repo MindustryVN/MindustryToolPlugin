@@ -50,13 +50,13 @@ public class Workflow {
     @Getter
     public WorkflowContext context;
 
-    private static Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
+    private Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
-    public static Queue<SseClient> getWorkflowEventConsumers() {
+    public Queue<SseClient> getWorkflowEventConsumers() {
         return workflowEventConsumers;
     }
 
-    public static void sendWorkflowEvent(WorkflowEvent event) {
+    public void sendWorkflowEvent(WorkflowEvent event) {
         workflowEventConsumers.forEach(consumer -> consumer.sendEvent(event));
     }
 

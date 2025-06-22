@@ -479,9 +479,9 @@ public class HttpServer {
 
         app.sse("workflow/events", client -> {
             client.keepAlive();
-            client.onClose(() -> Workflow.getWorkflowEventConsumers().remove(client));
+            client.onClose(() -> controller.workflow.getWorkflowEventConsumers().remove(client));
 
-            Workflow.getWorkflowEventConsumers().add(client);
+            controller.workflow.getWorkflowEventConsumers().add(client);
         });
 
         app.exception(Exception.class, (exception, context) -> {

@@ -19,7 +19,6 @@ import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowUnit;
 import mindustrytool.workflow.errors.WorkflowError;
-import mindustrytool.workflow.expressions.ExpressionParser;
 
 @Data
 @Accessors(chain = true)
@@ -256,34 +255,7 @@ public abstract class WorkflowNode {
                 Log.debug("Resolving variable: " + path);
 
                 result.append(value, lastEnd, match.start());
-
-                var firstDot = path.indexOf('.');
-
-                if (firstDot != -1) {
-                    var key = path.substring(0, firstDot);
-                    var obj = event.getVariables().get(key);
-
-                    if (obj == null) {
-                        Log.debug("Variable not found: " + key);
-                    }
-
-                    var variable = ExpressionParser.access(obj, path.substring(firstDot + 1));
-
-                    if (variable == null) {
-                        Log.debug("Variable not found: " + path);
-                    }
-
-                    result.append(variable);
-
-                } else {
-                    var variable = event.getVariables().get(path);
-
-                    if (variable == null) {
-                        Log.debug("Variable not found: " + path);
-                    }
-
-                    result.append(variable);
-                }
+                result.append(event.getContext().getExpressionParser().consume(path, event.getVariables()).toString());
 
                 lastEnd = match.end();
             }

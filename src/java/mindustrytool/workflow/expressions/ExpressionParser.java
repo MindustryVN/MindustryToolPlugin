@@ -78,7 +78,7 @@ public class ExpressionParser {
         register("Square", "square", a -> a * a);
         register("Length (abs)", "length", a -> Math.abs(a));
 
-        var lists = List.of(Vars.class, Groups.class);
+        List<Class<?>> lists = List.of(Vars.class, Groups.class);
 
         for (var clazz : lists) {
             CLASSES.put(clazz.getSimpleName(), clazz);
@@ -86,7 +86,7 @@ public class ExpressionParser {
 
         Log.debug("Registered " + BINARY_OPERATORS.size() + " binary operators");
         Log.debug("Registered " + UNARY_OPERATORS.size() + " unary operators");
-        Log.debug("Registered " + CLASSES.values() + " classes");
+        Log.debug("Registered " + CLASSES.keySet() + " classes");
     }
 
     public void register(String name, String sign, BiFunction<Double, Double, Object> function) {

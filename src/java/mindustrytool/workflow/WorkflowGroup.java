@@ -7,7 +7,7 @@ public enum WorkflowGroup {
     EMITTER("emitter", WorkflowColor.CYAN),
     TIME("time", WorkflowColor.ORANGE),
     OPERATION("operation", WorkflowColor.PURPLE),
-    ACTION("action", WorkflowColor.GREEN),
+    ACTION("action", WorkflowColor.OCEAN),
     FLOW("flow", WorkflowColor.LIME),
     DISPLAY("display", WorkflowColor.YELLOW);
 

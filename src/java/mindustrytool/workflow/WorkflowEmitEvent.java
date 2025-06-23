@@ -86,7 +86,11 @@ public class WorkflowEmitEvent {
             throw new IllegalStateException("Node not found, id: " + nextId);
         }
 
-        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, variables));
+        try {
+            nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, variables));
+        } catch (Exception e) {
+            context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "ERROR", Map.of("message", e.getMessage())));
+        }
         context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "EMIT", null));
     }
 

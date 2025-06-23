@@ -22,12 +22,15 @@ import mindustrytool.Config;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
+import mindustrytool.workflow.expressions.ExpressionParser;
+import mindustrytool.workflow.nodes.BinaryOperationWorkflow;
 import mindustrytool.workflow.nodes.DisplayLabelWorkflow;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
 import mindustrytool.workflow.nodes.MathRandomWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
+import mindustrytool.workflow.nodes.UnaryOperationWorkflow;
 import mindustrytool.workflow.nodes.WaitWorkflow;
 
 public class Workflow {
@@ -68,6 +71,12 @@ public class Workflow {
             register(new MathRandomWorkflow());
             register(new IfWorkflow());
             register(new DisplayLabelWorkflow());
+
+            expressionParser.BINARY_OPERATORS
+                    .forEach((_ignore, operator) -> register(new BinaryOperationWorkflow(operator)));
+
+            expressionParser.UNARY_OPERATORS
+                    .forEach((_ignore, operator) -> register(new UnaryOperationWorkflow(operator)));
 
             WORKFLOW_DIR.mkdirs();
             WORKFLOW_FILE.file().createNewFile();

@@ -1,4 +1,4 @@
-package mindustrytool.workflow;
+package mindustrytool.workflow.expressions;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,12 +11,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import arc.util.Log;
+import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.errors.WorkflowError;
 
 public class ExpressionParser {
     private final Map<String, Integer> PRECEDENCE = new HashMap<>();
-    private final Map<String, BiFunction<Double, Double, Object>> BINARY_OPERATORS = new HashMap<>();
-    private final Map<String, Function<Double, Double>> UNARY_OPERATORS = new HashMap<>();
+
+    public final Map<String, BinaryOperator> BINARY_OPERATORS = new HashMap<>();
+    public final Map<String, UnaryOperator> UNARY_OPERATORS = new HashMap<>();
 
     public ExpressionParser() {
         PRECEDENCE.put("(", 0);
@@ -39,42 +41,46 @@ public class ExpressionParser {
         PRECEDENCE.put("%", 8);
         PRECEDENCE.put("idiv", 8);
 
-        // Binary operations
-        BINARY_OPERATORS.put("+", (a, b) -> a + b);
-        BINARY_OPERATORS.put("-", (a, b) -> a - b);
-        BINARY_OPERATORS.put("*", (a, b) -> a * b);
-        BINARY_OPERATORS.put("/", (a, b) -> a / b);
-        BINARY_OPERATORS.put("%", (a, b) -> a % b);
-        BINARY_OPERATORS.put("idiv", (a, b) -> (double) ((int) (a / b)));
-        BINARY_OPERATORS.put("==", (a, b) -> a.equals(b));
-        BINARY_OPERATORS.put("!=", (a, b) -> !a.equals(b));
-        BINARY_OPERATORS.put("<", (a, b) -> a < b);
-        BINARY_OPERATORS.put(">", (a, b) -> a > b);
-        BINARY_OPERATORS.put("<=", (a, b) -> a <= b);
-        BINARY_OPERATORS.put(">=", (a, b) -> a >= b);
-        BINARY_OPERATORS.put("and", (a, b) -> (double) (a.intValue() & b.intValue()));
-        BINARY_OPERATORS.put("or", (a, b) -> (double) (a.intValue() | b.intValue()));
-        BINARY_OPERATORS.put("xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
-        BINARY_OPERATORS.put("<<", (a, b) -> (double) (a.intValue() << b.intValue()));
-        BINARY_OPERATORS.put(">>", (a, b) -> (double) (a.intValue() >> b.intValue()));
+        register("Multiplication", "*", (a, b) -> a * b);
+        register("Division", "/", (a, b) -> a / b);
+        register("Modulo", "%", (a, b) -> a % b);
+        register("Integer Division", "idiv", (a, b) -> (double) ((int) (a / b)));
+        register("Equals", "==", (a, b) -> a.equals(b));
+        register("Not Equals", "!=", (a, b) -> !a.equals(b));
+        register("Less Than", "<", (a, b) -> a < b);
+        register("Greater Than", ">", (a, b) -> a > b);
+        register("Less Than or Equal", "<=", (a, b) -> a <= b);
+        register("Greater Than or Equal", ">=", (a, b) -> a >= b);
+        register("Bitwise AND", "and", (a, b) -> (double) (a.intValue() & b.intValue()));
+        register("Bitwise OR", "or", (a, b) -> (double) (a.intValue() | b.intValue()));
+        register("Bitwise XOR", "xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
+        register("Left Shift", "<<", (a, b) -> (double) (a.intValue() << b.intValue()));
+        register("Right Shift", ">>", (a, b) -> (double) (a.intValue() >> b.intValue()));
 
-        // Unary operations
-        UNARY_OPERATORS.put("abs", Math::abs);
-        UNARY_OPERATORS.put("log", Math::log);
-        UNARY_OPERATORS.put("log10", Math::log10);
-        UNARY_OPERATORS.put("floor", Math::floor);
-        UNARY_OPERATORS.put("ceil", Math::ceil);
-        UNARY_OPERATORS.put("round", a -> (double) Math.round(a));
-        UNARY_OPERATORS.put("sqrt", Math::sqrt);
-        UNARY_OPERATORS.put("sin", Math::sin);
-        UNARY_OPERATORS.put("cos", Math::cos);
-        UNARY_OPERATORS.put("tan", Math::tan);
-        UNARY_OPERATORS.put("asin", Math::asin);
-        UNARY_OPERATORS.put("acos", Math::acos);
-        UNARY_OPERATORS.put("atan", Math::atan);
-        UNARY_OPERATORS.put("flip", a -> (double) ~(a.intValue()));
-        UNARY_OPERATORS.put("square", a -> a * a);
-        UNARY_OPERATORS.put("length", a -> Math.abs(a));
+        register("Absolute Value", "abs", Math::abs);
+        register("Natural Logarithm", "log", Math::log);
+        register("Base-10 Logarithm", "log10", Math::log10);
+        register("Floor", "floor", Math::floor);
+        register("Ceiling", "ceil", Math::ceil);
+        register("Round", "round", a -> (double) Math.round(a));
+        register("Square Root", "sqrt", Math::sqrt);
+        register("Sine", "sin", Math::sin);
+        register("Cosine", "cos", Math::cos);
+        register("Tangent", "tan", Math::tan);
+        register("Arcsine", "asin", Math::asin);
+        register("Arccosine", "acos", Math::acos);
+        register("Arctangent", "atan", Math::atan);
+        register("Bitwise NOT", "flip", a -> (double) ~(a.intValue()));
+        register("Square", "square", a -> a * a);
+        register("Length (abs)", "length", a -> Math.abs(a));
+    }
+
+    public void register(String name, String sign, BiFunction<Double, Double, Object> function) {
+        BINARY_OPERATORS.put(name, new BinaryOperator(name, sign, function));
+    }
+
+    public void register(String name, String sign, Function<Double, Object> function) {
+        UNARY_OPERATORS.put(name, new UnaryOperator(name, sign, function));
     }
 
     private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {
@@ -164,11 +170,15 @@ public class ExpressionParser {
         return output;
     }
 
-    public Object evaluate(String expr, Map<String, Object> variables) {
-        return evaluate(Object.class, expr, variables);
+    public Boolean evaluateAsBoolean(String expr, Map<String, Object> variables) {
+        return evaluate(Boolean.class, expr, variables);
     }
 
-    public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
+    public Double evaluateAsDouble(String expr, Map<String, Object> variables) {
+        return evaluate(Double.class, expr, variables);
+    }
+
+    private <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
         Map<String, Object> vars = new HashMap<>();
         Queue<String> rpn = toExpressionQueue(expr, variables);
         Stack<Object> stack = new Stack<>();
@@ -177,10 +187,10 @@ public class ExpressionParser {
             if (BINARY_OPERATORS.containsKey(token)) {
                 double b = (double) stack.pop();
                 double a = (double) stack.pop();
-                stack.push(BINARY_OPERATORS.get(token).apply(a, b));
+                stack.push(BINARY_OPERATORS.get(token).getFunction().apply(a, b));
             } else if (UNARY_OPERATORS.containsKey(token)) {
                 double a = (double) stack.pop();
-                stack.push(UNARY_OPERATORS.get(token).apply(a));
+                stack.push(UNARY_OPERATORS.get(token).getFunction().apply(a));
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
             } else {

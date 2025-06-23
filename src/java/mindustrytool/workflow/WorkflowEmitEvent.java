@@ -11,17 +11,22 @@ import lombok.ToString;
 import mindustry.gen.Groups;
 
 @ToString(exclude = { "context" })
-@Getter
 public class WorkflowEmitEvent {
     private static final int MAX_STEP = 5000;
 
     private final int step;
+
+    @Getter
     private final WorkflowNode current;
-    private final Map<String, Object> values;
+
+    @Getter
+    private final Map<String, Object> variables;
+
+    @Getter
     private final Workflow context;
 
     public WorkflowEmitEvent putValue(String name, Object value) {
-        values.put(name, value);
+        variables.put(name, value);
         Log.debug("Add variable: " + name + ": " + value);
 
         context.sendWorkflowEvent(new WorkflowEvent(current.getId(), "SET", Map.of(name, value)));
@@ -29,34 +34,34 @@ public class WorkflowEmitEvent {
         return this;
     }
 
-    private WorkflowEmitEvent(int step, WorkflowNode currentNode, Workflow context, Map<String, Object> values) {
+    private WorkflowEmitEvent(int step, WorkflowNode currentNode, Workflow context, Map<String, Object> variables) {
         this.step = step;
         this.current = currentNode;
         this.context = context;
-        this.values = values;
+        this.variables = variables;
 
-        putDefaultValues(values);
+        putDefaultValues(variables);
 
-        Log.debug("step: " + step + " current: " + current.getName() + ":" + currentNode.getId() + " values: "
-                + values);
+        Log.debug("step: " + step + " current: " + current.getName() + ":" + currentNode.getId() + " variables: "
+                + variables);
     }
 
-    public static void putDefaultValues(Map<String, Object> values) {
+    public static void putDefaultValues(Map<String, Object> variables) {
 
-        values.put("@time", System.currentTimeMillis());
-        values.put("@step", 0);
+        variables.put("@time", System.currentTimeMillis());
+        variables.put("@step", 0);
 
         Calendar calendar = Calendar.getInstance();
 
-        values.put("@seconds", calendar.get(Calendar.SECOND));
-        values.put("@minutes", calendar.get(Calendar.MINUTE));
-        values.put("@hours", calendar.get(Calendar.HOUR));
-        values.put("@day", calendar.get(Calendar.DAY_OF_MONTH));
-        values.put("@month", calendar.get(Calendar.MONTH));
-        values.put("@year", calendar.get(Calendar.YEAR));
+        variables.put("@seconds", calendar.get(Calendar.SECOND));
+        variables.put("@minutes", calendar.get(Calendar.MINUTE));
+        variables.put("@hours", calendar.get(Calendar.HOUR));
+        variables.put("@day", calendar.get(Calendar.DAY_OF_MONTH));
+        variables.put("@month", calendar.get(Calendar.MONTH));
+        variables.put("@year", calendar.get(Calendar.YEAR));
 
-        values.put("@datetime", new Date().toString());
-        values.put("@players", Groups.player);
+        variables.put("@datetime", new Date().toString());
+        variables.put("@players", Groups.player);
 
     }
 
@@ -80,7 +85,7 @@ public class WorkflowEmitEvent {
             throw new IllegalStateException("Node not found, id: " + nextId);
         }
 
-        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, values));
+        nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, variables));
         context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "EMIT", null));
     }
 

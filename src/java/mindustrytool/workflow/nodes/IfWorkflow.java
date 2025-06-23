@@ -21,7 +21,7 @@ public class IfWorkflow extends WorkflowNode {
     public void execute(WorkflowEmitEvent event) {
         Boolean condition = event.getContext()
                 .getExpressionParser()
-                .evaluate(Boolean.class, conditionField.getConsumer().getValue(), event.getValues());
+                .evaluateAsBoolean(conditionField.getConsumer().getValue(), event.getVariables());
 
         if (condition) {
             event.next(trueOutput.getNextId());

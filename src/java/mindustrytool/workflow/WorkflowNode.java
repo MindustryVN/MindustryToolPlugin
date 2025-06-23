@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import mindustrytool.workflow.errors.WorkflowError;
+import mindustrytool.workflow.expressions.ExpressionParser;
 
 @Data
 @Accessors(chain = true)
@@ -209,10 +210,10 @@ public abstract class WorkflowNode {
             var fields = value.split(".");
 
             if (fields.length == 0) {
-                return (T) event.getValues().get(fields[0]);
+                return (T) event.getVariables().get(fields[0]);
             }
 
-            Object result = event.getValues().get(fields[0]);
+            Object result = event.getVariables().get(fields[0]);
 
             for (int index = 1; index < fields.length; index++) {
                 try {
@@ -280,7 +281,7 @@ public abstract class WorkflowNode {
 
                 if (firstDot != -1) {
                     var key = path.substring(0, firstDot);
-                    var obj = event.getValues().get(key);
+                    var obj = event.getVariables().get(key);
 
                     if (obj == null) {
                         Log.debug("Variable not found: " + key);
@@ -295,7 +296,7 @@ public abstract class WorkflowNode {
                     result.append(variable);
 
                 } else {
-                    var variable = event.getValues().get(path);
+                    var variable = event.getVariables().get(path);
 
                     if (variable == null) {
                         Log.debug("Variable not found: " + path);

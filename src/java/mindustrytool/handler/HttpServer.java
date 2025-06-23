@@ -478,12 +478,10 @@ public class HttpServer {
 
         app.sse("workflow/events", client -> {
             client.keepAlive();
-            Log.info("New workflow event client connected: " + client.ctx().ip());
-
             client.sendComment("connected");
+
             client.onClose(() -> {
                 controller.workflow.getWorkflowEventConsumers().remove(client);
-                Log.info("Workflow event client disconnected: " + client.ctx().ip());
             });
 
             controller.workflow.getWorkflowEventConsumers().add(client);

@@ -10,7 +10,7 @@ public class MathRandomWorkflow extends WorkflowNode {
             .produce(new FieldProducer<Double>("number", Double.class));
 
     public MathRandomWorkflow() {
-        super("MathRandom", WorkflowGroup.OPERATION, WorkflowColor.PURPLE, 1);
+        super("Random", WorkflowGroup.OPERATION, WorkflowColor.PURPLE, 1);
 
         defaultOneOutput();
     }

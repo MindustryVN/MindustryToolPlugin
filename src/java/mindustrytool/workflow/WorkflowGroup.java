@@ -5,11 +5,10 @@ import lombok.Getter;
 @Getter
 public enum WorkflowGroup {
     EMITTER("emitter", WorkflowColor.CYAN),
-    TIME("time", WorkflowColor.ORANGE),
     OPERATION("operation", WorkflowColor.PURPLE),
     ACTION("action", WorkflowColor.OCEAN),
     FLOW("flow", WorkflowColor.LIME),
-    DISPLAY("display", WorkflowColor.YELLOW);
+    DISPLAY("display", WorkflowColor.ORANGE);
 
     private final String name;
     private final String color;

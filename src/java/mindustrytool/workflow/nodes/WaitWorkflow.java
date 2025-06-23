@@ -11,7 +11,7 @@ public class WaitWorkflow extends WorkflowNode {
                     .defaultValue(1000L));
 
     public WaitWorkflow() {
-        super("Wait", WorkflowGroup.TIME, 1);
+        super("Wait", WorkflowGroup.FLOW, 1);
 
         defaultOneOutput();
     }

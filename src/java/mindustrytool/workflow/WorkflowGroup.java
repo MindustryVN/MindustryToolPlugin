@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum WorkflowGroup {
+    BASE("base", WorkflowColor.RED),
     EMITTER("emitter", WorkflowColor.CYAN),
     OPERATION("operation", WorkflowColor.PURPLE),
     ACTION("action", WorkflowColor.OCEAN),

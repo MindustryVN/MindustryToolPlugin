@@ -261,6 +261,7 @@ public class ExpressionParser {
 
     public <T> T consume(String path, Map<String, Object> variables) {
         if (path == null) {
+            Log.debug("Trying to access null path");
             return null;
         }
 
@@ -272,11 +273,11 @@ public class ExpressionParser {
         if (fields[0].substring(0, 2).equals(fields[0].substring(0, 2).toUpperCase())) {
             var clazz = CLASSES.get(fields[0]);
 
+            Log.debug("Trying to access class: " + fields[0]);
+
             if (clazz == null) {
                 throw new WorkflowError("Class not registered: " + fields[0]);
             }
-
-            Log.debug("Trying to access class: " + clazz.getName());
 
             if (fields.length == 1) {
                 return (T) clazz;

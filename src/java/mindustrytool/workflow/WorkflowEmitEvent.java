@@ -89,6 +89,7 @@ public class WorkflowEmitEvent {
         try {
             nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, variables));
         } catch (Exception e) {
+            Log.err(e);
             context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "ERROR", Map.of("message", e.getMessage())));
         }
         context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "EMIT", null));

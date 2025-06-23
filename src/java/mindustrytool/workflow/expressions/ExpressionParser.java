@@ -269,7 +269,7 @@ public class ExpressionParser {
             return null;
         }
 
-        if (path.isEmpty()) {
+        if (path.isBlank()) {
             Log.debug("Trying to access empty path");
             return null;
         }

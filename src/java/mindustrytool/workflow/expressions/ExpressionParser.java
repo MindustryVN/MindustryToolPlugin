@@ -270,8 +270,7 @@ public class ExpressionParser {
         }
 
         if (path.isBlank()) {
-            Log.debug("Trying to access empty path");
-            return null;
+            throw new WorkflowError("Trying to access empty path");
         }
 
         var fields = path.trim().split("\\.");

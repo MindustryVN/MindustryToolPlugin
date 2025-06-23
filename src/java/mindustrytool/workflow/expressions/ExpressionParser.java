@@ -3,6 +3,7 @@ package mindustrytool.workflow.expressions;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
@@ -11,6 +12,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import arc.util.Log;
+import mindustry.Vars;
+import mindustry.gen.Groups;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.WorkflowNode;
 
@@ -19,6 +22,7 @@ public class ExpressionParser {
 
     public final Map<String, BinaryOperator> BINARY_OPERATORS = new HashMap<>();
     public final Map<String, UnaryOperator> UNARY_OPERATORS = new HashMap<>();
+    public final Map<String, Class<?>> CLASSES = new HashMap<>();
 
     public ExpressionParser() {
         PRECEDENCE.put("(", 0);
@@ -73,6 +77,12 @@ public class ExpressionParser {
         register("Bitwise NOT", "flip", a -> (double) ~(a.intValue()));
         register("Square", "square", a -> a * a);
         register("Length (abs)", "length", a -> Math.abs(a));
+
+        var lists = List.of(Vars.class, Groups.class);
+
+        for (var clazz : lists) {
+            CLASSES.put(clazz.getSimpleName(), clazz);
+        }
     }
 
     public void register(String name, String sign, BiFunction<Double, Double, Object> function) {
@@ -246,6 +256,60 @@ public class ExpressionParser {
                         "Can not access field: " + fields[index] + " of " + path + " on value " + result, e);
             }
         }
+        return (T) result;
+    }
+
+    public <T> T consume(String value, Map<String, Object> variables) {
+        if (value == null) {
+            return null;
+        }
+
+        var fields = value.split(".");
+
+        if (fields.length == 1) {
+            return (T) variables.get(fields[0]);
+        }
+
+        Object result = null;
+
+        if (fields[0].substring(0, 2).equals(fields[0].substring(0, 2).toUpperCase())) {
+            var clazz = CLASSES.get(fields[0]);
+
+            if (clazz == null) {
+                throw new WorkflowError("Class not registered: " + fields[0]);
+            }
+
+            try {
+                result = clazz.getField(value).get(null);
+            } catch (IllegalArgumentException e) {
+                throw new WorkflowError("Invalid class: " + value + " " + e.getMessage(), e);
+            } catch (IllegalAccessException e) {
+                throw new WorkflowError("Can not access field: " + fields[0] + " of " + value + " on value "
+                        + result, e);
+            } catch (NoSuchFieldException e) {
+                throw new WorkflowError("Field not found: " + fields[0] + " of " + value + " on value " + result, e);
+            } catch (SecurityException e) {
+                throw new WorkflowError("Can not access field: " + fields[0] + " of " + value + " on value " + result,
+                        e);
+            }
+
+        } else {
+            result = variables.get(fields[0]);
+        }
+
+        for (int index = 1; index < fields.length; index++) {
+            try {
+                result = result.getClass().getDeclaredField(fields[index]).get(result);
+            } catch (IllegalArgumentException //
+                    | IllegalAccessException //
+                    | NoSuchFieldException
+                    | SecurityException e//
+            ) {
+                throw new IllegalStateException(
+                        "Field not found: " + fields[index] + " of " + value + " on value " + result, e);
+            }
+        }
+
         return (T) result;
     }
 }

@@ -208,32 +208,7 @@ public abstract class WorkflowNode {
                 throw new WorkflowError("Field is required but not set: " + name);
             }
 
-            if (value == null) {
-                return null;
-            }
-
-            var fields = value.split(".");
-
-            if (fields.length == 0) {
-                return (T) event.getVariables().get(fields[0]);
-            }
-
-            Object result = event.getVariables().get(fields[0]);
-
-            for (int index = 1; index < fields.length; index++) {
-                try {
-                    result = result.getClass().getDeclaredField(fields[index]).get(result);
-                } catch (IllegalArgumentException //
-                        | IllegalAccessException //
-                        | NoSuchFieldException
-                        | SecurityException e//
-                ) {
-                    throw new IllegalStateException(
-                            "Field not found: " + fields[index] + " of " + value + " on value " + result, e);
-                }
-            }
-
-            return (T) result;
+            return event.getContext().getExpressionParser().consume(value, event.getVariables());
         }
 
         public Double asDouble(WorkflowEmitEvent event) {

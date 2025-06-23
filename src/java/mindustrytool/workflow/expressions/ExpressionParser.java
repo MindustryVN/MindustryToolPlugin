@@ -83,6 +83,10 @@ public class ExpressionParser {
         for (var clazz : lists) {
             CLASSES.put(clazz.getSimpleName(), clazz);
         }
+
+        Log.debug("Registered " + BINARY_OPERATORS.size() + " binary operators");
+        Log.debug("Registered " + UNARY_OPERATORS.size() + " unary operators");
+        Log.debug("Registered " + CLASSES.values() + " classes");
     }
 
     public void register(String name, String sign, BiFunction<Double, Double, Object> function) {

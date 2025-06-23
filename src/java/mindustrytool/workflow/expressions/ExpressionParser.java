@@ -265,7 +265,12 @@ public class ExpressionParser {
             return null;
         }
 
-        var fields = path.split(".");
+        if (path.isEmpty()) {
+            Log.debug("Trying to access empty path");
+            return null;
+        }
+
+        var fields = path.split("\\.");
 
         Object result = null;
         var startIndex = 1;

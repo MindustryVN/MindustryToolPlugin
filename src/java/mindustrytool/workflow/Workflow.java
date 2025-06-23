@@ -27,7 +27,6 @@ import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
 import mindustrytool.workflow.nodes.MathRandomWorkflow;
-import mindustrytool.workflow.nodes.SendChatToPlayerWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
 import mindustrytool.workflow.nodes.WaitWorkflow;
 
@@ -63,7 +62,6 @@ public class Workflow {
     public void init() {
         try {
             register(new EventListenerWorkflow());
-            register(new SendChatToPlayerWorkflow());
             register(new SendChatWorkflow());
             register(new IntervalWorkflow());
             register(new WaitWorkflow());

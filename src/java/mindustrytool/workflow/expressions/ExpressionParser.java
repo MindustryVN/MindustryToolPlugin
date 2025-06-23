@@ -274,7 +274,7 @@ public class ExpressionParser {
             return null;
         }
 
-        var fields = path.split("\\.");
+        var fields = path.trim().split("\\.");
 
         Object result = null;
         var startIndex = 1;

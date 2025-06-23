@@ -1,9 +1,7 @@
 package mindustrytool.workflow.nodes;
 
-import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
-import mindustrytool.workflow.WorkflowNode;
 
 public class IfWorkflow extends WorkflowNode {
 
@@ -14,7 +12,7 @@ public class IfWorkflow extends WorkflowNode {
             .consume(new FieldConsumer<>(String.class));
 
     public IfWorkflow() {
-        super("if", WorkflowGroup.FLOW, WorkflowColor.LIME, 1);
+        super("if", WorkflowGroup.FLOW, 1);
     }
 
     @Override

@@ -2,10 +2,8 @@ package mindustrytool.workflow.nodes;
 
 import mindustry.game.EventType;
 import mindustrytool.workflow.Workflow;
-import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
-import mindustrytool.workflow.WorkflowNode;
 
 public class EventListenerWorkflow extends WorkflowNode {
     private WorkflowField<Boolean, Void> beforeField = new WorkflowField<Boolean, Void>("before")
@@ -27,7 +25,7 @@ public class EventListenerWorkflow extends WorkflowNode {
     }
 
     public EventListenerWorkflow() {
-        super("EventListener", WorkflowGroup.EMITTER, WorkflowColor.CYAN, 0);
+        super("EventListener", WorkflowGroup.EMITTER, 0);
 
         defaultOneOutput();
     }

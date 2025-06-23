@@ -11,8 +11,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import arc.util.Log;
-import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.errors.WorkflowError;
+import mindustrytool.workflow.nodes.WorkflowNode;
 
 public class ExpressionParser {
     private final Map<String, Integer> PRECEDENCE = new HashMap<>();

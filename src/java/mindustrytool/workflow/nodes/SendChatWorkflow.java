@@ -2,10 +2,8 @@ package mindustrytool.workflow.nodes;
 
 import mindustry.gen.Call;
 import mindustry.gen.Player;
-import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
-import mindustrytool.workflow.WorkflowNode;
 
 public class SendChatWorkflow extends WorkflowNode {
     private WorkflowField<Player, Void> playerField = new WorkflowField<Player, Void>("player")
@@ -16,7 +14,7 @@ public class SendChatWorkflow extends WorkflowNode {
                     .defaultValue("Hello"));
 
     public SendChatWorkflow() {
-        super("SendChat", WorkflowGroup.DISPLAY, WorkflowColor.LIME, 1);
+        super("SendChat", WorkflowGroup.DISPLAY, 1);
 
         defaultOneOutput();
     }

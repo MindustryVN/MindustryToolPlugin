@@ -28,10 +28,11 @@ import mindustrytool.workflow.nodes.DisplayLabelWorkflow;
 import mindustrytool.workflow.nodes.EventListenerWorkflow;
 import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
-import mindustrytool.workflow.nodes.MathRandomWorkflow;
+import mindustrytool.workflow.nodes.RandomWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
 import mindustrytool.workflow.nodes.UnaryOperationWorkflow;
 import mindustrytool.workflow.nodes.WaitWorkflow;
+import mindustrytool.workflow.nodes.WorkflowNode;
 
 public class Workflow {
     private final HashMap<Object, Seq<Cons2<?, Boolean>>> events = new HashMap<>();
@@ -68,7 +69,7 @@ public class Workflow {
             register(new SendChatWorkflow());
             register(new IntervalWorkflow());
             register(new WaitWorkflow());
-            register(new MathRandomWorkflow());
+            register(new RandomWorkflow());
             register(new IfWorkflow());
             register(new DisplayLabelWorkflow());
 

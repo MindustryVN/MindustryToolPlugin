@@ -1,10 +1,8 @@
 package mindustrytool.workflow.nodes;
 
-import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowUnit;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
-import mindustrytool.workflow.WorkflowNode;
 
 public class WaitWorkflow extends WorkflowNode {
     private WorkflowField secondField = new WorkflowField("second")
@@ -13,7 +11,7 @@ public class WaitWorkflow extends WorkflowNode {
                     .defaultValue(1000L));
 
     public WaitWorkflow() {
-        super("Wait", WorkflowGroup.TIME, WorkflowColor.CYAN, 1);
+        super("Wait", WorkflowGroup.TIME, 1);
 
         defaultOneOutput();
     }

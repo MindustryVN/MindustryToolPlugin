@@ -9,6 +9,7 @@ import arc.util.Log;
 import lombok.Getter;
 import lombok.ToString;
 import mindustry.gen.Groups;
+import mindustrytool.workflow.nodes.WorkflowNode;
 
 @ToString(exclude = { "context" })
 public class WorkflowEmitEvent {

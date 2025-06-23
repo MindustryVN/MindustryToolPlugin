@@ -1,4 +1,4 @@
-package mindustrytool.workflow;
+package mindustrytool.workflow.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import mindustrytool.workflow.ClassSerializer;
+import mindustrytool.workflow.Workflow;
+import mindustrytool.workflow.WorkflowEmitEvent;
+import mindustrytool.workflow.WorkflowGroup;
+import mindustrytool.workflow.WorkflowUnit;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.expressions.ExpressionParser;
 
@@ -42,10 +47,10 @@ public abstract class WorkflowNode {
         // Unload logic if needed
     }
 
-    public WorkflowNode(String name, String group, String color, int inputs) {
+    public WorkflowNode(String name, WorkflowGroup group, int inputs) {
         this.name = name;
-        this.group = group;
-        this.color = color;
+        this.group = group.getName();
+        this.color = group.getColor();
         this.inputs = inputs;
     }
 

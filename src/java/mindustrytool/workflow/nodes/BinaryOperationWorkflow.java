@@ -1,9 +1,7 @@
 package mindustrytool.workflow.nodes;
 
-import mindustrytool.workflow.WorkflowColor;
 import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
-import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.expressions.BinaryOperator;
 
 public class BinaryOperationWorkflow extends WorkflowNode {
@@ -19,7 +17,7 @@ public class BinaryOperationWorkflow extends WorkflowNode {
     private final BinaryOperator operator;
 
     public BinaryOperationWorkflow(BinaryOperator operator) {
-        super(operator.getName(), WorkflowGroup.OPERATION, WorkflowColor.PURPLE, 2);
+        super(operator.getName(), WorkflowGroup.OPERATION, 1);
         this.operator = operator;
 
         defaultOneOutput();

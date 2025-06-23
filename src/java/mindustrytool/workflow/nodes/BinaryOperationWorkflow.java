@@ -7,9 +7,11 @@ import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.expressions.BinaryOperator;
 
 public class BinaryOperationWorkflow extends WorkflowNode {
-    private final WorkflowField<Double, Void> aField = new WorkflowField<Double, Void>("a");
+    private final WorkflowField<Double, Void> aField = new WorkflowField<Double, Void>("a")
+            .setConsumer(new FieldConsumer<>(Double.class).defaultValue(0d));
 
-    private final WorkflowField<Double, Void> bField = new WorkflowField<Double, Void>("b");
+    private final WorkflowField<Double, Void> bField = new WorkflowField<Double, Void>("b")
+            .setConsumer(new FieldConsumer<>(Double.class).defaultValue(0d));
 
     private final WorkflowField<Void, Double> resultField = new WorkflowField<Void, Double>("result")
             .produce(new FieldProducer<Double>("result", Double.class));

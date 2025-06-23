@@ -259,18 +259,15 @@ public class ExpressionParser {
         return (T) result;
     }
 
-    public <T> T consume(String value, Map<String, Object> variables) {
-        if (value == null) {
+    public <T> T consume(String path, Map<String, Object> variables) {
+        if (path == null) {
             return null;
         }
 
-        var fields = value.split(".");
-
-        if (fields.length == 1) {
-            return (T) variables.get(fields[0]);
-        }
+        var fields = path.split(".");
 
         Object result = null;
+        var startIndex = 1;
 
         if (fields[0].substring(0, 2).equals(fields[0].substring(0, 2).toUpperCase())) {
             var clazz = CLASSES.get(fields[0]);
@@ -279,26 +276,40 @@ public class ExpressionParser {
                 throw new WorkflowError("Class not registered: " + fields[0]);
             }
 
+            Log.debug("Trying to access class: " + clazz.getName());
+
+            if (fields.length == 1) {
+                return (T) clazz;
+            }
+
             try {
-                result = clazz.getField(value).get(null);
+                Log.debug("Trying to access field: " + fields[1] + " of class " + clazz.getName());
+                result = clazz.getField(fields[1]).get(null);
+                startIndex = 2;
             } catch (IllegalArgumentException e) {
-                throw new WorkflowError("Invalid class: " + value + " " + e.getMessage(), e);
+                throw new WorkflowError("Invalid class: " + path + " " + e.getMessage(), e);
             } catch (IllegalAccessException e) {
-                throw new WorkflowError("Can not access field: " + fields[0] + " of " + value + " on value "
+                throw new WorkflowError("Can not access field: " + fields[0] + " of " + path + " on value "
                         + result, e);
             } catch (NoSuchFieldException e) {
-                throw new WorkflowError("Field not found: " + fields[0] + " of " + value + " on value " + result, e);
+                throw new WorkflowError("Field not found: " + fields[0] + " of " + path + " on value " + result, e);
             } catch (SecurityException e) {
-                throw new WorkflowError("Can not access field: " + fields[0] + " of " + value + " on value " + result,
+                throw new WorkflowError("Can not access field: " + fields[0] + " of " + path + " on value " + result,
                         e);
             }
 
         } else {
+            Log.debug("Trying to access variable: " + fields[0]);
             result = variables.get(fields[0]);
         }
 
-        for (int index = 1; index < fields.length; index++) {
+        if (fields.length == 1) {
+            return (T) result;
+        }
+
+        for (int index = startIndex; index < fields.length; index++) {
             try {
+                Log.debug("Trying to access field: " + fields[index] + " of " + path + " on value " + result);
                 result = result.getClass().getDeclaredField(fields[index]).get(result);
             } catch (IllegalArgumentException //
                     | IllegalAccessException //
@@ -306,7 +317,7 @@ public class ExpressionParser {
                     | SecurityException e//
             ) {
                 throw new IllegalStateException(
-                        "Field not found: " + fields[index] + " of " + value + " on value " + result, e);
+                        "Field not found: " + fields[index] + " of " + path + " on value " + result, e);
             }
         }
 

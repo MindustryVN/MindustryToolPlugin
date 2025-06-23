@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import arc.util.Log;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -251,8 +250,6 @@ public abstract class WorkflowNode {
 
             for (var match : matcher.results().toList()) {
                 String path = match.group(1);
-
-                Log.debug("Resolving variable: " + path);
 
                 result.append(value, lastEnd, match.start());
                 result.append(event.getContext().getExpressionParser().consume(path, event.getVariables()).toString());

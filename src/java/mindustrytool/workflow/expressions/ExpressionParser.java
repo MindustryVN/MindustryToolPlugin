@@ -235,7 +235,7 @@ public class ExpressionParser {
             return null;
         }
 
-        var fields = path.split("\\.");
+        var fields = path.trim().split("\\.");
 
         if (fields.length == 0) {
             return (T) value;

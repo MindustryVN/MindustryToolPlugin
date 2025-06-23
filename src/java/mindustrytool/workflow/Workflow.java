@@ -61,7 +61,11 @@ public class Workflow {
     }
 
     public void sendWorkflowEvent(WorkflowEvent event) {
-        workflowEventConsumers.forEach(consumer -> consumer.sendEvent(event));
+        try {
+            workflowEventConsumers.forEach(consumer -> consumer.sendEvent(event));
+        } catch (Exception e) {
+            Log.err("Error sending workflow event", e);
+        }
     }
 
     public void init() {

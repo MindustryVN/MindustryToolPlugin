@@ -30,6 +30,7 @@ import mindustrytool.workflow.nodes.IfWorkflow;
 import mindustrytool.workflow.nodes.IntervalWorkflow;
 import mindustrytool.workflow.nodes.RandomWorkflow;
 import mindustrytool.workflow.nodes.SendChatWorkflow;
+import mindustrytool.workflow.nodes.SetWorkflow;
 import mindustrytool.workflow.nodes.UnaryOperationWorkflow;
 import mindustrytool.workflow.nodes.WaitWorkflow;
 import mindustrytool.workflow.nodes.WorkflowNode;
@@ -72,6 +73,7 @@ public class Workflow {
             register(new RandomWorkflow());
             register(new IfWorkflow());
             register(new DisplayLabelWorkflow());
+            register(new SetWorkflow());
 
             expressionParser.BINARY_OPERATORS
                     .forEach((_ignore, operator) -> register(new BinaryOperationWorkflow(operator)));

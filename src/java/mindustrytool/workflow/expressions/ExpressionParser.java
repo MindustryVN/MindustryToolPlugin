@@ -280,7 +280,7 @@ public class ExpressionParser {
         var startIndex = 1;
 
         if (fields[0].substring(0, 2).equals(fields[0].substring(0, 2).toUpperCase())) {
-            var clazz = CLASSES.get(fields[0]);
+            var clazz = CLASSES.get(fields[0].trim());
 
             Log.debug("Trying to access class: " + fields[0]);
 

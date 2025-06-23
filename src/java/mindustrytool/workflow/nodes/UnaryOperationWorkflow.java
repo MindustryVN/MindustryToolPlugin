@@ -7,9 +7,9 @@ import mindustrytool.workflow.WorkflowNode;
 import mindustrytool.workflow.expressions.UnaryOperator;
 
 public class UnaryOperationWorkflow extends WorkflowNode {
-    private final WorkflowField<Void, Double> aField = new WorkflowField<Void, Double>("a");
+    private final WorkflowField<Double, Void> aField = new WorkflowField<Double, Void>("a");
 
-    private final WorkflowField<Void, Double> resultField = new WorkflowField<Void, Double>("b")
+    private final WorkflowField<Void, Double> resultField = new WorkflowField<Void, Double>("result")
             .produce(new FieldProducer<Double>("result", Double.class));
 
     private final UnaryOperator operator;

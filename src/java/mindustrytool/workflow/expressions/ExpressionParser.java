@@ -173,7 +173,7 @@ public class ExpressionParser {
             } else if (token.equals("null")) {
                 stack.push(null);
                 Log.debug("Push null");
-            } else if (WorkflowNode.VARIABLE_PATTERN.matcher(expr).matches()) {
+            } else if (WorkflowNode.VARIABLE_PATTERN.matcher(token).matches()) {
                 var variable = consume(token, variables);
                 stack.push(variable);
                 Log.debug("Push variable: " + token);

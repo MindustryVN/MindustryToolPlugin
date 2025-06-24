@@ -379,6 +379,20 @@ public class HttpServer {
             context.json(controller.workflow.getNodeTypes());
         });
 
+        app.get("workflow/nodes/{id}/autocomplete", context -> {
+            var id = context.pathParam("id");
+            var input = context.queryParam("input");
+            var node = controller.workflow.getNodes().get(id);
+
+            if (node == null) {
+                context.status(404);
+                context.result();
+                return;
+            }
+
+            context.json(node.autocomplete(input.trim()));
+        });
+
         app.get("workflow/version", context -> {
             var data = controller.workflow.readWorkflowData();
             if (data == null || data.get("createdAt") == null) {

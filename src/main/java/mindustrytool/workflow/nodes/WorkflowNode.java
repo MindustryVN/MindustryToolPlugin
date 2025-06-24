@@ -60,6 +60,10 @@ public abstract class WorkflowNode {
         new WorkflowOutput("Next", "None");
     }
 
+    public List<String> autocomplete(String input) {
+        return new ArrayList<>();
+    }
+
     public String nextId() {
         if (outputs.isEmpty()) {
             throw new WorkflowError("No outputs defined for node: " + name);

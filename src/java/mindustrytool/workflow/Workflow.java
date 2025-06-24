@@ -285,16 +285,20 @@ public class Workflow {
     }
 
     public void scheduleAtFixedRate(Runnable runnable, long delay, long period) {
-        Log.debug("Schedule task at fixed rate: " + runnable.getClass().getName() + " delay: " + delay
-                + " period: " + period);
+        Log.debug("Schedule task at fixed rate: " + runnable.getClass().getName() +
+                " delay: " + delay +
+                " period: " + period);
+
         scheduledTasks
                 .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
                         TimeUnit.SECONDS));
     }
 
     public void scheduleWithFixedDelay(Runnable runnable, long initialDelay, long delay) {
-        Log.debug("Schedule task with fixed delay: " + runnable.getClass().getName() + " initialDelay: "
-                + initialDelay + " delay: " + delay);
+        Log.debug("Schedule task with fixed delay: " +
+                runnable.getClass().getName() +
+                " initialDelay: " + initialDelay +
+                " delay: " + delay);
 
         scheduledTasks
                 .add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,

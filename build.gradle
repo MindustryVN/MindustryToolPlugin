@@ -57,6 +57,9 @@ dependencies{
     
     // testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    testImplementation "com.github.Anuken.Arc:arc-core:$mindustryVersion"
+    testImplementation "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    testImplementation 'org.projectlombok:lombok:1.18.32'
     testImplementation files('lib/MindustryToolPluginLoader.jar')
 }
 

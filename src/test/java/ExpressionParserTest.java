@@ -13,6 +13,6 @@ public class ExpressionParserTest {
 
     @Test
     void testAddition() {
-        assertEquals(parser.evaluateAsDouble("1 + 2", variables), 3);
+        assertEquals(parser.evaluate(Object.class, "1 + 2", variables), 3);
     }
 }

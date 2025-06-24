@@ -156,6 +156,10 @@ public class ExpressionParser {
         return evaluate(Double.class, expr, variables);
     }
 
+    public Object evaluate(String expr, Map<String, Object> variables) {
+        return evaluate(Object.class, expr, variables);
+    }
+
     public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
         Map<String, Object> vars = new HashMap<>();
         Queue<String> rpn = toExpressionQueue(expr);

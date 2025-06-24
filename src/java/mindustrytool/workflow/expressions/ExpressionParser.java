@@ -27,10 +27,9 @@ public class ExpressionParser {
     public final Map<String, Class<?>> CLASSES = new HashMap<>();
 
     private static final Pattern TOKEN_PATTERN = Pattern.compile(
-            "\\{\\{\\s*[^}]+\\s*\\}\\}" + // match {{ var }}
-                    "|\\d+(\\.\\d+)?" + // match numbers
-                    "|[a-zA-Z_][a-zA-Z_0-9]*" + // match identifiers
-                    "|[()+\\-*/%^]" + // match operators and parentheses
+            "(\\{\\{([^{}]+)\\}\\})" + // match {{ var }}
+                    "|(\\d(\\\\.\\d)*)" + // match numbers
+                    "|([a-zA-Z0-9_-]+)" + // match identifiers
                     "|\\S" // fallback: match any non-whitespace char
     );
 

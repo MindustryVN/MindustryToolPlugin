@@ -121,11 +121,13 @@ public class ExpressionParser {
 
                     if (UNARY_OPERATORS.containsKey(token)) {
                         ops.push(token);
+                        Log.debug("Push unary operator: " + token);
                     } else if (BINARY_OPERATORS.containsKey(token)) {
                         while (!ops.isEmpty() && PRECEDENCE.getOrDefault(ops.peek(), 0) >= PRECEDENCE.get(token)) {
                             output.add(ops.pop());
                         }
                         ops.push(token);
+                        Log.debug("Push binary operator: " + token);
                     } else if ("(".equals(token)) {
                         ops.push(token);
                     } else if (")".equals(token)) {

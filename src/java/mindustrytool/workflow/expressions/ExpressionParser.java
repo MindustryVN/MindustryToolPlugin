@@ -197,6 +197,10 @@ public class ExpressionParser {
                 }
             }
         }
+        if (stack.isEmpty()) {
+            throw new WorkflowError("Empty expression: " + expr);
+        }
+
         var result = stack.pop();
 
         if (result == null) {

@@ -381,7 +381,11 @@ public class HttpServer {
 
         app.get("workflow/version", context -> {
             var data = controller.workflow.readWorkflowData();
-            context.json(data.get("createdAt").asLong());
+            if (data == null || data.get("createdAt") == null) {
+                context.json(0L);
+            } else {
+                context.json(data.get("createdAt").asLong());
+            }
         });
 
         app.get("workflow", context -> {

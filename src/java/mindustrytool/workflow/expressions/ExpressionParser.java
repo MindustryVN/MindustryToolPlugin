@@ -160,6 +160,10 @@ public class ExpressionParser {
         Queue<String> rpn = toExpressionQueue(expr, variables);
         Deque<Object> stack = new ArrayDeque<>();
 
+        if (rpn.isEmpty()) {
+            throw new WorkflowError("Empty stack, expression: " + expr);
+        }
+
         for (String token : rpn) {
             token = token.trim();
 

@@ -58,7 +58,7 @@ public class ExpressionParser {
         register("Multiplication", "*", (a, b) -> a * b);
         register("Division", "/", (a, b) -> a / b);
         register("Modulo", "%", (a, b) -> a % b);
-        register("Integer Division", "idiv", (a, b) -> (double) ((int) (a / b)));
+        register("Integer Division", "idiv", (a, b) -> Math.floor((a / b)));
         register("Equals", "==", (a, b) -> a.equals(b));
         register("Not Equals", "!=", (a, b) -> !a.equals(b));
         register("Less Than", "<", (a, b) -> a < b);
@@ -160,7 +160,7 @@ public class ExpressionParser {
         if (result instanceof String) {
             return Boolean.parseBoolean(result.toString());
         }
-        
+
         throw new WorkflowError("Invalid boolean value: " + result.toString());
     }
 
@@ -188,15 +188,23 @@ public class ExpressionParser {
                 double b = (double) stack.pop();
                 double a = (double) stack.pop();
                 var operation = BINARY_OPERATORS.get(token);
-                var result = operation.getFunction().apply(a, b);
-                Log.debug(a + " " + operation.getSign() + " " + b + " = " + result);
-                stack.push(result);
+                try {
+                    var result = operation.getFunction().apply(a, b);
+                    stack.push(result);
+                    Log.debug(a + " " + operation.getSign() + " " + b + " = " + result);
+                } catch (Exception e) {
+                    throw new WorkflowError("Invalid unary operation: " + a + " " + operation.getSign() + " " + b, e);
+                }
             } else if (UNARY_OPERATORS.containsKey(token)) {
                 double a = (double) stack.pop();
                 var operation = UNARY_OPERATORS.get(token);
-                var result = operation.getFunction().apply(a);
-                Log.debug(a + " " + operation.getSign() + " = " + result);
-                stack.push(result);
+                try {
+                    var result = operation.getFunction().apply(a);
+                    stack.push(result);
+                    Log.debug(operation.getSign() + " " + a + " = " + result);
+                } catch (Exception e) {
+                    throw new WorkflowError("Invalid unary operation: " + operation.getSign() + " " + a, e);
+                }
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
                 Log.debug("Add variable: " + token);

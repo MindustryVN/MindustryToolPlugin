@@ -14,6 +14,10 @@ public class ExpressionParserTest {
     @Test
     void testAddition() {
         assertEquals(parser.evaluate(Object.class, "1 + 2", variables), 3d);
+    }
+
+    @Test
+    void testAdditionWithVariable() {
         assertEquals(parser.evaluate(Object.class, "{{a}} + {{ b}}", variables), 3d);
     }
 }

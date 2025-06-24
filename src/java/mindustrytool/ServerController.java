@@ -54,8 +54,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         httpServer = new HttpServer(this);
         workflow = new Workflow();
 
-        Thread.dumpStack();
-
         Log.info("Server controller created: " + this);
     }
 

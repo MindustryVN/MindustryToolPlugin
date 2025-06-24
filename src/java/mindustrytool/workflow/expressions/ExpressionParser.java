@@ -98,56 +98,10 @@ public class ExpressionParser {
     }
 
     private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {
-        var matcher = WorkflowNode.VARIABLE_PATTERN.matcher(expr);
-        var builder = new StringBuilder();
-        int lastEnd = 0;
-
-        for (var match : matcher.results().toList()) {
-            String path = match.group(1);
-
-            Log.debug("Resolving variable: " + path);
-
-            builder.append(expr, lastEnd, match.start());
-
-            var firstDot = path.indexOf('.');
-
-            if (firstDot != -1) {
-                var key = path.substring(0, firstDot);
-                var obj = variables.get(key);
-
-                if (obj == null) {
-                    Log.debug("Variable not found: " + key);
-                }
-
-                var variable = access(obj, path.substring(firstDot + 1));
-
-                if (variable == null) {
-                    Log.debug("Variable not found: " + path);
-                }
-
-                builder.append(variable);
-
-            } else {
-                var variable = variables.get(path);
-
-                if (variable == null) {
-                    Log.debug("Variable not found: " + path);
-                }
-
-                builder.append(variable);
-            }
-
-            lastEnd = match.end();
-        }
-
-        builder.append(expr.substring(lastEnd));
-
-        var parameter = builder.toString();
-
         Stack<String> ops = new Stack<>();
         Queue<String> output = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(parameter)) {
+        try (Scanner scanner = new Scanner(expr)) {
             while (scanner.hasNext()) {
                 if (scanner.hasNextDouble()) {
                     output.add(scanner.next());
@@ -192,7 +146,7 @@ public class ExpressionParser {
         return evaluate(Double.class, expr, variables);
     }
 
-    private <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
+    public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
         Map<String, Object> vars = new HashMap<>();
         Queue<String> rpn = toExpressionQueue(expr, variables);
         Stack<Object> stack = new Stack<>();
@@ -203,7 +157,7 @@ public class ExpressionParser {
             if (BINARY_OPERATORS.containsKey(token)) {
                 double b = (double) stack.pop();
                 double a = (double) stack.pop();
-                var operation = BINARY_OPERATORS.get(token); 
+                var operation = BINARY_OPERATORS.get(token);
                 var result = operation.getFunction().apply(a, b);
                 Log.debug(a + " " + operation.getSign() + " " + b + " = " + result);
                 stack.push(result);
@@ -219,6 +173,10 @@ public class ExpressionParser {
             } else if (token.equals("null")) {
                 stack.push(null);
                 Log.debug("Push null");
+            } else if (WorkflowNode.VARIABLE_PATTERN.matcher(expr).matches()) {
+                var variable = consume(token, variables);
+                stack.push(variable);
+                Log.debug("Push variable: " + token);
             } else {
                 try {
                     stack.push(Double.parseDouble(token));

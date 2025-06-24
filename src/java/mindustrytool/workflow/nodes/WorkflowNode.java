@@ -206,6 +206,10 @@ public abstract class WorkflowNode {
                 throw new WorkflowError("Field is required but not set: " + name);
             }
 
+            if (value == null) {
+                return null;
+            }
+
             return event.getContext().getExpressionParser().evaluate(type, value, event.getVariables());
         }
 

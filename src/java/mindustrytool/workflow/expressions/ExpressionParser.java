@@ -7,10 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Scanner;
 import java.util.Deque;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import arc.util.Log;
@@ -110,39 +110,33 @@ public class ExpressionParser {
         Deque<String> ops = new ArrayDeque<>();
         Queue<String> output = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(expr.trim()).useDelimiter(TOKEN_PATTERN)) {
-            while (scanner.hasNext()) {
-                if (scanner.hasNextDouble()) {
-                    var value = scanner.next();
-                    output.add(value);
-                    Log.debug("Push number: " + value);
-                } else {
-                    String token = scanner.next();
+        Matcher matcher = TOKEN_PATTERN.matcher(expr);
 
-                    if (UNARY_OPERATORS.containsKey(token)) {
-                        ops.push(token);
-                        Log.debug("Push unary operator: " + token);
-                    } else if (BINARY_OPERATORS.containsKey(token)) {
-                        while (!ops.isEmpty() && PRECEDENCE.getOrDefault(ops.peek(), 0) >= PRECEDENCE.get(token)) {
-                            output.add(ops.pop());
-                        }
-                        ops.push(token);
-                        Log.debug("Push binary operator: " + token);
-                    } else if ("(".equals(token)) {
-                        ops.push(token);
-                    } else if (")".equals(token)) {
-                        while (!"(".equals(ops.peek())) {
-                            output.add(ops.pop());
-                        }
-                        ops.pop();
-                        if (!ops.isEmpty() && UNARY_OPERATORS.containsKey(ops.peek())) {
-                            output.add(ops.pop());
-                        }
-                    } else {
-                        Log.debug("Push token: " + token);
-                        output.add(token);
-                    }
+        while (matcher.find()) {
+            String token = matcher.group().trim();
+
+            if (UNARY_OPERATORS.containsKey(token)) {
+                ops.push(token);
+                Log.debug("Push unary operator: " + token);
+            } else if (BINARY_OPERATORS.containsKey(token)) {
+                while (!ops.isEmpty() && PRECEDENCE.getOrDefault(ops.peek(), 0) >= PRECEDENCE.get(token)) {
+                    output.add(ops.pop());
                 }
+                ops.push(token);
+                Log.debug("Push binary operator: " + token);
+            } else if ("(".equals(token)) {
+                ops.push(token);
+            } else if (")".equals(token)) {
+                while (!"(".equals(ops.peek())) {
+                    output.add(ops.pop());
+                }
+                ops.pop();
+                if (!ops.isEmpty() && UNARY_OPERATORS.containsKey(ops.peek())) {
+                    output.add(ops.pop());
+                }
+            } else {
+                Log.debug("Push token: " + token);
+                output.add(token);
             }
         }
 

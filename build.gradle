@@ -54,7 +54,7 @@ dependencies{
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testOnly files('lib/MindustryToolPluginLoader.jar')
+    testImplementation files('lib/MindustryToolPluginLoader.jar')
 }
 
 test {

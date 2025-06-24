@@ -65,18 +65,18 @@ public class ExpressionParser {
         registerNumber("Greater Than", ">", (a, b) -> a > b);
         registerNumber("Less Than or Equal", "<=", (a, b) -> a <= b);
         registerNumber("Greater Than or Equal", ">=", (a, b) -> a >= b);
-        registerNumber("Bitwise AND", "and", (a, b) -> (double) (a.intValue() & b.intValue()));
-        registerNumber("Bitwise OR", "or", (a, b) -> (double) (a.intValue() | b.intValue()));
-        registerNumber("Bitwise XOR", "xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
-        registerNumber("Left Shift", "<<", (a, b) -> (double) (a.intValue() << b.intValue()));
-        registerNumber("Right Shift", ">>", (a, b) -> (double) (a.intValue() >> b.intValue()));
+        registerNumber("Bitwise AND", "and", (a, b) -> (a.intValue() & b.intValue()));
+        registerNumber("Bitwise OR", "or", (a, b) -> (a.intValue() | b.intValue()));
+        registerNumber("Bitwise XOR", "xor", (a, b) -> (a.intValue() ^ b.intValue()));
+        registerNumber("Left Shift", "<<", (a, b) -> (a.intValue() << b.intValue()));
+        registerNumber("Right Shift", ">>", (a, b) -> (a.intValue() >> b.intValue()));
 
         registerNumber("Absolute Value", "abs", Math::abs);
         registerNumber("Natural Logarithm", "log", Math::log);
         registerNumber("Base-10 Logarithm", "log10", Math::log10);
         registerNumber("Floor", "floor", Math::floor);
         registerNumber("Ceiling", "ceil", Math::ceil);
-        registerNumber("Round", "round", a -> (double) Math.round(a));
+        registerNumber("Round", "round", a -> Math.round(a));
         registerNumber("Square Root", "sqrt", Math::sqrt);
         registerNumber("Sine", "sin", Math::sin);
         registerNumber("Cosine", "cos", Math::cos);
@@ -84,7 +84,7 @@ public class ExpressionParser {
         registerNumber("Arcsine", "asin", Math::asin);
         registerNumber("Arccosine", "acos", Math::acos);
         registerNumber("Arctangent", "atan", Math::atan);
-        registerNumber("Bitwise NOT", "flip", a -> (double) ~(a.intValue()));
+        registerNumber("Bitwise NOT", "flip", a -> ~(a.intValue()));
         registerNumber("Square", "square", a -> a * a);
         registerNumber("Length (abs)", "length", a -> Math.abs(a));
 
@@ -206,8 +206,8 @@ public class ExpressionParser {
             token = token.trim();
 
             if (BINARY_OPERATORS.containsKey(token)) {
-                double b = (double) stack.pop();
-                double a = (double) stack.pop();
+                Double b = (Double) stack.pop();
+                Double a = (Double) stack.pop();
                 var operation = BINARY_OPERATORS.get(token);
                 try {
                     var result = operation.getFunction().apply(a, b);
@@ -217,7 +217,7 @@ public class ExpressionParser {
                     throw new WorkflowError("Invalid unary operation: " + a + " " + operation.getSign() + " " + b, e);
                 }
             } else if (UNARY_OPERATORS.containsKey(token)) {
-                double a = (double) stack.pop();
+                Double a = (Double) stack.pop();
                 var operation = UNARY_OPERATORS.get(token);
                 try {
                     var result = operation.getFunction().apply(a);

@@ -207,6 +207,8 @@ public class ExpressionParser {
                 stack.push(UNARY_OPERATORS.get(token).getFunction().apply(a));
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
+            } else if (token.equals("null")) {
+                stack.push(null);
             } else {
                 try {
                     stack.push(Double.parseDouble(token));

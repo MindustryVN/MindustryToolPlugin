@@ -110,7 +110,7 @@ public class ExpressionParser {
         Deque<String> ops = new ArrayDeque<>();
         Queue<String> output = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(expr).useDelimiter(TOKEN_PATTERN)) {
+        try (Scanner scanner = new Scanner(expr.trim()).useDelimiter(TOKEN_PATTERN)) {
             while (scanner.hasNext()) {
                 if (scanner.hasNextDouble()) {
                     output.add(scanner.next());

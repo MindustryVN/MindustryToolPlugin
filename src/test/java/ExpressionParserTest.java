@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import mindustrytool.workflow.expressions.ExpressionParser;
 
-
 public class ExpressionParserTest {
     ExpressionParser parser = new ExpressionParser();
 
@@ -15,10 +14,5 @@ public class ExpressionParserTest {
     @Test
     void testAddition() {
         assertEquals(parser.evaluateAsDouble("1 + 2", variables), 3);
-    }
-
-    @Test
-    void test(){
-        assertEquals(1, 1);
     }
 }

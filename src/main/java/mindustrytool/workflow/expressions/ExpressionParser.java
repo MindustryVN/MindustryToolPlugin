@@ -94,9 +94,9 @@ public class ExpressionParser {
         loadClassFromPackage("arc");
         loadClassFromPackage("mindustrytool");
 
-        Log.debug("Registered " + BINARY_OPERATORS.size() + " binary operators");
-        Log.debug("Registered " + UNARY_OPERATORS.size() + " unary operators");
-        Log.debug("Registered " + CLASSES.size() + " classes");
+        Log.info("Registered " + BINARY_OPERATORS.size() + " binary operators");
+        Log.info("Registered " + UNARY_OPERATORS.size() + " unary operators");
+        Log.info("Registered " + CLASSES.size() + " classes");
     }
 
     public void loadClassFromPackage(String packageName) {

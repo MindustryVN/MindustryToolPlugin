@@ -276,23 +276,34 @@ public class Workflow {
         }
     }
 
+    private void tryRun(Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            Log.err("Error running task", e);
+        }
+    }
+
     public void scheduleAtFixedRate(Runnable runnable, long delay, long period) {
         Log.debug("Schedule task at fixed rate: " + runnable.getClass().getName() + " delay: " + delay
                 + " period: " + period);
         scheduledTasks
-                .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(runnable, delay, period, TimeUnit.SECONDS));
+                .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
+                        TimeUnit.SECONDS));
     }
 
     public void scheduleWithFixedDelay(Runnable runnable, long initialDelay, long delay) {
         Log.debug("Schedule task with fixed delay: " + runnable.getClass().getName() + " initialDelay: "
                 + initialDelay + " delay: " + delay);
-        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(runnable, initialDelay, delay,
-                TimeUnit.SECONDS));
+
+        scheduledTasks
+                .add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
+                        TimeUnit.SECONDS));
     }
 
     public void schedule(Runnable runnable, long delay) {
         Log.debug("Schedule task: " + runnable.getClass().getName() + " delay: " + delay);
-        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.schedule(runnable, delay, TimeUnit.SECONDS));
+        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
     }
 
 }

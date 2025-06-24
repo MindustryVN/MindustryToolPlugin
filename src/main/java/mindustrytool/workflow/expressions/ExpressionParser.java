@@ -3,18 +3,19 @@ package mindustrytool.workflow.expressions;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
 import arc.util.Log;
-import mindustry.Vars;
-import mindustry.gen.Groups;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.WorkflowNode;
 
@@ -88,15 +89,25 @@ public class ExpressionParser {
         registerNumber("Square", "square", a -> a * a);
         registerNumber("Length (abs)", "length", a -> Math.abs(a));
 
-        List<Class<?>> lists = List.of(Vars.class, Groups.class);
-
-        for (var clazz : lists) {
-            CLASSES.put(clazz.getSimpleName(), clazz);
-        }
+        loadClassFromPackage("mindustry");
+        loadClassFromPackage("java");
+        loadClassFromPackage("arc");
+        loadClassFromPackage("mindustrytool");
 
         Log.debug("Registered " + BINARY_OPERATORS.size() + " binary operators");
         Log.debug("Registered " + UNARY_OPERATORS.size() + " unary operators");
         Log.debug("Registered " + CLASSES.keySet() + " classes");
+    }
+
+    public void loadClassFromPackage(String packageName) {
+        Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
+        Set<Class> classes = reflections.getSubTypesOf(Object.class)
+                .stream()
+                .collect(Collectors.toSet());
+
+        for (var clazz : classes) {
+            CLASSES.put(clazz.getSimpleName(), clazz);
+        }
     }
 
     public void register(String name, String sign, BiFunction<Object, Object, Object> function) {

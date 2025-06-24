@@ -198,6 +198,8 @@ public class ExpressionParser {
         Stack<Object> stack = new Stack<>();
 
         for (String token : rpn) {
+            token = token.trim();
+
             if (BINARY_OPERATORS.containsKey(token)) {
                 double b = (double) stack.pop();
                 double a = (double) stack.pop();
@@ -213,7 +215,7 @@ public class ExpressionParser {
                 try {
                     stack.push(Double.parseDouble(token));
                 } catch (Exception e) {
-                    throw new WorkflowError("Invalid token: " + token, e);
+                    throw new WorkflowError("Invalid token: <" + token + ">", e);
                 }
             }
         }

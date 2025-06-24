@@ -244,7 +244,7 @@ public abstract class WorkflowNode {
             if (value == null) {
                 return null;
             }
-            
+
             var matcher = VARIABLE_PATTERN.matcher(value);
 
             if (!matcher.find()) {
@@ -260,8 +260,8 @@ public abstract class WorkflowNode {
                 String path = match.group(1);
 
                 result.append(value, lastEnd, match.start());
-                result.append(
-                        String.valueOf(event.getContext().getExpressionParser().consume(path, event.getVariables())));
+                var consumed = event.getContext().getExpressionParser().consume(path, event.getVariables());
+                result.append(consumed == null ? "null" : consumed.toString());
 
                 lastEnd = match.end();
             }

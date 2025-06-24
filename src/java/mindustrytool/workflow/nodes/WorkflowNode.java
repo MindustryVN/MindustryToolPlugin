@@ -241,6 +241,10 @@ public abstract class WorkflowNode {
         }
 
         public String asString(WorkflowEmitEvent event) {
+            if (value == null) {
+                return null;
+            }
+            
             var matcher = VARIABLE_PATTERN.matcher(value);
 
             if (!matcher.find()) {

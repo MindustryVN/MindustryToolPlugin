@@ -183,21 +183,21 @@ public class ExpressionParser {
                 stack.push(result);
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
-                Log.debug("Push variable: " + token);
+                Log.debug("Add variable: " + token);
             } else if ("true".equalsIgnoreCase(token) || "false".equalsIgnoreCase(token)) {
                 stack.push(Boolean.parseBoolean(token));
             } else if (token.equals("null")) {
                 stack.push(null);
-                Log.debug("Push null");
+                Log.debug("Add null");
             } else if (WorkflowNode.VARIABLE_PATTERN.matcher(token).matches()) {
                 var variableName = token.replace("{{", "").replace("}}", "").trim();
                 var variable = consume(variableName, variables);
                 stack.push(variable);
-                Log.debug("Push variable: " + variableName);
+                Log.debug("Add variable: " + variableName);
             } else {
                 try {
                     stack.push(Double.parseDouble(token));
-                    Log.debug("Push number: " + token);
+                    Log.debug("Add number: " + token);
                 } catch (Exception e) {
                     throw new WorkflowError("Invalid token: <" + token + ">", e);
                 }

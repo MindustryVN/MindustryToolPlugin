@@ -252,7 +252,8 @@ public abstract class WorkflowNode {
                 String path = match.group(1);
 
                 result.append(value, lastEnd, match.start());
-                result.append(event.getContext().getExpressionParser().consume(path, event.getVariables()).toString());
+                result.append(
+                        String.valueOf(event.getContext().getExpressionParser().consume(path, event.getVariables())));
 
                 lastEnd = match.end();
             }

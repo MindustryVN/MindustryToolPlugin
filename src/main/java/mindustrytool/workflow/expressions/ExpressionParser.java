@@ -96,7 +96,7 @@ public class ExpressionParser {
 
         Log.debug("Registered " + BINARY_OPERATORS.size() + " binary operators");
         Log.debug("Registered " + UNARY_OPERATORS.size() + " unary operators");
-        Log.debug("Registered " + CLASSES.keySet() + " classes");
+        Log.debug("Registered " + CLASSES.size() + " classes");
     }
 
     public void loadClassFromPackage(String packageName) {

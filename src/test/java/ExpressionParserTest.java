@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import mindustrytool.workflow.expressions.ExpressionParser;
+import main.java.mindustrytool.workflow.expressions.ExpressionParser;
 
 public class ExpressionParserTest {
     ExpressionParser parser = new ExpressionParser();

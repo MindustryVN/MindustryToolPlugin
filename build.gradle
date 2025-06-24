@@ -53,6 +53,7 @@ dependencies{
     annotationProcessor 'org.pf4j:pf4j:3.13.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {

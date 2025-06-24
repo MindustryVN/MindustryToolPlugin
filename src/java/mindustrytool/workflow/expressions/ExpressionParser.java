@@ -1,5 +1,6 @@
 package mindustrytool.workflow.expressions;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.Stack;
+import java.util.Deque;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ public class ExpressionParser {
     public final Map<String, BinaryOperator> BINARY_OPERATORS = new HashMap<>();
     public final Map<String, UnaryOperator> UNARY_OPERATORS = new HashMap<>();
     public final Map<String, Class<?>> CLASSES = new HashMap<>();
-    
+
     private static final Pattern TOKEN_PATTERN = Pattern.compile(
             "\\{\\{\\s*[^}]+\\s*\\}\\}" + // match {{ var }}
                     "|\\d+(\\.\\d+)?" + // match numbers
@@ -107,7 +108,7 @@ public class ExpressionParser {
     }
 
     private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {
-        Stack<String> ops = new Stack<>();
+        Deque<String> ops = new ArrayDeque<>();
         Queue<String> output = new LinkedList<>();
 
         try (Scanner scanner = new Scanner(expr).useDelimiter(TOKEN_PATTERN)) {
@@ -158,7 +159,7 @@ public class ExpressionParser {
     public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
         Map<String, Object> vars = new HashMap<>();
         Queue<String> rpn = toExpressionQueue(expr, variables);
-        Stack<Object> stack = new Stack<>();
+        Deque<Object> stack = new ArrayDeque<>();
 
         for (String token : rpn) {
             token = token.trim();

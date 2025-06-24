@@ -29,8 +29,7 @@ public class ExpressionParser {
             "(\\{\\{([^{}]+)\\}\\})" + // match {{ var }}
                     "|(or|xor|and|==|!=|<|>|<=|>=|<<|>>)" + //Match operators
                     "|(\\d+\\\\.*\\d*)" + // match numbers
-                    "|([a-zA-Z0-9_-]+)" + // match identifiers
-                    "|\\S" // fallback: match any non-whitespace char
+                    "|([a-zA-Z0-9_-]+)" // match identifiers
     );
 
     public ExpressionParser() {

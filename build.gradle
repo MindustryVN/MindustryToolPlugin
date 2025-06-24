@@ -16,6 +16,14 @@ sourceSets {
             srcDir 'src/mindustrytool/resources'
         }
     }
+    test {
+        java {
+            srcDirs 'src/test/java'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
 }
 
 compileJava.options.encoding = "UTF-8"

@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import arc.util.Log;
 import mindustry.Vars;
@@ -23,6 +24,14 @@ public class ExpressionParser {
     public final Map<String, BinaryOperator> BINARY_OPERATORS = new HashMap<>();
     public final Map<String, UnaryOperator> UNARY_OPERATORS = new HashMap<>();
     public final Map<String, Class<?>> CLASSES = new HashMap<>();
+    
+    private static final Pattern TOKEN_PATTERN = Pattern.compile(
+            "\\{\\{\\s*[^}]+\\s*\\}\\}" + // match {{ var }}
+                    "|\\d+(\\.\\d+)?" + // match numbers
+                    "|[a-zA-Z_][a-zA-Z_0-9]*" + // match identifiers
+                    "|[()+\\-*/%^]" + // match operators and parentheses
+                    "|\\S" // fallback: match any non-whitespace char
+    );
 
     public ExpressionParser() {
         PRECEDENCE.put("(", 0);
@@ -101,7 +110,7 @@ public class ExpressionParser {
         Stack<String> ops = new Stack<>();
         Queue<String> output = new LinkedList<>();
 
-        try (Scanner scanner = new Scanner(expr)) {
+        try (Scanner scanner = new Scanner(expr).useDelimiter(TOKEN_PATTERN)) {
             while (scanner.hasNext()) {
                 if (scanner.hasNextDouble()) {
                     output.add(scanner.next());
@@ -170,6 +179,8 @@ public class ExpressionParser {
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
                 Log.debug("Push variable: " + token);
+            } else if ("true".equalsIgnoreCase(token) || "false".equalsIgnoreCase(token)) {
+                stack.push(Boolean.parseBoolean(token));
             } else if (token.equals("null")) {
                 stack.push(null);
                 Log.debug("Push null");

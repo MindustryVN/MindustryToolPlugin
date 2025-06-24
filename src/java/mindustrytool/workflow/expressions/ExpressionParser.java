@@ -146,8 +146,11 @@ public class ExpressionParser {
             }
         }
 
-        while (!ops.isEmpty())
-            output.add(ops.pop());
+        while (!ops.isEmpty()) {
+            var value = ops.pop();
+            output.add(value);
+            Log.debug("Push rest token: " + value);
+        }
 
         return output;
     }

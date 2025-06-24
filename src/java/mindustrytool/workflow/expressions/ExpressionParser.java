@@ -1,13 +1,12 @@
 package mindustrytool.workflow.expressions;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Deque;
+import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -106,8 +105,8 @@ public class ExpressionParser {
         UNARY_OPERATORS.put(sign, new UnaryOperator(name, sign, function));
     }
 
-    private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {
-        Deque<String> ops = new ArrayDeque<>();
+    private Queue<String> toExpressionQueue(String expr) {
+        Stack<String> ops = new Stack<>();
         Queue<String> output = new LinkedList<>();
 
         Matcher matcher = TOKEN_PATTERN.matcher(expr);
@@ -159,8 +158,8 @@ public class ExpressionParser {
 
     public <T> T evaluate(Class<T> type, String expr, Map<String, Object> variables) {
         Map<String, Object> vars = new HashMap<>();
-        Queue<String> rpn = toExpressionQueue(expr, variables);
-        Deque<Object> stack = new ArrayDeque<>();
+        Queue<String> rpn = toExpressionQueue(expr);
+        Stack<Object> stack = new Stack<>();
 
         if (rpn.isEmpty()) {
             throw new WorkflowError("Empty stack, expression: " + expr);

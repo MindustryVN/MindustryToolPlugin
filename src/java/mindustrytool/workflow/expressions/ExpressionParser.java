@@ -90,11 +90,11 @@ public class ExpressionParser {
     }
 
     public void register(String name, String sign, BiFunction<Double, Double, Object> function) {
-        BINARY_OPERATORS.put(name, new BinaryOperator(name, sign, function));
+        BINARY_OPERATORS.put(sign, new BinaryOperator(name, sign, function));
     }
 
     public void register(String name, String sign, Function<Double, Object> function) {
-        UNARY_OPERATORS.put(name, new UnaryOperator(name, sign, function));
+        UNARY_OPERATORS.put(sign, new UnaryOperator(name, sign, function));
     }
 
     private Queue<String> toExpressionQueue(String expr, Map<String, Object> variables) {

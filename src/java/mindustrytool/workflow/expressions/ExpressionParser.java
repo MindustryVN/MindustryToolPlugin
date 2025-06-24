@@ -113,7 +113,9 @@ public class ExpressionParser {
         try (Scanner scanner = new Scanner(expr.trim()).useDelimiter(TOKEN_PATTERN)) {
             while (scanner.hasNext()) {
                 if (scanner.hasNextDouble()) {
-                    output.add(scanner.next());
+                    var value = scanner.next();
+                    output.add(value);
+                    Log.debug("Push number: " + value);
                 } else {
                     String token = scanner.next();
 
@@ -135,6 +137,7 @@ public class ExpressionParser {
                             output.add(ops.pop());
                         }
                     } else {
+                        Log.debug("Push token: " + token);
                         output.add(token);
                     }
                 }

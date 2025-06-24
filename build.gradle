@@ -11,17 +11,10 @@ sourceSets {
         java {
             srcDirs 'src/main/java'
         }
-
-        resources {
-            srcDir 'src/mindustrytool/resources'
-        }
     }
     test {
         java {
             srcDirs 'src/test/java'
-        }
-        resources {
-            srcDir 'src/test/resources'
         }
     }
 }

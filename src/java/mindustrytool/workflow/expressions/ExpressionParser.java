@@ -203,17 +203,26 @@ public class ExpressionParser {
             if (BINARY_OPERATORS.containsKey(token)) {
                 double b = (double) stack.pop();
                 double a = (double) stack.pop();
-                stack.push(BINARY_OPERATORS.get(token).getFunction().apply(a, b));
+                var operation = BINARY_OPERATORS.get(token); 
+                var result = operation.getFunction().apply(a, b);
+                Log.debug(a + " " + operation.getSign() + " " + b + " = " + result);
+                stack.push(result);
             } else if (UNARY_OPERATORS.containsKey(token)) {
                 double a = (double) stack.pop();
-                stack.push(UNARY_OPERATORS.get(token).getFunction().apply(a));
+                var operation = UNARY_OPERATORS.get(token);
+                var result = operation.getFunction().apply(a);
+                Log.debug(a + " " + operation.getSign() + " = " + result);
+                stack.push(result);
             } else if (vars.containsKey(token)) {
                 stack.push(vars.get(token));
+                Log.debug("Push variable: " + token);
             } else if (token.equals("null")) {
                 stack.push(null);
+                Log.debug("Push null");
             } else {
                 try {
                     stack.push(Double.parseDouble(token));
+                    Log.debug("Push number: " + token);
                 } catch (Exception e) {
                     throw new WorkflowError("Invalid token: <" + token + ">", e);
                 }

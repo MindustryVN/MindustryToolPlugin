@@ -54,9 +54,9 @@ public class WorkflowEmitEvent {
 
         Calendar calendar = Calendar.getInstance();
 
-        variables.put("@seconds", calendar.get(Calendar.SECOND));
-        variables.put("@minutes", calendar.get(Calendar.MINUTE));
-        variables.put("@hours", calendar.get(Calendar.HOUR));
+        variables.put("@second", calendar.get(Calendar.SECOND));
+        variables.put("@minute", calendar.get(Calendar.MINUTE));
+        variables.put("@hour", calendar.get(Calendar.HOUR));
         variables.put("@day", calendar.get(Calendar.DAY_OF_MONTH));
         variables.put("@month", calendar.get(Calendar.MONTH));
         variables.put("@year", calendar.get(Calendar.YEAR));

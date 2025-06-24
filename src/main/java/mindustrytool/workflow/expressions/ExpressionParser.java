@@ -151,7 +151,25 @@ public class ExpressionParser {
     }
 
     public Boolean evaluateAsBoolean(String expr, Map<String, Object> variables) {
-        return evaluate(Boolean.class, expr, variables);
+        var result = evaluate(expr, variables);
+
+        if (result instanceof Boolean) {
+            return (Boolean) result;
+        }
+
+        if (result == null) {
+            return false;
+        }
+
+        if (result instanceof String) {
+            return Boolean.parseBoolean(result.toString());
+        }
+
+        if (result instanceof Number) {
+            return ((Number) result).doubleValue() != 0;
+        }
+
+        throw new WorkflowError("Invalid boolean value: " + result.toString());
     }
 
     public Double evaluateAsDouble(String expr, Map<String, Object> variables) {

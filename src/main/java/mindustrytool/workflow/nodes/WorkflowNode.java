@@ -214,30 +214,15 @@ public abstract class WorkflowNode {
         }
 
         public Double asDouble(WorkflowEmitEvent event) {
-            var string = asString(event);
-            try {
-                return Double.parseDouble(string);
-            } catch (Exception e) {
-                throw new WorkflowError("Invalid double value: " + string + " " + e.getMessage(), e);
-            }
+            return event.getContext().getExpressionParser().evaluateAsDouble(value, event.getVariables());
         }
 
         public Long asLong(WorkflowEmitEvent event) {
-            var string = asString(event);
-            try {
-                return Long.parseLong(string);
-            } catch (Exception e) {
-                throw new WorkflowError("Invalid long value: " + string + " " + e.getMessage(), e);
-            }
+            return event.getContext().getExpressionParser().evaluateAsDouble(value, event.getVariables()).longValue();
         }
 
         public Float asFloat(WorkflowEmitEvent event) {
-            var string = asString(event);
-            try {
-                return Float.parseFloat(string);
-            } catch (Exception e) {
-                throw new WorkflowError("Invalid float value: " + string + " " + e.getMessage(), e);
-            }
+            return event.getContext().getExpressionParser().evaluateAsDouble(value, event.getVariables()).floatValue();
         }
 
         public String asString(WorkflowEmitEvent event) {

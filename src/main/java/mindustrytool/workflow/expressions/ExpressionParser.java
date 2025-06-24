@@ -53,6 +53,8 @@ public class ExpressionParser {
         PRECEDENCE.put("%", 8);
         PRECEDENCE.put("idiv", 8);
 
+        register("Addition", "+", (a, b) -> a + b);
+        register("Subtraction", "-", (a, b) -> a - b);
         register("Multiplication", "*", (a, b) -> a * b);
         register("Division", "/", (a, b) -> a / b);
         register("Modulo", "%", (a, b) -> a % b);

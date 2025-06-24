@@ -9,7 +9,7 @@ import mindustrytool.workflow.expressions.ExpressionParser;
 public class ExpressionParserTest {
     ExpressionParser parser = new ExpressionParser();
 
-    Map<String, Object> variables = Map.of("a", 1, "b", 2);
+    Map<String, Object> variables = Map.of("a", 1d, "b", 2d);
 
     @Test
     void testAddition() {

@@ -216,7 +216,11 @@ public class ExpressionParser {
             } else if (WorkflowNode.VARIABLE_PATTERN.matcher(token).matches()) {
                 var variableName = token.replace("{{", "").replace("}}", "").trim();
                 var variable = consume(variableName, variables);
-                stack.push(variable);
+                if (variable instanceof Number number) {
+                    stack.push(number.doubleValue());
+                } else {
+                    stack.push(variable);
+                }
                 Log.debug("Add variable: " + variableName);
             } else {
                 try {

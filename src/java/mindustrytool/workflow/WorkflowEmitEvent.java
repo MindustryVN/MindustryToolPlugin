@@ -28,7 +28,7 @@ public class WorkflowEmitEvent {
 
     public WorkflowEmitEvent putValue(String name, Object value) {
         variables.put(name, value);
-        Log.debug("Add variable: " + name + ": " + value);
+        Log.debug("Add variable: " + name + " = " + value);
 
         context.sendWorkflowEvent(new WorkflowEvent(current.getId(), "SET", Map.of(name, value.toString())));
 

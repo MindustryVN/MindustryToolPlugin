@@ -10,5 +10,5 @@ import lombok.RequiredArgsConstructor;
 public class UnaryOperator {
     private final String name;
     private final String sign;
-    private final Function<Double, Object> function;
+    private final Function<Object, Object> function;
 }

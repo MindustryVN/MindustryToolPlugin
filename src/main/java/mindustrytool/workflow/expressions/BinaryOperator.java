@@ -10,5 +10,5 @@ import lombok.RequiredArgsConstructor;
 public class BinaryOperator {
     private final String name;
     private final String sign;
-    private final BiFunction<Double, Double, Object> function;
+    private final BiFunction<Object, Object, Object> function;
 }

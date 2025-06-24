@@ -53,40 +53,40 @@ public class ExpressionParser {
         PRECEDENCE.put("%", 8);
         PRECEDENCE.put("idiv", 8);
 
-        register("Addition", "+", (a, b) -> a + b);
-        register("Subtraction", "-", (a, b) -> a - b);
-        register("Multiplication", "*", (a, b) -> a * b);
-        register("Division", "/", (a, b) -> a / b);
-        register("Modulo", "%", (a, b) -> a % b);
-        register("Integer Division", "idiv", (a, b) -> Math.floor((a / b)));
+        registerNumber("Addition", "+", (a, b) -> a + b);
+        registerNumber("Subtraction", "-", (a, b) -> a - b);
+        registerNumber("Multiplication", "*", (a, b) -> a * b);
+        registerNumber("Division", "/", (a, b) -> a / b);
+        registerNumber("Modulo", "%", (a, b) -> a % b);
+        registerNumber("Integer Division", "idiv", (a, b) -> Math.floor((a / b)));
         register("Equals", "==", (a, b) -> a.equals(b));
         register("Not Equals", "!=", (a, b) -> !a.equals(b));
-        register("Less Than", "<", (a, b) -> a < b);
-        register("Greater Than", ">", (a, b) -> a > b);
-        register("Less Than or Equal", "<=", (a, b) -> a <= b);
-        register("Greater Than or Equal", ">=", (a, b) -> a >= b);
-        register("Bitwise AND", "and", (a, b) -> (double) (a.intValue() & b.intValue()));
-        register("Bitwise OR", "or", (a, b) -> (double) (a.intValue() | b.intValue()));
-        register("Bitwise XOR", "xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
-        register("Left Shift", "<<", (a, b) -> (double) (a.intValue() << b.intValue()));
-        register("Right Shift", ">>", (a, b) -> (double) (a.intValue() >> b.intValue()));
+        registerNumber("Less Than", "<", (a, b) -> a < b);
+        registerNumber("Greater Than", ">", (a, b) -> a > b);
+        registerNumber("Less Than or Equal", "<=", (a, b) -> a <= b);
+        registerNumber("Greater Than or Equal", ">=", (a, b) -> a >= b);
+        registerNumber("Bitwise AND", "and", (a, b) -> (double) (a.intValue() & b.intValue()));
+        registerNumber("Bitwise OR", "or", (a, b) -> (double) (a.intValue() | b.intValue()));
+        registerNumber("Bitwise XOR", "xor", (a, b) -> (double) (a.intValue() ^ b.intValue()));
+        registerNumber("Left Shift", "<<", (a, b) -> (double) (a.intValue() << b.intValue()));
+        registerNumber("Right Shift", ">>", (a, b) -> (double) (a.intValue() >> b.intValue()));
 
-        register("Absolute Value", "abs", Math::abs);
-        register("Natural Logarithm", "log", Math::log);
-        register("Base-10 Logarithm", "log10", Math::log10);
-        register("Floor", "floor", Math::floor);
-        register("Ceiling", "ceil", Math::ceil);
-        register("Round", "round", a -> (double) Math.round(a));
-        register("Square Root", "sqrt", Math::sqrt);
-        register("Sine", "sin", Math::sin);
-        register("Cosine", "cos", Math::cos);
-        register("Tangent", "tan", Math::tan);
-        register("Arcsine", "asin", Math::asin);
-        register("Arccosine", "acos", Math::acos);
-        register("Arctangent", "atan", Math::atan);
-        register("Bitwise NOT", "flip", a -> (double) ~(a.intValue()));
-        register("Square", "square", a -> a * a);
-        register("Length (abs)", "length", a -> Math.abs(a));
+        registerNumber("Absolute Value", "abs", Math::abs);
+        registerNumber("Natural Logarithm", "log", Math::log);
+        registerNumber("Base-10 Logarithm", "log10", Math::log10);
+        registerNumber("Floor", "floor", Math::floor);
+        registerNumber("Ceiling", "ceil", Math::ceil);
+        registerNumber("Round", "round", a -> (double) Math.round(a));
+        registerNumber("Square Root", "sqrt", Math::sqrt);
+        registerNumber("Sine", "sin", Math::sin);
+        registerNumber("Cosine", "cos", Math::cos);
+        registerNumber("Tangent", "tan", Math::tan);
+        registerNumber("Arcsine", "asin", Math::asin);
+        registerNumber("Arccosine", "acos", Math::acos);
+        registerNumber("Arctangent", "atan", Math::atan);
+        registerNumber("Bitwise NOT", "flip", a -> (double) ~(a.intValue()));
+        registerNumber("Square", "square", a -> a * a);
+        registerNumber("Length (abs)", "length", a -> Math.abs(a));
 
         List<Class<?>> lists = List.of(Vars.class, Groups.class);
 
@@ -99,12 +99,33 @@ public class ExpressionParser {
         Log.debug("Registered " + CLASSES.keySet() + " classes");
     }
 
-    public void register(String name, String sign, BiFunction<Double, Double, Object> function) {
+    public void register(String name, String sign, BiFunction<Object, Object, Object> function) {
         BINARY_OPERATORS.put(sign, new BinaryOperator(name, sign, function));
     }
 
-    public void register(String name, String sign, Function<Double, Object> function) {
+    public void registerNumber(String name, String sign, BiFunction<Double, Double, Object> function) {
+        BINARY_OPERATORS.put(sign, new BinaryOperator(name, sign, (a, b) -> {
+
+            if (a instanceof Number numberA && b instanceof Number numberB) {
+                return function.apply(numberA.doubleValue(), numberB.doubleValue());
+            }
+
+            throw new WorkflowError("Invalid arguments for binary operator: " + name + " a: " + a + " b: " + b);
+        }));
+    }
+
+    public void register(String name, String sign, Function<Object, Object> function) {
         UNARY_OPERATORS.put(sign, new UnaryOperator(name, sign, function));
+    }
+
+    public void registerNumber(String name, String sign, Function<Double, Object> function) {
+        UNARY_OPERATORS.put(sign, new UnaryOperator(name, sign, (a) -> {
+            if (a instanceof Number number) {
+                return function.apply(number.doubleValue());
+            }
+
+            throw new WorkflowError("Invalid argument for unary operator: " + name + " a: " + a);
+        }));
     }
 
     private Queue<String> toExpressionQueue(String expr) {

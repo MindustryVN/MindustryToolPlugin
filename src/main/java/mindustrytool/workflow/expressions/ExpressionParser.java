@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import arc.util.Log;
+import mindustry.Vars;
+import mindustry.gen.Groups;
 import mindustrytool.workflow.errors.WorkflowError;
 import mindustrytool.workflow.nodes.WorkflowNode;
 
@@ -94,9 +96,18 @@ public class ExpressionParser {
         loadClassFromPackage("arc");
         loadClassFromPackage("mindustrytool");
 
+        loadClass(Vars.class, Groups.class, System.class);
+
         Log.info("Registered " + BINARY_OPERATORS.size() + " binary operators");
         Log.info("Registered " + UNARY_OPERATORS.size() + " unary operators");
         Log.info("Registered " + CLASSES.size() + " classes");
+
+    }
+
+    public void loadClass(Class<?>... clazz) {
+        for (var c : clazz) {
+            CLASSES.put(c.getSimpleName(), c);
+        }
     }
 
     public void loadClassFromPackage(String packageName) {

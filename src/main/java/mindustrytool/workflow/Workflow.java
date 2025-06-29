@@ -115,8 +115,10 @@ public class Workflow {
 
     private void loadWorkflowFromFile() {
         String content = WORKFLOW_FILE.readString();
-        context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
-        load(context);
+        if (!content.isBlank()) {
+            context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
+            load(context);
+        }
     }
 
     private void writeWorkflowToFile() {

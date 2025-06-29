@@ -65,7 +65,7 @@ public class EventHandler {
     }
 
     private List<ServerResponseData> servers = new ArrayList<>();
-    private List<ServerCore> serverCores = new ArrayList<>();
+    private final List<ServerCore> serverCores = new ArrayList<>();
 
     int page = 0;
     int gap = 50;
@@ -136,7 +136,7 @@ public class EventHandler {
                                             : "[red]" + server.getStatus();
 
                                     var mods = server.getMods();
-                                    mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+                                    mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                                     String message = //
                                             "%s (Tap core to join)\n\n".formatted(server.getName()) //
@@ -297,7 +297,7 @@ public class EventHandler {
     }
 
     public String getIconBaseOnLevel(int level) {
-        var index = (int) (level / 3);
+        var index = level / 3;
 
         if (index >= icons.size()) {
             index = icons.size() - 1;
@@ -630,7 +630,7 @@ public class EventHandler {
                         server.getName());
 
                 var mods = server.getMods();
-                mods.removeIf(m -> m.trim().toLowerCase().equals("mindustrytoolplugin"));
+                mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                 if (server.getMapName() == null) {
                     options.add(List.of(HudUtils.option(valid, "[yellow]%s".formatted(server.getName())),

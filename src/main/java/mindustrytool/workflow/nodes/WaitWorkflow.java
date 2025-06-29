@@ -5,7 +5,7 @@ import mindustrytool.workflow.WorkflowEmitEvent;
 import mindustrytool.workflow.WorkflowGroup;
 
 public class WaitWorkflow extends WorkflowNode {
-    private WorkflowField secondField = new WorkflowField("second")
+    private final WorkflowField secondField = new WorkflowField("second")
             .consume(new FieldConsumer<>(Long.class)
                     .unit(WorkflowUnit.SECOND)
                     .defaultValue(1000L));

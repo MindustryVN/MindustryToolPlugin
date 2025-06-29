@@ -8,7 +8,7 @@ public class IfWorkflow extends WorkflowNode {
     private final WorkflowOutput trueOutput = new WorkflowOutput("True", "True");
     private final WorkflowOutput falseOutput = new WorkflowOutput("False", "False");
 
-    private WorkflowField<String, Void> conditionField = new WorkflowField<String, Void>("condition")
+    private final WorkflowField<String, Void> conditionField = new WorkflowField<String, Void>("condition")
             .consume(new FieldConsumer<>(String.class));
 
     public IfWorkflow() {

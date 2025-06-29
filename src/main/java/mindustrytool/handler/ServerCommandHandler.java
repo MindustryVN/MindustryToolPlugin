@@ -31,7 +31,7 @@ public class ServerCommandHandler {
     @Getter
     private CommandHandler handler;
 
-    private List<PrevCommand> prevCommands = new ArrayList<>();
+    private final List<PrevCommand> prevCommands = new ArrayList<>();
 
     public void execute(String command, Consumer<CommandResponse> callback) {
         Core.app.post(() -> {

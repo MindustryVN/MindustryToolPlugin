@@ -419,7 +419,6 @@ public class HttpServer {
             } catch (WorkflowError e) {
                 Log.err("Failed to load workflow", e);
                 context.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
-                return;
             }
         });
 

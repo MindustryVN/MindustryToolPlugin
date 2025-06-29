@@ -88,7 +88,7 @@ public class ApiGateway {
 
     private URI path(String... path) {
         var uri = URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
-        Log.debug("[REQUEST]: " + uri.toString());
+        Log.debug("[REQUEST]: " + uri);
 
         return uri;
     }

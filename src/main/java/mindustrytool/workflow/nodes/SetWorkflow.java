@@ -5,11 +5,11 @@ import mindustrytool.workflow.WorkflowGroup;
 
 public class SetWorkflow extends WorkflowNode {
 
-    private WorkflowField nameField = new WorkflowField("name")
+    private final WorkflowField nameField = new WorkflowField("name")
             .consume(new FieldConsumer<>(String.class)
                     .defaultValue("a"));
 
-    private WorkflowField valueField = new WorkflowField("value")
+    private final WorkflowField valueField = new WorkflowField("value")
             .consume(new FieldConsumer<>(Object.class)
                     .defaultValue("0"));
 

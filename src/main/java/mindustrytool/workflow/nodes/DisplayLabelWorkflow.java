@@ -7,22 +7,22 @@ import mindustrytool.workflow.WorkflowGroup;
 import mindustrytool.workflow.WorkflowUnit;
 
 public class DisplayLabelWorkflow extends WorkflowNode {
-    private WorkflowField<Player, Void> playerField = new WorkflowField<Player, Void>("player")
+    private final WorkflowField<Player, Void> playerField = new WorkflowField<Player, Void>("player")
             .consume(new FieldConsumer<>(Player.class).notRequired());
 
-    private WorkflowField<String, Void> messageField = new WorkflowField<String, Void>("message")
+    private final WorkflowField<String, Void> messageField = new WorkflowField<String, Void>("message")
             .consume(new FieldConsumer<>(String.class)
                     .defaultValue("Hello"));
 
-    private WorkflowField<Float, Void> xField = new WorkflowField<Float, Void>("x")
+    private final WorkflowField<Float, Void> xField = new WorkflowField<Float, Void>("x")
             .consume(new FieldConsumer<>(Float.class)
                     .defaultValue(0f));
 
-    private WorkflowField<Float, Void> yField = new WorkflowField<Float, Void>("y")
+    private final WorkflowField<Float, Void> yField = new WorkflowField<Float, Void>("y")
             .consume(new FieldConsumer<>(Float.class)
                     .defaultValue(0f));
 
-    private WorkflowField<Float, Void> durationField = new WorkflowField<Float, Void>("duration")
+    private final WorkflowField<Float, Void> durationField = new WorkflowField<Float, Void>("duration")
             .consume(new FieldConsumer<>(Float.class)
                     .unit(WorkflowUnit.SECOND)
                     .defaultValue(0f));

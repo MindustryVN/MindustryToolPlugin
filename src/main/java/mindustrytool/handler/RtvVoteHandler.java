@@ -79,7 +79,6 @@ public class RtvVoteHandler {
             Vars.maps.setNextMapOverride(getMaps().get(mapId));
             reset();
             Events.fire(new EventType.GameOverEvent(Team.crux));
-            return;
         }
     }
 }

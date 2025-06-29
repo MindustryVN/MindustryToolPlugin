@@ -36,7 +36,7 @@ public class ClientCommandHandler {
         Log.info("Client command handler created: " + this);
     }
 
-    private static boolean isPreparingForNewWave = false;
+    private static final boolean isPreparingForNewWave = false;
     private static short waveVoted = 0;
 
     @Getter

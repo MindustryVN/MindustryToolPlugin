@@ -8,7 +8,7 @@ import mindustry.gen.Player;
 import mindustrytool.type.Session;
 
 public class SessionHandler {
-    private HashMap<String, Session> data = new HashMap<>();
+    private final HashMap<String, Session> data = new HashMap<>();
 
     public HashMap<String, Session> get() {
         return data;

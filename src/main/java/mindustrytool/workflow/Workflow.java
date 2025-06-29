@@ -54,7 +54,7 @@ public class Workflow {
     @Getter
     public WorkflowContext context;
 
-    private Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
+    private final Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
     public Queue<SseClient> getWorkflowEventConsumers() {
         return workflowEventConsumers;

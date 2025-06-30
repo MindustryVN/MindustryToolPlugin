@@ -3,7 +3,7 @@ package mindustrytool.handler;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import java.io.IOException;
+import java.io.IOThrowable;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public class EventHandler {
                     var response = controller.apiGateway.getServers(request);
                     servers = response.getServers();
 
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }, 0, 30, TimeUnit.SECONDS);
@@ -177,7 +177,7 @@ public class EventHandler {
                             }
                         }
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }, 0, 5, TimeUnit.SECONDS);
@@ -271,7 +271,7 @@ public class EventHandler {
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
             controller.apiGateway.sendBuildLog(buildLog);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -290,7 +290,7 @@ public class EventHandler {
                     player.sendMessage("You have leveled up to level %s".formatted(level));
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -316,7 +316,7 @@ public class EventHandler {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -348,7 +348,7 @@ public class EventHandler {
                             map = serverData.mapName == null ? "" : serverData.mapName;
                             players = (int) serverData.players;
                         }
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         e.printStackTrace();
                     }
                 }
@@ -374,7 +374,7 @@ public class EventHandler {
                 buffer.clear();
             });
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.err(e);
         }
     }
@@ -412,7 +412,7 @@ public class EventHandler {
             Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
                 try {
                     controller.apiGateway.sendChatMessage(chat);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     Log.err(e);
                 }
             });
@@ -437,12 +437,12 @@ public class EventHandler {
                                     "[white][Translation] " + player.name() + "[]: " + translatedMessage);
 
                         }
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         Log.err(e);
                     }
                 });
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -461,7 +461,7 @@ public class EventHandler {
                             .setColor(team.color.toString()));
 
             controller.apiGateway.sendPlayerLeave(request);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
 
@@ -489,12 +489,12 @@ public class EventHandler {
             Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 controller.apiGateway.sendChatMessage(chat);
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
 
-    public synchronized ServerResponseData getTopServer() throws IOException {
+    public synchronized ServerResponseData getTopServer() throws IOThrowable {
         try {
             var request = new PaginationRequest().setPage(0).setSize(1);
             var response = controller.apiGateway.getServers(request);
@@ -509,7 +509,7 @@ public class EventHandler {
             }
 
             return servers.get(0);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             return null;
         }
@@ -580,7 +580,7 @@ public class EventHandler {
 
             setPlayerData(playerData, player);
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -668,7 +668,7 @@ public class EventHandler {
 
             HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "List of all servers",
                     Config.CHOOSE_SERVER_MESSAGE, Integer.valueOf(page), options);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.err(e);
         }
     }
@@ -702,7 +702,7 @@ public class EventHandler {
                 Log.info("Redirecting " + player.name + " to " + host + ":" + port);
 
                 Call.connect(player.con, InetAddress.getByName(host.trim()).getHostAddress(), port);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 player.sendMessage("Error: Can not load server");
                 e.printStackTrace();
             }

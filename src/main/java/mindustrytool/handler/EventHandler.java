@@ -267,7 +267,6 @@ public class EventHandler {
                     .setBuilding(new BuildingDto()//
                             .setX(building.x())
                             .setY(building.y())
-                            .setLastAccess(building.lastAccessed())
                             .setName(building.block() != null ? building.block().name : "Unknown"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 

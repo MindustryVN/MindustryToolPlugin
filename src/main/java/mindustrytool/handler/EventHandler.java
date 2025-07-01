@@ -3,7 +3,6 @@ package mindustrytool.handler;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import java.io.IOThrowable;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -267,12 +266,12 @@ public class EventHandler {
                     .setBuilding(new BuildingDto()//
                             .setX(building.x())
                             .setY(building.y())
-                            .setName(building.block() != null ? building.block().name : "Unknown"))
+                            .setName(building.block != null ? building.block.name : "Unknown"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
             controller.apiGateway.sendBuildLog(buildLog);
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.err(e);
         }
     }
 
@@ -494,7 +493,7 @@ public class EventHandler {
         }
     }
 
-    public synchronized ServerResponseData getTopServer() throws IOThrowable {
+    public synchronized ServerResponseData getTopServer() {
         try {
             var request = new PaginationRequest().setPage(0).setSize(1);
             var response = controller.apiGateway.getServers(request);

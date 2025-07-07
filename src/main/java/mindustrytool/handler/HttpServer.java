@@ -458,6 +458,13 @@ public class HttpServer {
 
                     data.put("gameStats", gameStats);
                     data.put("locales", Vars.locales);
+                    data.put("threads",
+                            Thread.getAllStackTraces().keySet().stream()
+                                    .map(thread -> java.util.Map.of(
+                                            "id", thread.getId(),
+                                            "name", thread.getName(),
+                                            "state", thread.getState().name()))
+                                    .toList());
 
                     var maps = new ArrayList<HashMap<String, String>>();
                     Vars.maps.all().forEach(map -> {

@@ -56,21 +56,12 @@ import io.javalin.plugin.bundled.RouteOverviewPlugin;
 public class HttpServer {
     private static final String MAP_PREVIEW_FILE_NAME = "MapPreview";
 
-    private Javalin app;
+    private final Javalin app;
 
     private final ServerController controller;
 
     public HttpServer(ServerController controller) {
         this.controller = controller;
-        Log.info("Http server created: " + this);
-    }
-
-    public void init() {
-        Log.info("Setup http server");
-
-        if (app != null) {
-            throw new RuntimeException("Already init");
-        }
 
         app = Javalin.create(config -> {
             config.showJavalinBanner = false;
@@ -102,6 +93,12 @@ public class HttpServer {
                 }
             });
         });
+
+        Log.info("Http server created: " + this);
+    }
+
+    public void init() {
+        Log.info("Setup http server");
 
         app.get("stats", context -> {
             context.future(() -> {
@@ -624,11 +621,7 @@ public class HttpServer {
     }
 
     public void unload() {
-        if (app != null) {
-            app.stop();
-            app = null;
-            Log.info("Jetty server stopped");
-        }
+        app.stop();
         Log.info("Stop http server");
     }
 }

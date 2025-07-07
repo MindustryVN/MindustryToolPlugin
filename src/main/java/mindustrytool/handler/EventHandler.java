@@ -13,14 +13,11 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import arc.Core;
-import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
-import mindustry.core.Version;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayerChatEvent;
@@ -47,8 +44,6 @@ import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerResponseData;
 import mindustrytool.utils.HudUtils;
 import mindustry.net.Administration.PlayerInfo;
-import mindustry.net.ArcNetProvider;
-import mindustry.net.Net;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
 
@@ -321,61 +316,62 @@ public class EventHandler {
     }
 
     private void setupCustomServerDiscovery() {
-        try {
-            var providerField = Net.class.getDeclaredField("provider");
-            providerField.setAccessible(true);
-            var provider = (ArcNetProvider) providerField.get(Vars.net);
-            var serverField = ArcNetProvider.class.getDeclaredField("server");
-            serverField.setAccessible(true);
-            var server = (Server) serverField.get(provider);
+        // try {
+        //     var providerField = Net.class.getDeclaredField("provider");
+        //     providerField.setAccessible(true);
+        //     var provider = (ArcNetProvider) providerField.get(Vars.net);
+        //     var serverField = ArcNetProvider.class.getDeclaredField("server");
+        //     serverField.setAccessible(true);
+        //     var server = (Server) serverField.get(provider);
 
-            server.setDiscoveryHandler((address, handler) -> {
-                String name = mindustry.net.Administration.Config.serverName.string();
-                String description = mindustry.net.Administration.Config.desc.string();
-                String map = Vars.state.map.name();
 
-                ByteBuffer buffer = ByteBuffer.allocate(500);
+        //     server.setDiscoveryHandler((address, handler) -> {
+        //         String name = mindustry.net.Administration.Config.serverName.string();
+        //         String description = mindustry.net.Administration.Config.desc.string();
+        //         String map = Vars.state.map.name();
 
-                int players = Groups.player.size();
+        //         ByteBuffer buffer = ByteBuffer.allocate(500);
 
-                if (Config.IS_HUB) {
-                    try {
-                        var serverData = getTopServer();
-                        if (serverData != null) {
-                            name += " -> " + serverData.name;
-                            description += " -> " + serverData.description;
-                            map = serverData.mapName == null ? "" : serverData.mapName;
-                            players = (int) serverData.players;
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                    }
-                }
+        //         int players = Groups.player.size();
 
-                writeString(buffer, name, 100);
-                writeString(buffer, map, 64);
+        //         if (Config.IS_HUB) {
+        //             try {
+        //                 var serverData = getTopServer();
+        //                 if (serverData != null) {
+        //                     name += " -> " + serverData.name;
+        //                     description += " -> " + serverData.description;
+        //                     map = serverData.mapName == null ? "" : serverData.mapName;
+        //                     players = (int) serverData.players;
+        //                 }
+        //             } catch (Throwable e) {
+        //                 e.printStackTrace();
+        //             }
+        //         }
 
-                buffer.putInt(Core.settings.getInt("totalPlayers", players));
-                buffer.putInt(Vars.state.wave);
-                buffer.putInt(Version.build);
-                writeString(buffer, Version.type);
+        //         writeString(buffer, name, 100);
+        //         writeString(buffer, map, 64);
 
-                buffer.put((byte) Vars.state.rules.mode().ordinal());
-                buffer.putInt(Vars.netServer.admins.getPlayerLimit());
+        //         buffer.putInt(Core.settings.getInt("totalPlayers", players));
+        //         buffer.putInt(Vars.state.wave);
+        //         buffer.putInt(Version.build);
+        //         writeString(buffer, Version.type);
 
-                writeString(buffer, description, 100);
-                if (Vars.state.rules.modeName != null) {
-                    writeString(buffer, Vars.state.rules.modeName, 50);
-                }
-                buffer.position(0);
-                handler.respond(buffer);
+        //         buffer.put((byte) Vars.state.rules.mode().ordinal());
+        //         buffer.putInt(Vars.netServer.admins.getPlayerLimit());
 
-                buffer.clear();
-            });
+        //         writeString(buffer, description, 100);
+        //         if (Vars.state.rules.modeName != null) {
+        //             writeString(buffer, Vars.state.rules.modeName, 50);
+        //         }
+        //         buffer.position(0);
+        //         handler.respond(buffer);
 
-        } catch (Throwable e) {
-            Log.err(e);
-        }
+        //         buffer.clear();
+        //     });
+
+        // } catch (Throwable e) {
+        //     Log.err(e);
+        // }
     }
 
     private void writeString(ByteBuffer buffer, String string) {

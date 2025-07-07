@@ -460,6 +460,7 @@ public class HttpServer {
                     data.put("locales", Vars.locales);
                     data.put("threads",
                             Thread.getAllStackTraces().keySet().stream()
+                                    .sorted((a, b) -> a.getName().compareTo(b.getName()))
                                     .map(thread -> java.util.Map.of(
                                             "id", thread.getId(),
                                             "name", thread.getName(),

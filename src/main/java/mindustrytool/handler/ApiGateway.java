@@ -34,7 +34,7 @@ public class ApiGateway {
 
     public Cache<PaginationRequest, ServerDto> serverQueryCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofSeconds(15))
-            .maximumSize(100)
+            .maximumSize(10)
             .build();
 
     public ApiGateway(ServerController controller) {
@@ -175,6 +175,8 @@ public class ApiGateway {
                 return httpClient.send(request, BodyHandlers.ofString()).body();
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
+            } finally {
+                locks.remove(targetServerId);
             }
         }
     }

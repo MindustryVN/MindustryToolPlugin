@@ -57,11 +57,9 @@ public class Utils {
                 }
 
                 Vars.logic.reset();
-
+                Vars.world.loadMap(result, result.applyRules(preset));
                 Vars.state.rules = result.applyRules(preset);
                 Vars.logic.play();
-
-                Log.info("Starting server...");
                 Vars.netServer.openServer();
                 Log.info("Server started.");
             } catch (MapException event) {

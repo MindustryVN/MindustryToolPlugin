@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -73,15 +73,14 @@ public class HttpServer {
 
             }));
 
-            int maxThreads = 20;
+            int maxThreads = 50;
             int minThreads = 0;
-            int idleTimeoutMillis = 5_000;
             // to finish
             config.http.asyncTimeout = 5_000;
             config.useVirtualThreads = true;
 
-            config.jetty.threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMillis);
-            config.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
+            config.jetty.threadPool = new ExecutorThreadPool(maxThreads, minThreads);
+            config.jetty.modifyServer(server ->  server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
 
             config.registerPlugin(new RouteOverviewPlugin());
 

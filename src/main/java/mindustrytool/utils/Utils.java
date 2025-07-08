@@ -1,5 +1,11 @@
 package mindustrytool.utils;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+
 import arc.Core;
 import arc.util.Log;
 import arc.util.Strings;
@@ -68,5 +74,39 @@ public class Utils {
                 isHosting = false;
             }
         });
+    }
+
+    public static void appPostWithTimeout(Runnable r) {
+        appPostWithTimeout(r, 5000);
+    }
+
+    public static void appPostWithTimeout(Runnable r, int timeout) {
+        CompletableFuture<Void> v = new CompletableFuture<>();
+        Core.app.post(() -> {
+            r.run();
+            v.complete(null);
+        });
+        try {
+            v.get(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T appPostWithTimeout(Supplier<T> fn) {
+        return appPostWithTimeout(fn, 5000);
+    }
+
+    public static <T> T appPostWithTimeout(Supplier<T> fn, int timeout) {
+        CompletableFuture<T> future = new CompletableFuture<T>();
+        Core.app.post(() -> {
+            future.complete(fn.get());
+        });
+
+        try {
+            return future.get(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

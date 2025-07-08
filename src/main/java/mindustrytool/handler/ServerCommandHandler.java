@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import arc.util.CommandHandler.CommandResponse;
 import arc.util.Log;
-import arc.Core;
 import arc.func.Cons;
 import arc.util.CommandHandler;
 import lombok.Getter;
@@ -34,13 +33,11 @@ public class ServerCommandHandler {
     private final List<PrevCommand> prevCommands = new ArrayList<>();
 
     public void execute(String command, Consumer<CommandResponse> callback) {
-        Core.app.post(() -> {
-            if (this.handler == null) {
-                prevCommands.add(new PrevCommand(command, callback));
-            } else {
-                callback.accept(this.handler.handleMessage(command));
-            }
-        });
+        if (this.handler == null) {
+            prevCommands.add(new PrevCommand(command, callback));
+        } else {
+            callback.accept(this.handler.handleMessage(command));
+        }
     }
 
     private void register(String text, String params, String description, Cons<String[]> runner) {

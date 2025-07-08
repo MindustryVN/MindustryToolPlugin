@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.pf4j.Plugin;
 
-import arc.Core;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
@@ -32,14 +31,14 @@ import mindustrytoolpluginloader.MindustryToolPlugin;
 
 public class ServerController extends Plugin implements MindustryToolPlugin {
 
-    public final ApiGateway apiGateway;
-    public final RtvVoteHandler voteHandler;
-    public final EventHandler eventHandler;
-    public final ClientCommandHandler clientCommandHandler;
-    public final ServerCommandHandler serverCommandHandler;
-    public final HttpServer httpServer;
-    public final SessionHandler sessionHandler;
-    public final Workflow workflow;
+    public ApiGateway apiGateway;
+    public RtvVoteHandler voteHandler;
+    public EventHandler eventHandler;
+    public ClientCommandHandler clientCommandHandler;
+    public ServerCommandHandler serverCommandHandler;
+    public HttpServer httpServer;
+    public SessionHandler sessionHandler;
+    public Workflow workflow;
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
@@ -110,36 +109,34 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
 
     @Override
     public void onEvent(Object event) {
-        Core.app.post(() -> {
-            try {
-                workflow.fire(event, true);
+        try {
+            workflow.fire(event, true);
 
-                if (event instanceof PlayerJoin playerJoin) {
-                    eventHandler.onPlayerJoin(playerJoin);
-                } else if (event instanceof PlayerLeave playerLeave) {
-                    eventHandler.onPlayerLeave(playerLeave);
-                    HudUtils.onPlayerLeave(playerLeave);
-                } else if (event instanceof PlayerChatEvent playerChat) {
-                    eventHandler.onPlayerChat(playerChat);
-                } else if (event instanceof ServerLoadEvent serverLoad) {
-                    eventHandler.onServerLoad(serverLoad);
-                } else if (event instanceof PlayerConnect playerConnect) {
-                    eventHandler.onPlayerConnect(playerConnect);
-                } else if (event instanceof BlockBuildEndEvent blockBuild) {
-                    eventHandler.onBuildBlockEnd(blockBuild);
-                } else if (event instanceof TapEvent tapEvent) {
-                    eventHandler.onTap(tapEvent);
-                } else if (event instanceof MenuOptionChooseEvent menuOption) {
-                    HudUtils.onMenuOptionChoose(menuOption);
-                } else if (event instanceof GameOverEvent gameOverEvent) {
-                    eventHandler.onGameOver(gameOverEvent);
-                }
-
-                workflow.fire(event, false);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (event instanceof PlayerJoin playerJoin) {
+                eventHandler.onPlayerJoin(playerJoin);
+            } else if (event instanceof PlayerLeave playerLeave) {
+                eventHandler.onPlayerLeave(playerLeave);
+                HudUtils.onPlayerLeave(playerLeave);
+            } else if (event instanceof PlayerChatEvent playerChat) {
+                eventHandler.onPlayerChat(playerChat);
+            } else if (event instanceof ServerLoadEvent serverLoad) {
+                eventHandler.onServerLoad(serverLoad);
+            } else if (event instanceof PlayerConnect playerConnect) {
+                eventHandler.onPlayerConnect(playerConnect);
+            } else if (event instanceof BlockBuildEndEvent blockBuild) {
+                eventHandler.onBuildBlockEnd(blockBuild);
+            } else if (event instanceof TapEvent tapEvent) {
+                eventHandler.onTap(tapEvent);
+            } else if (event instanceof MenuOptionChooseEvent menuOption) {
+                HudUtils.onMenuOptionChoose(menuOption);
+            } else if (event instanceof GameOverEvent gameOverEvent) {
+                eventHandler.onGameOver(gameOverEvent);
             }
-        });
+
+            workflow.fire(event, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -152,11 +149,20 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         httpServer.unload();
         clientCommandHandler.unload();
         serverCommandHandler.unload();
+        apiGateway.unload();
         sessionHandler.clear();
         workflow.clear();
 
-        HudUtils.menus.invalidateAll();
-        HudUtils.menus = null;
+        HudUtils.unload();
+
+        apiGateway = null;
+        voteHandler = null;
+        eventHandler = null;
+        clientCommandHandler = null;
+        serverCommandHandler = null;
+        sessionHandler = null;
+        httpServer = null;
+        workflow = null;
 
         Log.info("Server controller stopped: " + this);
     }

@@ -5,16 +5,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
 import arc.util.Log;
 import mindustry.Vars;
 import mindustry.gen.Groups;
@@ -91,11 +86,6 @@ public class ExpressionParser {
         registerNumber("Square", "square", a -> a * a);
         registerNumber("Length (abs)", "length", a -> Math.abs(a));
 
-        loadClassFromPackage("mindustry");
-        loadClassFromPackage("java");
-        loadClassFromPackage("arc");
-        loadClassFromPackage("mindustrytool");
-
         loadClass(Vars.class, Groups.class, System.class);
 
         Log.info("Registered " + BINARY_OPERATORS.size() + " binary operators");
@@ -107,17 +97,6 @@ public class ExpressionParser {
     public void loadClass(Class<?>... clazz) {
         for (var c : clazz) {
             CLASSES.put(c.getSimpleName(), c);
-        }
-    }
-
-    public void loadClassFromPackage(String packageName) {
-        Reflections reflections = new Reflections(packageName, Scanners.SubTypes);
-        Set<Class> classes = reflections.getSubTypesOf(Object.class)
-                .stream()
-                .collect(Collectors.toSet());
-
-        for (var clazz : classes) {
-            CLASSES.put(clazz.getSimpleName(), clazz);
         }
     }
 

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -56,7 +55,7 @@ import io.javalin.plugin.bundled.RouteOverviewPlugin;
 public class HttpServer {
     private static final String MAP_PREVIEW_FILE_NAME = "MapPreview";
 
-    private final Javalin app;
+    private Javalin app;
 
     private final ServerController controller;
 
@@ -101,32 +100,14 @@ public class HttpServer {
         Log.info("Setup http server");
 
         app.get("stats", context -> {
-            context.future(() -> {
-                var future = new CompletableFuture<>();
-
-                Core.app.post(() -> {
-                    var stats = getStats();
-                    context.contentType(ContentType.APPLICATION_JSON);
-                    context.json(stats);
-                    future.complete(null);
-                });
-
-                return future;
-            });
+            var stats = Utils.appPostWithTimeout(this::getStats);
+            context.contentType(ContentType.APPLICATION_JSON);
+            context.json(stats);
         });
 
         app.get("image", context -> {
-            context.future(() -> {
-                var future = new CompletableFuture<>();
-
-                Core.app.post(() -> {
-                    var mapPreview = mapPreview();
-                    context.contentType(ContentType.IMAGE_PNG).result(mapPreview);
-                    future.complete(null);
-                });
-
-                return future;
-            });
+            var mapPreview = Utils.appPostWithTimeout(this::mapPreview);
+            context.contentType(ContentType.IMAGE_PNG).result(mapPreview);
         });
 
         app.get("ok", (context) -> {
@@ -197,14 +178,12 @@ public class HttpServer {
         });
 
         app.get("players", context -> {
-            context.future(() -> {
-                var future = new CompletableFuture<>();
 
-                Core.app.post(() -> {
-                    var players = new ArrayList<Player>();
-                    Groups.player.forEach(players::add);
+            var players = new ArrayList<Player>();
+            Groups.player.forEach(players::add);
 
-                    var result = (players.stream()//
+            var result = Utils
+                    .appPostWithTimeout(() -> (players.stream()//
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
                                     .setUuid(player.uuid())//
@@ -217,12 +196,9 @@ public class HttpServer {
                                     .setTeam(new TeamDto()//
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))
-                            .collect(Collectors.toList()));
-                    context.json(result);
-                    future.complete(null);
-                });
-                return future;
-            });
+                            .collect(Collectors.toList())));
+
+            context.json(result);
         });
 
         app.get("player-infos", context -> {
@@ -249,60 +225,50 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            context.future(() -> {
-                var future = new CompletableFuture<>();
+            var result = Utils.appPostWithTimeout(() -> {
+                Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
 
-                Core.app.post(() -> {
-
-                    Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
-
-                    var result = bans.list()//
-                            .stream()//
-                            .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
-                            .skip(offset)//
-                            .limit(size)//
-                            .map(ban -> new PlayerInfoDto()
-                                    .setId(ban.id)
-                                    .setLastName(ban.lastName)
-                                    .setLastIP(ban.lastIP)
-                                    .setIps(ban.ips.list())
-                                    .setNames(ban.names.list())
-                                    .setAdminUsid(ban.adminUsid)
-                                    .setTimesKicked(ban.timesKicked)
-                                    .setTimesJoined(ban.timesJoined)
-                                    .setBanned(ban.banned)
-                                    .setAdmin(ban.admin)
-                                    .setLastKicked(ban.lastKicked))
-                            .toList();
-
-                    context.json(result);
-                    future.complete(null);
-                });
-                return future;
+                return bans.list()//
+                        .stream()//
+                        .filter(info -> conditions.stream().allMatch(condition -> condition.test(info)))//
+                        .skip(offset)//
+                        .limit(size)//
+                        .map(ban -> new PlayerInfoDto()
+                                .setId(ban.id)
+                                .setLastName(ban.lastName)
+                                .setLastIP(ban.lastIP)
+                                .setIps(ban.ips.list())
+                                .setNames(ban.names.list())
+                                .setAdminUsid(ban.adminUsid)
+                                .setTimesKicked(ban.timesKicked)
+                                .setTimesJoined(ban.timesJoined)
+                                .setBanned(ban.banned)
+                                .setAdmin(ban.admin)
+                                .setLastKicked(ban.lastKicked))
+                        .toList();
             });
+
+            context.json(result);
         });
 
         app.get("kicks", context -> {
-            context.future(() -> {
-                var future = new CompletableFuture<>();
 
-                Core.app.post(() -> {
-                    var result = new HashMap<>();
-                    for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
-                        if (entry.value != 0 && Time.millis() - entry.value < 0) {
-                            result.put(entry.key, entry.value);
-                        }
+            var result = Utils.appPostWithTimeout(() -> {
+                var res = new HashMap<>();
+                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+                    if (entry.value != 0 && Time.millis() - entry.value < 0) {
+                        res.put(entry.key, entry.value);
                     }
-
-                    context.json(result);
-                    future.complete(null);
-                });
-
-                return future;
+                }
+                return res;
             });
+
+            context.json(result);
         });
 
-        app.get("commands", context -> {
+        app.get("commands", context ->
+
+        {
             var commands = controller.serverCommandHandler.getHandler() == null
                     ? List.of()
                     : controller.serverCommandHandler.getHandler()//
@@ -423,82 +389,77 @@ public class HttpServer {
         });
 
         app.get("json", context -> {
-            context.future(() -> {
-                var future = new CompletableFuture<>();
+            var res = Utils.appPostWithTimeout(() -> {
 
-                Core.app.post(() -> {
+                var data = new HashMap<String, Object>();
 
-                    var data = new HashMap<String, Object>();
+                data.put("stats", getStats());
+                data.put("session", controller.sessionHandler.get());
+                data.put("hud", HudUtils.menus.asMap());
+                data.put("buildLogs", controller.apiGateway.buildLogs);
+                data.put("isHub", Config.IS_HUB);
+                data.put("ip", Config.SERVER_IP);
+                data.put("units", Groups.unit.size());
+                data.put("enemies", Vars.state.enemies);
+                data.put("tps", Core.graphics.getFramesPerSecond());
 
-                    data.put("stats", getStats());
-                    data.put("session", controller.sessionHandler.get());
-                    data.put("hud", HudUtils.menus.asMap());
-                    data.put("buildLogs", controller.apiGateway.buildLogs);
-                    data.put("isHub", Config.IS_HUB);
-                    data.put("ip", Config.SERVER_IP);
-                    data.put("units", Groups.unit.size());
-                    data.put("enemies", Vars.state.enemies);
-                    data.put("tps", Core.graphics.getFramesPerSecond());
+                var gameStats = new HashMap<String, Object>();
 
-                    var gameStats = new HashMap<String, Object>();
+                gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
+                gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
+                gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
+                gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
+                gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
+                gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
+                gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
+                gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
-                    gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
-                    gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
-                    gameStats.put("buildingsDestroyed", Vars.state.stats.buildingsDestroyed);
-                    gameStats.put("coreItemCount", Vars.state.stats.coreItemCount);
-                    gameStats.put("enemyUnitsDestroyed", Vars.state.stats.enemyUnitsDestroyed);
-                    gameStats.put("placedBlockCount", Vars.state.stats.placedBlockCount);
-                    gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
-                    gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
+                data.put("executors", java.util.Map.of(
+                        "backgroundExecutor", Config.BACKGROUND_TASK_EXECUTOR.toString(), //
+                        "backgroundScheduler", Config.BACKGROUND_SCHEDULER.toString()//
+                ));
 
-                    data.put("executors", java.util.Map.of(
-                            "backgroundExecutor", Config.BACKGROUND_TASK_EXECUTOR.toString(), //
-                            "backgroundScheduler", Config.BACKGROUND_SCHEDULER.toString()//
-                    ));
+                data.put("gameStats", gameStats);
+                data.put("locales", Vars.locales);
+                data.put("threads",
+                        Thread.getAllStackTraces().keySet().stream()
+                                .sorted((a, b) -> a.getName().compareTo(b.getName()))
+                                .map(thread -> java.util.Map.of(
+                                        "id", thread.getId(),
+                                        "name", thread.getName(),
+                                        "state", thread.getState().name()))
+                                .toList());
 
-                    data.put("gameStats", gameStats);
-                    data.put("locales", Vars.locales);
-                    data.put("threads",
-                            Thread.getAllStackTraces().keySet().stream()
-                                    .sorted((a, b) -> a.getName().compareTo(b.getName()))
-                                    .map(thread -> java.util.Map.of(
-                                            "id", thread.getId(),
-                                            "name", thread.getName(),
-                                            "state", thread.getState().name()))
-                                    .toList());
+                var maps = new ArrayList<HashMap<String, String>>();
+                Vars.maps.all().forEach(map -> {
+                    var tags = new HashMap<String, String>();
+                    map.tags.each((key, value) -> tags.put(key, value));
+                    maps.add(tags);
+                });
+                data.put("maps",
+                        Vars.maps.all().map(map -> java.util.Map.of(
+                                "name", map.name(), //
+                                "author", map.author(), //
+                                "file", map.file.absolutePath(),
+                                "tags", map.tags,
+                                "description", map.description(),
+                                "width", map.width,
+                                "height", map.height)).list());
+                data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
+                data.put("votes", controller.voteHandler.votes);
 
-                    var maps = new ArrayList<HashMap<String, String>>();
-                    Vars.maps.all().forEach(map -> {
-                        var tags = new HashMap<String, String>();
-                        map.tags.each((key, value) -> tags.put(key, value));
-                        maps.add(tags);
-                    });
-                    data.put("maps",
-                            Vars.maps.all().map(map -> java.util.Map.of(
-                                    "name", map.name(), //
-                                    "author", map.author(), //
-                                    "file", map.file.absolutePath(),
-                                    "tags", map.tags,
-                                    "description", map.description(),
-                                    "width", map.width,
-                                    "height", map.height)).list());
-                    data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-                    data.put("votes", controller.voteHandler.votes);
+                var settings = new HashMap<String, Object>();
 
-                    var settings = new HashMap<String, Object>();
-
-                    Core.settings.keys().forEach(key -> {
-                        settings.put(key, Core.settings.get(key, null));
-                    });
-
-                    data.put("settings", settings);
-
-                    context.json(data);
-                    future.complete(null);
+                Core.settings.keys().forEach(key -> {
+                    settings.put(key, Core.settings.get(key, null));
                 });
 
-                return future;
+                data.put("settings", settings);
+
+                return data;
             });
+
+            context.json(res);
         });
 
         app.sse("workflow/events", client -> {
@@ -623,5 +584,16 @@ public class HttpServer {
     public void unload() {
         app.stop();
         Log.info("Stop http server");
+
+        try {
+            var field = org.eclipse.jetty.http.DateGenerator.class.getDeclaredField("__dateGenerator");
+            field.setAccessible(true);
+            field.set(null, null);
+
+        } catch (Throwable throwable) {
+            Log.err(throwable);
+        }
+
+        app = null;
     }
 }

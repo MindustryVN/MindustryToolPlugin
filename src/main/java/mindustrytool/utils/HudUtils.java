@@ -29,6 +29,11 @@ public class HudUtils {
             .maximumSize(100)
             .build();
 
+    public static void unload() {
+        menus.invalidateAll();
+        menus = null;
+    }
+
     public static void onPlayerLeave(PlayerLeave event) {
         var menu = menus.getIfPresent(event.player.uuid());
         if (menu != null) {

@@ -42,7 +42,7 @@ public class ApiGateway {
         Log.info("Api gateway handler created: " + this);
     }
 
-    private final HttpClient httpClient = HttpClient.newBuilder()//
+    private HttpClient httpClient = HttpClient.newBuilder()//
             .connectTimeout(Duration.ofSeconds(2))//
             .executor(Config.BACKGROUND_TASK_EXECUTOR)
             .build();
@@ -78,6 +78,12 @@ public class ApiGateway {
 
         Log.info("Setup api gateway done");
 
+    }
+
+    public void unload() {
+        serverQueryCache.invalidateAll();
+        httpClient = null;
+        serverQueryCache = null;
     }
 
     private Builder setHeaders(Builder builder) {

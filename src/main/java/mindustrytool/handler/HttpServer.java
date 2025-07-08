@@ -74,8 +74,8 @@ public class HttpServer {
             }));
 
             int maxThreads = 20;
-            int minThreads = 1;
-            int idleTimeoutMillis = 20_000;
+            int minThreads = 0;
+            int idleTimeoutMillis = 5_000;
             // to finish
             config.http.asyncTimeout = 5_000;
             config.useVirtualThreads = true;

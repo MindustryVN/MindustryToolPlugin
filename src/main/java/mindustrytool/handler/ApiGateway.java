@@ -47,7 +47,7 @@ public class ApiGateway {
             .executor(Config.BACKGROUND_TASK_EXECUTOR)
             .build();
 
-    public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(1000);
+    public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(100);
 
     public void init() {
         Log.info("Setup api gateway");
@@ -74,7 +74,7 @@ public class ApiGateway {
 
             }
 
-        }, 0, 10, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.SECONDS);
 
         Log.info("Setup api gateway done");
 
@@ -156,7 +156,6 @@ public class ApiGateway {
 
     public void sendBuildLog(BuildLogDto buildLog) {
         if (!buildLogs.offer(buildLog)) {
-            buildLogs.clear();
             Log.warn("Build log queue is full. Dropping log.");
         }
     }

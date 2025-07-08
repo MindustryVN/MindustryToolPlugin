@@ -4,9 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -374,19 +372,19 @@ public class EventHandler {
         // }
     }
 
-    private void writeString(ByteBuffer buffer, String string) {
-        writeString(buffer, string, 32);
-    }
+    // private void writeString(ByteBuffer buffer, String string) {
+    //     writeString(buffer, string, 32);
+    // }
 
-    private void writeString(ByteBuffer buffer, String string, int maxlen) {
-        byte[] bytes = string.getBytes(Vars.charset);
-        if (bytes.length > maxlen) {
-            bytes = Arrays.copyOfRange(bytes, 0, maxlen);
-        }
+    // private void writeString(ByteBuffer buffer, String string, int maxlen) {
+    //     byte[] bytes = string.getBytes(Vars.charset);
+    //     if (bytes.length > maxlen) {
+    //         bytes = Arrays.copyOfRange(bytes, 0, maxlen);
+    //     }
 
-        buffer.put((byte) bytes.length);
-        buffer.put(bytes);
-    }
+    //     buffer.put((byte) bytes.length);
+    //     buffer.put(bytes);
+    // }
 
     public void onServerLoad(ServerLoadEvent event) {
         Config.isLoaded = true;

@@ -206,9 +206,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             @SuppressWarnings("removal")
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "background-pool-" +
-                    poolNumber.getAndIncrement() +
-                    "-thread-";
+            namePrefix = "background-pool-" + poolNumber.getAndIncrement() + "-thread-";
         }
 
         public Thread newThread(Runnable r) {

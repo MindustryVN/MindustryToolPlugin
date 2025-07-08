@@ -582,17 +582,8 @@ public class HttpServer {
 
     public void unload() {
         app.stop();
-        Log.info("Stop http server");
-
-        try {
-            var field = org.eclipse.jetty.http.DateGenerator.class.getDeclaredField("__dateGenerator");
-            field.setAccessible(true);
-            field.set(null, null);
-
-        } catch (Throwable throwable) {
-            Log.err(throwable);
-        }
-
         app = null;
+
+        Log.info("Stop http server");
     }
 }

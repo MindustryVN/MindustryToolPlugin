@@ -1,5 +1,6 @@
 package mindustrytool.handler;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,11 +27,11 @@ import mindustrytool.type.TeamDto;
 
 public class ClientCommandHandler {
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
     private final List<String> registeredCommands = new ArrayList<>();
 
-    public ClientCommandHandler(ServerController controller) {
-        this.controller = controller;
+    public ClientCommandHandler(WeakReference<ServerController> context) {
+        this.context = context;
         Log.info("Client command handler created: " + this);
     }
 
@@ -68,31 +69,31 @@ public class ClientCommandHandler {
                 return;
             }
 
-            Seq<Map> maps = controller.voteHandler.getMaps();
+            Seq<Map> maps = context.get().voteHandler.getMaps();
 
             if (mapId < 0 || mapId > (maps.size - 1)) {
                 player.sendMessage("[red]Invalid map id");
                 return;
             }
-            if (controller.voteHandler.isVoted(player, mapId)) {
+            if (context.get().voteHandler.isVoted(player, mapId)) {
                 Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
                         + maps.get(mapId).name());
-                controller.voteHandler.removeVote(player, mapId);
+                context.get().voteHandler.removeVote(player, mapId);
                 return;
             }
-            controller.voteHandler.vote(player, mapId);
+            context.get().voteHandler.vote(player, mapId);
             Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
                     + maps.get(mapId).name());
             Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
-                    + controller.voteHandler.getVoteCount(mapId) + "/"
-                    + controller.voteHandler.getRequire());
+                    + context.get().voteHandler.getVoteCount(mapId) + "/"
+                    + context.get().voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
-            controller.voteHandler.check(mapId);
+            context.get().voteHandler.check(mapId);
         });
 
         register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
-            Seq<Map> maps = controller.voteHandler.getMaps();
+            Seq<Map> maps = context.get().voteHandler.getMaps();
             int page = 1;
             int maxPage = maps.size / MAPS_PER_PAGE + (maps.size % MAPS_PER_PAGE == 0 ? 0 : 1);
             if (args.length == 0) {
@@ -124,11 +125,11 @@ public class ClientCommandHandler {
         });
 
         register("servers", "", "Display available servers", (args, player) -> {
-            controller.eventHandler.sendServerList(player, 0);
+            context.get().eventHandler.sendServerList(player, 0);
         });
 
         register("hub", "", "Display available servers", (args, player) -> {
-            controller.eventHandler.sendHub(player, null);
+            context.get().eventHandler.sendHub(player, null);
         });
 
         register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
@@ -151,7 +152,7 @@ public class ClientCommandHandler {
                                 .setName(team.name)//
                                 .setColor(team.color.toString()));
 
-                MindustryPlayerDto playerData = controller.apiGateway.setPlayer(request);
+                MindustryPlayerDto playerData = context.get().apiGateway.setPlayer(request);
 
                 var loginLink = playerData.getLoginLink();
 
@@ -166,7 +167,7 @@ public class ClientCommandHandler {
         });
 
         register("vnw", "[number]", "Vote for sending a New Wave", (arg, player) -> {
-            var session = controller.sessionHandler.get(player);
+            var session = context.get().sessionHandler.get(player);
 
             if (Groups.player.size() < 3 && !player.admin) {
                 player.sendMessage("[scarlet]3 players are required or be an admin to start a vote.");
@@ -197,13 +198,13 @@ public class ClientCommandHandler {
             }
 
             session.votedVNW = true;
-            int cur = controller.sessionHandler.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
+            int cur = context.get().sessionHandler.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
             Call.sendMessage(player.name + "[orange] has voted to "
                     + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray]("
                     + (req - cur) + " votes missing)");
 
             if (!isPreparingForNewWave)
-            controller.BACKGROUND_SCHEDULER.schedule(() -> {
+                context.get().BACKGROUND_SCHEDULER.schedule(() -> {
                     Call.sendMessage("[scarlet]Vote for "
                             + (waveVoted == 1 ? "sending a new wave"
                                     : "skipping [scarlet]" + waveVoted + "[] waves")
@@ -255,12 +256,12 @@ public class ClientCommandHandler {
     }
 
     public void onServerChoose(Player player, String id, String name) {
-        controller.hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
+        context.get().hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
         player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
         try {
-            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
-                var data = controller.apiGateway.host(id);
+            context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                var data = context.get().apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));
@@ -292,14 +293,14 @@ public class ClientCommandHandler {
     }
 
     public void sendRedirectServerList(Player player, int page) {
-        controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+        context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 var size = 8;
                 var request = new PaginationRequest()//
                         .setPage(page)//
                         .setSize(size);
 
-                var response = controller.apiGateway.getServers(request);
+                var response = context.get().apiGateway.getServers(request);
                 var servers = response.getServers();
 
                 PlayerPressCallback invalid = (p, s) -> {
@@ -342,21 +343,21 @@ public class ClientCommandHandler {
                         page > 0//
                                 ? HudHandler.option((p, state) -> {
                                     sendRedirectServerList(player, (int) state - 1);
-                                    controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
+                                    context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
                                 }, "[yellow]Previous")
                                 : HudHandler.option(invalid, "First page"), //
                         servers.size() == size//
                                 ? HudHandler.option((p, state) -> {
                                     sendRedirectServerList(player, (int) state + 1);
-                                    controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
+                                    context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
                                 }, "[green]Next")
                                 : HudHandler.option(invalid, "No more")));
 
                 options.add(List.of(HudHandler.option(
-                        (p, state) -> controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
+                        (p, state) -> context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
                         "[red]Close")));
 
-                controller.hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "Servers", "",
+                context.get().hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "Servers", "",
                         Integer.valueOf(page), options);
             } catch (Exception e) {
                 Log.err(e);

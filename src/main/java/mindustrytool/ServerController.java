@@ -1,5 +1,6 @@
 package mindustrytool;
 
+import java.lang.ref.WeakReference;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,6 +47,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public Workflow workflow;
     public HudHandler hudHandler;
 
+    public WeakReference<ServerController> context = new WeakReference<>(this);
+
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
 
@@ -60,15 +63,15 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             .newSingleThreadScheduledExecutor();
 
     public ServerController() {
-        apiGateway = new ApiGateway(this);
+        apiGateway = new ApiGateway(context);
         voteHandler = new RtvVoteHandler();
-        eventHandler = new EventHandler(this);
-        clientCommandHandler = new ClientCommandHandler(this);
-        serverCommandHandler = new ServerCommandHandler(this);
+        eventHandler = new EventHandler(context);
+        clientCommandHandler = new ClientCommandHandler(context);
+        serverCommandHandler = new ServerCommandHandler(context);
         sessionHandler = new SessionHandler();
-        httpServer = new HttpServer(this);
-        workflow = new Workflow(this);
-        hudHandler = new HudHandler(this);
+        httpServer = new HttpServer(context);
+        workflow = new Workflow(context);
+        hudHandler = new HudHandler(context);
 
         Log.info("Server controller created: " + this);
     }

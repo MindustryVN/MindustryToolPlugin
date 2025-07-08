@@ -1,5 +1,6 @@
 package mindustrytool.handler;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,11 +20,11 @@ import mindustrytool.type.PrevCommand;
 
 public class ServerCommandHandler {
 
-    final ServerController controller;
+    final WeakReference<ServerController> context;
     private final List<String> registeredCommands = new ArrayList<>();
 
-    public ServerCommandHandler(ServerController controller) {
-        this.controller = controller;
+    public ServerCommandHandler(WeakReference<ServerController> context) {
+        this.context = context;
         Log.info("Server command handler created: " + this);
     }
 

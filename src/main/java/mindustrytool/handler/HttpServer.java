@@ -1,5 +1,6 @@
 package mindustrytool.handler;
 
+import java.lang.ref.WeakReference;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,10 +57,10 @@ public class HttpServer {
 
     private Javalin app;
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
 
-    public HttpServer(ServerController controller) {
-        this.controller = controller;
+    public HttpServer(WeakReference<ServerController> context) {
+        this.context = context;
 
         app = Javalin.create(config -> {
             config.showJavalinBanner = false;
@@ -80,13 +81,13 @@ public class HttpServer {
             config.useVirtualThreads = true;
 
             config.jetty.threadPool = new ExecutorThreadPool(maxThreads, minThreads);
-            config.jetty.modifyServer(server ->  server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
+            config.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
 
             config.registerPlugin(new RouteOverviewPlugin());
 
-            config.requestLogger.http((context, ms) -> {
-                if (!context.fullUrl().contains("stats")) {
-                    Log.debug("[" + context.method().name() + "] " + Math.round(ms) + "ms " + context.fullUrl());
+            config.requestLogger.http((ctx, ms) -> {
+                if (!ctx.fullUrl().contains("stats")) {
+                    Log.debug("[" + ctx.method().name() + "] " + Math.round(ms) + "ms " + ctx.fullUrl());
                 }
             });
         });
@@ -97,56 +98,56 @@ public class HttpServer {
     public void init() {
         Log.info("Setup http server");
 
-        app.get("stats", context -> {
+        app.get("stats", ctx -> {
             var stats = Utils.appPostWithTimeout(this::getStats);
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(stats);
+            ctx.contentType(ContentType.APPLICATION_JSON);
+            ctx.json(stats);
         });
 
-        app.get("image", context -> {
+        app.get("image", ctx -> {
             var mapPreview = Utils.appPostWithTimeout(this::mapPreview);
-            context.contentType(ContentType.IMAGE_PNG).result(mapPreview);
+            ctx.contentType(ContentType.IMAGE_PNG).result(mapPreview);
         });
 
-        app.get("ok", (context) -> {
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json("Ok");
+        app.get("ok", (ctx) -> {
+            ctx.contentType(ContentType.APPLICATION_JSON);
+            ctx.json("Ok");
         });
 
-        app.get("plugin-version", context -> {
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(Config.PLUGIN_VERSION);
+        app.get("plugin-version", ctx -> {
+            ctx.contentType(ContentType.APPLICATION_JSON);
+            ctx.json(Config.PLUGIN_VERSION);
         });
 
-        app.get("hosting", (context) -> {
-            context.contentType(ContentType.APPLICATION_JSON);
-            context.json(Vars.state.isGame());
+        app.get("hosting", (ctx) -> {
+            ctx.contentType(ContentType.APPLICATION_JSON);
+            ctx.json(Vars.state.isGame());
         });
 
-        app.post("discord", context -> {
-            String message = context.body();
+        app.post("discord", ctx -> {
+            String message = ctx.body();
 
             Call.sendMessage(message);
-            context.result();
+            ctx.result();
         });
 
-        app.post("pause", context -> {
+        app.post("pause", ctx -> {
             if (Vars.state.isPaused()) {
                 Vars.state.set(State.playing);
             } else if (Vars.state.isPlaying()) {
                 Vars.state.set(State.paused);
             }
-            context.json(Vars.state.isPaused());
+            ctx.json(Vars.state.isPaused());
         });
 
-        app.post("host", context -> {
-            StartServerDto request = context.bodyAsClass(StartServerDto.class);
+        app.post("host", ctx -> {
+            StartServerDto request = ctx.bodyAsClass(StartServerDto.class);
             host(request);
-            context.result();
+            ctx.result();
         });
 
-        app.post("set-player", context -> {
-            MindustryPlayerDto request = context.bodyAsClass(MindustryPlayerDto.class);
+        app.post("set-player", ctx -> {
+            MindustryPlayerDto request = ctx.bodyAsClass(MindustryPlayerDto.class);
 
             String uuid = request.getUuid();
             boolean isAdmin = request.isAdmin();
@@ -168,14 +169,14 @@ public class HttpServer {
             }
 
             if (player != null) {
-                controller.hudHandler.closeFollowDisplay(player, HudHandler.LOGIN_UI);
-                controller.eventHandler.setPlayerData(request, player);
+                context.get().hudHandler.closeFollowDisplay(player, HudHandler.LOGIN_UI);
+                context.get().eventHandler.setPlayerData(request, player);
             }
-            context.result();
+            ctx.result();
 
         });
 
-        app.get("players", context -> {
+        app.get("players", ctx -> {
 
             var players = new ArrayList<Player>();
             Groups.player.forEach(players::add);
@@ -188,22 +189,22 @@ public class HttpServer {
                                     .setIp(player.ip())
                                     .setLocale(player.locale())//
                                     .setAdmin(player.admin)//
-                                    .setJoinedAt(controller.sessionHandler.contains(player) //
-                                            ? controller.sessionHandler.get(player).joinedAt
+                                    .setJoinedAt(context.get().sessionHandler.contains(player) //
+                                            ? context.get().sessionHandler.get(player).joinedAt
                                             : Instant.now().toEpochMilli())
                                     .setTeam(new TeamDto()//
                                             .setColor(player.team().color.toString())//
                                             .setName(player.team().name)))
                             .collect(Collectors.toList())));
 
-            context.json(result);
+            ctx.json(result);
         });
 
-        app.get("player-infos", context -> {
-            var pageString = context.queryParam("page");
-            var sizeString = context.queryParam("size");
-            var isBannedString = context.queryParam("banned");
-            var filter = context.queryParam("filter");
+        app.get("player-infos", ctx -> {
+            var pageString = ctx.queryParam("page");
+            var sizeString = ctx.queryParam("size");
+            var isBannedString = ctx.queryParam("banned");
+            var filter = ctx.queryParam("filter");
 
             int page = pageString != null ? Integer.parseInt(pageString) : 0;
             int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
@@ -246,10 +247,10 @@ public class HttpServer {
                         .toList();
             });
 
-            context.json(result);
+            ctx.json(result);
         });
 
-        app.get("kicks", context -> {
+        app.get("kicks", ctx -> {
 
             var result = Utils.appPostWithTimeout(() -> {
                 var res = new HashMap<>();
@@ -261,15 +262,15 @@ public class HttpServer {
                 return res;
             });
 
-            context.json(result);
+            ctx.json(result);
         });
 
-        app.get("commands", context ->
+        app.get("commands", ctx ->
 
         {
-            var commands = controller.serverCommandHandler.getHandler() == null
+            var commands = context.get().serverCommandHandler.getHandler() == null
                     ? List.of()
-                    : controller.serverCommandHandler.getHandler()//
+                    : context.get().serverCommandHandler.getHandler()//
                             .getCommandList()
                             .map(command -> new ServerCommandDto()
                                     .setText(command.text)
@@ -283,24 +284,24 @@ public class HttpServer {
                                             .list()))
                             .list();
 
-            context.json(commands);
+            ctx.json(commands);
 
         });
 
-        app.post("commands", context -> {
-            String[] commands = context.bodyAsClass(String[].class);
+        app.post("commands", ctx -> {
+            String[] commands = ctx.bodyAsClass(String[].class);
 
             if (commands != null) {
                 for (var command : commands) {
                     Log.info("Execute command: " + command);
 
-                    controller.serverCommandHandler.execute(command, response -> {
+                    context.get().serverCommandHandler.execute(command, response -> {
                         if (response.type == ResponseType.unknownCommand) {
 
                             int minDst = 0;
                             Command closest = null;
 
-                            for (Command cmd : controller.serverCommandHandler.getHandler().getCommandList()) {
+                            for (Command cmd : context.get().serverCommandHandler.getHandler().getCommandList()) {
                                 int dst = Strings.levenshtein(cmd.text, response.runCommand);
 
                                 if (dst < 3 && (closest == null || dst < minDst)) {
@@ -324,77 +325,77 @@ public class HttpServer {
                     });
                 }
             }
-            context.result();
+            ctx.result();
         });
 
-        app.post("say", context -> {
+        app.post("say", ctx -> {
             if (!Vars.state.isGame()) {
                 Log.err("Not hosting. Host a game first.");
                 return;
             }
 
-            String message = context.body();
+            String message = ctx.body();
             Call.sendMessage("[]" + message);
 
-            context.result();
+            ctx.result();
         });
 
-        app.get("workflow/nodes", context -> {
-            context.json(controller.workflow.getNodeTypes());
+        app.get("workflow/nodes", ctx -> {
+            ctx.json(context.get().workflow.getNodeTypes());
         });
 
-        app.get("workflow/nodes/{id}/autocomplete", context -> {
-            var id = context.pathParam("id");
-            var input = context.queryParam("input");
-            var node = controller.workflow.getNodes().get(id);
+        app.get("workflow/nodes/{id}/autocomplete", ctx -> {
+            var id = ctx.pathParam("id");
+            var input = ctx.queryParam("input");
+            var node = context.get().workflow.getNodes().get(id);
 
             if (node == null) {
-                context.status(404);
-                context.result();
+                ctx.status(404);
+                ctx.result();
                 return;
             }
 
-            context.json(node.autocomplete(input.trim()));
+            ctx.json(node.autocomplete(input.trim()));
         });
 
-        app.get("workflow/version", context -> {
-            var data = controller.workflow.readWorkflowData();
+        app.get("workflow/version", ctx -> {
+            var data = context.get().workflow.readWorkflowData();
             if (data == null || data.get("createdAt") == null) {
-                context.json(0L);
+                ctx.json(0L);
             } else {
-                context.json(data.get("createdAt").asLong());
+                ctx.json(data.get("createdAt").asLong());
             }
         });
 
-        app.get("workflow", context -> {
-            context.json(controller.workflow.readWorkflowData());
+        app.get("workflow", ctx -> {
+            ctx.json(context.get().workflow.readWorkflowData());
         });
 
-        app.post("workflow", context -> {
-            var payload = context.bodyAsClass(JsonNode.class);
-            controller.workflow.writeWorkflowData(payload);
+        app.post("workflow", ctx -> {
+            var payload = ctx.bodyAsClass(JsonNode.class);
+            context.get().workflow.writeWorkflowData(payload);
         });
 
-        app.post("workflow/load", context -> {
-            var payload = context.bodyAsClass(WorkflowContext.class);
+        app.post("workflow/load", ctx -> {
+            var payload = ctx.bodyAsClass(WorkflowContext.class);
             try {
-                controller.workflow.load(payload);
-                context.json(controller.workflow.getContext());
+                context.get().workflow.load(payload);
+                ctx.json(context.get().workflow.getWorkflowContext());
             } catch (WorkflowError e) {
                 Log.err("Failed to load workflow", e);
-                context.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
+                ctx.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
             }
         });
 
-        app.get("json", context -> {
+        app.get("json", ctx -> {
             var res = Utils.appPostWithTimeout(() -> {
 
                 var data = new HashMap<String, Object>();
 
                 data.put("stats", getStats());
-                data.put("session", controller.sessionHandler.get());
-                data.put("hud", controller.hudHandler.menus.asMap());
-                data.put("buildLogs", controller.apiGateway.buildLogs);
+                data.put("session", context.get().sessionHandler.get());
+                data.put("hud", context.get().hudHandler.menus.asMap());
+                data.put("buildLogs", context.get().apiGateway.buildLogs);
                 data.put("isHub", Config.IS_HUB);
                 data.put("ip", Config.SERVER_IP);
                 data.put("units", Groups.unit.size());
@@ -413,8 +414,8 @@ public class HttpServer {
                 gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
                 data.put("executors", java.util.Map.of(
-                        "backgroundExecutor", controller.BACKGROUND_TASK_EXECUTOR.toString(), //
-                        "backgroundScheduler", controller.BACKGROUND_SCHEDULER.toString()//
+                        "backgroundExecutor", context.get().BACKGROUND_TASK_EXECUTOR.toString(), //
+                        "backgroundScheduler", context.get().BACKGROUND_SCHEDULER.toString()//
                 ));
 
                 data.put("gameStats", gameStats);
@@ -444,7 +445,7 @@ public class HttpServer {
                                 "width", map.width,
                                 "height", map.height)).list());
                 data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
-                data.put("votes", controller.voteHandler.votes);
+                data.put("votes", context.get().voteHandler.votes);
 
                 var settings = new HashMap<String, Object>();
 
@@ -457,7 +458,7 @@ public class HttpServer {
                 return data;
             });
 
-            context.json(res);
+            ctx.json(res);
         });
 
         app.sse("workflow/events", client -> {
@@ -465,22 +466,22 @@ public class HttpServer {
             client.sendComment("connected");
 
             client.onClose(() -> {
-                controller.workflow.getWorkflowEventConsumers().remove(client);
+                context.get().workflow.getWorkflowEventConsumers().remove(client);
             });
 
-            controller.workflow.getWorkflowEventConsumers().add(client);
+            context.get().workflow.getWorkflowEventConsumers().add(client);
         });
 
-        app.exception(Exception.class, (exception, context) -> {
+        app.exception(Exception.class, (exception, ctx) -> {
             Log.err("Unhandled api exception", exception);
 
             try {
                 var result = java.util.Map.of("message",
                         exception.getMessage() == null ? "Unknown error" : exception.getMessage());
-                context.status(500).json(result);
+                ctx.status(500).json(result);
             } catch (Exception e) {
                 Log.err("Failed to create error response", e);
-                context.status(500).json("Failed to create error response");
+                ctx.status(500).json("Failed to create error response");
             }
         });
 
@@ -504,7 +505,7 @@ public class HttpServer {
             String[] commandsArray = commands.split("\n");
             for (var command : commandsArray) {
                 Log.info("Host command: " + command);
-                controller.serverCommandHandler.execute(command, (_ignore) -> {
+                context.get().serverCommandHandler.execute(command, (_ignore) -> {
                 });
             }
             return;

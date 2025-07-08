@@ -10,6 +10,7 @@ import mindustrytool.type.PlayerPressCallback;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,10 +25,10 @@ public class HudHandler {
     public static final int LOGIN_UI = 3;
     public static final int SERVER_REDIRECT = 4;
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
 
-    public HudHandler(ServerController controller) {
-        this.controller = controller;
+    public HudHandler(WeakReference<ServerController> context) {
+        this.context = context;
     }
 
     public Cache<String, LinkedList<MenuData>> menus = Caffeine.newBuilder()
@@ -108,7 +109,7 @@ public class HudHandler {
             return;
         }
 
-        controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+        context.get().BACKGROUND_TASK_EXECUTOR.execute(() -> {
             callback.accept(event.player, data.getState());
         });
     }

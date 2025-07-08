@@ -1,6 +1,7 @@
 package mindustrytool.handler;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -28,7 +29,7 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
     private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
     private HttpClient httpClient;
 
@@ -37,11 +38,11 @@ public class ApiGateway {
             .maximumSize(10)
             .build();
 
-    public ApiGateway(ServerController controller) {
-        this.controller = controller;
+    public ApiGateway(WeakReference<ServerController> context) {
+        this.context = context;
         httpClient = HttpClient.newBuilder()//
                 .connectTimeout(Duration.ofSeconds(2))//
-                .executor(controller.BACKGROUND_TASK_EXECUTOR)
+                .executor(context.get().BACKGROUND_TASK_EXECUTOR)
                 .build();
 
         Log.info("Api gateway handler created: " + this);
@@ -52,7 +53,7 @@ public class ApiGateway {
     public void init() {
         Log.info("Setup api gateway");
 
-        controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+        context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
 
                 Log.debug("Sending build logs: " + buildLogs.size());

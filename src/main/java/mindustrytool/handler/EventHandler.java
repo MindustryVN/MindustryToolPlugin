@@ -3,6 +3,7 @@ package mindustrytool.handler;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,10 +49,10 @@ import java.time.Duration;
 
 public class EventHandler {
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
 
-    public EventHandler(ServerController controller) {
-        this.controller = controller;
+    public EventHandler(WeakReference<ServerController> context) {
+        this.context = context;
         Log.info("Event handler created: " + this);
     }
 
@@ -85,11 +86,11 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
 
-            updateServerTask = controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+            updateServerTask = context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
-                    var response = controller.apiGateway.getServers(request);
+                    var response = context.get().apiGateway.getServers(request);
                     servers = response.getServers();
 
                 } catch (Throwable e) {
@@ -97,7 +98,7 @@ public class EventHandler {
                 }
             }, 0, 30, TimeUnit.SECONDS);
 
-            updateServerCore = controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+            updateServerCore = context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var map = Vars.state.map;
 
@@ -264,7 +265,7 @@ public class EventHandler {
                             .setName(building.block != null ? building.block.name : "Unknown"))
                     .setMessage(event.breaking ? "Breaking" : "Building");
 
-            controller.apiGateway.sendBuildLog(buildLog);
+            context.get().apiGateway.sendBuildLog(buildLog);
         } catch (Throwable e) {
             Log.err(e);
         }
@@ -403,9 +404,9 @@ public class EventHandler {
                 return;
             }
 
-            controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            context.get().BACKGROUND_TASK_EXECUTOR.execute(() -> {
                 try {
-                    controller.apiGateway.sendChatMessage(chat);
+                    context.get().apiGateway.sendChatMessage(chat);
                 } catch (Throwable e) {
                     Log.err(e);
                 }
@@ -416,10 +417,10 @@ public class EventHandler {
             Groups.player.forEach(p -> groupByLocale.getOrDefault(p.locale(), new ArrayList<>()).add(p));
 
             groupByLocale.forEach((locale, ps) -> {
-                controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                context.get().BACKGROUND_TASK_EXECUTOR.execute(() -> {
                     try {
                         String translatedMessage = translationCache.get(locale + message,
-                                _ignore -> controller.apiGateway.translate(message, locale));
+                                _ignore -> context.get().apiGateway.translate(message, locale));
 
                         for (var p : ps) {
                             if (p.id == player.id) {
@@ -427,7 +428,7 @@ public class EventHandler {
                             }
 
                             p.sendMessage("[white][Translation] " + player.name() + "[]: " + translatedMessage);
-                            controller.apiGateway.sendChatMessage(
+                            context.get().apiGateway.sendChatMessage(
                                     "[white][Translation] " + player.name() + "[]: " + translatedMessage);
 
                         }
@@ -454,7 +455,7 @@ public class EventHandler {
                             .setName(team.name)//
                             .setColor(team.color.toString()));
 
-            controller.apiGateway.sendPlayerLeave(request);
+            context.get().apiGateway.sendPlayerLeave(request);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -463,15 +464,15 @@ public class EventHandler {
 
             Player player = event.player;
 
-            controller.sessionHandler.remove(player);
+            context.get().sessionHandler.remove(player);
 
-            controller.voteHandler.removeVote(player);
+            context.get().voteHandler.removeVote(player);
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
             String chat = Strings.format("@ leaved the server, current players: @", playerName,
                     Math.max(Groups.player.size() - 1, 0));
 
-            controller.BACKGROUND_SCHEDULER.schedule(() -> {
+            context.get().BACKGROUND_SCHEDULER.schedule(() -> {
                 if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                     Vars.state.set(State.paused);
                     Log.info("No player: paused");
@@ -480,8 +481,8 @@ public class EventHandler {
 
             Log.info(chat);
 
-            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
-                controller.apiGateway.sendChatMessage(chat);
+            context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                context.get().apiGateway.sendChatMessage(chat);
             });
         } catch (Throwable e) {
             e.printStackTrace();
@@ -491,7 +492,7 @@ public class EventHandler {
     public synchronized ServerResponseData getTopServer() {
         try {
             var request = new PaginationRequest().setPage(0).setSize(1);
-            var response = controller.apiGateway.getServers(request);
+            var response = context.get().apiGateway.getServers(request);
             var servers = response.getServers();
 
             if (servers.isEmpty()) {
@@ -518,7 +519,7 @@ public class EventHandler {
 
             var player = event.player;
 
-            controller.sessionHandler.put(player);
+            context.get().sessionHandler.put(player);
 
             if (Config.IS_HUB) {
                 var serverData = getTopServer();
@@ -529,13 +530,13 @@ public class EventHandler {
                 ) {
                     var options = List.of(//
                             HudHandler.option((p, state) -> {
-                                controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
+                                context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
                             }, "[red]No"),
                             HudHandler.option((p, state) -> {
                                 onServerChoose(p, serverData.id.toString(), serverData.name);
-                                controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
+                                context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
                             }, "[green]Yes"));
-                    controller.hudHandler.showFollowDisplay(player, HudHandler.SERVER_REDIRECT, "Redirect",
+                    context.get().hudHandler.showFollowDisplay(player, HudHandler.SERVER_REDIRECT, "Redirect",
                             "Do you want to go to server: " + serverData.getName(), null, options);
                 }
             }
@@ -562,11 +563,11 @@ public class EventHandler {
 
             Log.info(chat);
 
-            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
-                controller.apiGateway.sendChatMessage(chat);
+            context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                context.get().apiGateway.sendChatMessage(chat);
             });
 
-            var playerData = controller.apiGateway.setPlayer(request);
+            var playerData = context.get().apiGateway.setPlayer(request);
 
             if (Config.IS_HUB) {
                 sendHub(event.player, playerData.getLoginLink());
@@ -585,7 +586,7 @@ public class EventHandler {
         if (loginLink != null && !loginLink.isEmpty()) {
             options.add(HudHandler.option((trigger, state) -> {
                 Call.openURI(trigger.con, loginLink);
-                controller.hudHandler.closeFollowDisplay(trigger, HudHandler.HUB_UI);
+                context.get().hudHandler.closeFollowDisplay(trigger, HudHandler.HUB_UI);
 
             }, "[green]Login via MindustryTool"));
         }
@@ -597,10 +598,10 @@ public class EventHandler {
                 HudHandler.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
         options.add(HudHandler.option((p, state) -> {
             sendServerList(player, 0);
-            controller.hudHandler.closeFollowDisplay(p, HudHandler.HUB_UI);
+            context.get().hudHandler.closeFollowDisplay(p, HudHandler.HUB_UI);
         }, "[red]Close"));
 
-        controller.hudHandler.showFollowDisplay(player, HudHandler.HUB_UI, "Servers", Config.HUB_MESSAGE, null,
+        context.get().hudHandler.showFollowDisplay(player, HudHandler.HUB_UI, "Servers", Config.HUB_MESSAGE, null,
                 options);
     }
 
@@ -609,7 +610,7 @@ public class EventHandler {
             var size = 8;
             var request = new PaginationRequest().setPage(page).setSize(size);
 
-            var response = controller.apiGateway.getServers(request);
+            var response = context.get().apiGateway.getServers(request);
             var servers = response.getServers();
 
             PlayerPressCallback invalid = (p, s) -> {
@@ -659,10 +660,10 @@ public class EventHandler {
                     }, "[lime]Next") : HudHandler.option(invalid, "No more")));
 
             options.add(List.of(
-                    HudHandler.option((p, state) -> controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
+                    HudHandler.option((p, state) -> context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
                             "[scarlet]Close")));
 
-            controller.hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "List of all servers",
+            context.get().hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "List of all servers",
                     Config.CHOOSE_SERVER_MESSAGE, Integer.valueOf(page), options);
         } catch (Throwable e) {
             Log.err(e);
@@ -670,15 +671,15 @@ public class EventHandler {
     }
 
     public void onServerChoose(Player player, String id, String name) {
-        controller.hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
+        context.get().hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
 
-        controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+        context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait"
                                 .formatted(name));
                 Log.info("Send host command to server %s %S".formatted(name, id));
-                var data = controller.apiGateway.host(id);
+                var data = context.get().apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
                         .formatted(player.coloredName(), name));

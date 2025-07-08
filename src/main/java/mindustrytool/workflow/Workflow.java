@@ -1,5 +1,6 @@
 package mindustrytool.workflow;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,14 +53,14 @@ public class Workflow {
     private final Fi WORKFLOW_DATA_FILE = WORKFLOW_DIR.child("workflow_data.json");
 
     @Getter
-    public WorkflowContext context;
+    public WorkflowContext workflowContext;
 
     private final Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
-    private final ServerController controller;
+    private final WeakReference<ServerController> context;
 
-    public Workflow(ServerController controller) {
-        this.controller = controller;
+    public Workflow(WeakReference<ServerController> context) {
+        this.context = context;
     }
 
     public Queue<SseClient> getWorkflowEventConsumers() {
@@ -95,7 +96,7 @@ public class Workflow {
             WORKFLOW_FILE.file().createNewFile();
             WORKFLOW_DATA_FILE.file().createNewFile();
 
-            controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
+            context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
                     () -> {
                         try {
                             workflowEventConsumers.forEach(client -> client.sendComment("heartbeat"));
@@ -122,13 +123,13 @@ public class Workflow {
     private void loadWorkflowFromFile() {
         String content = WORKFLOW_FILE.readString();
         if (!content.isBlank()) {
-            context = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
-            load(context);
+            workflowContext = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
+            load(workflowContext);
         }
     }
 
     private void writeWorkflowToFile() {
-        WORKFLOW_FILE.writeString(JsonUtils.toJsonString(context));
+        WORKFLOW_FILE.writeString(JsonUtils.toJsonString(workflowContext));
     }
 
     private void register(WorkflowNode node) {
@@ -155,8 +156,8 @@ public class Workflow {
         Log.info("Workflow unloaded");
     }
 
-    public void load(WorkflowContext context) {
-        Log.info("Load workflow context" + context);
+    public void load(WorkflowContext workflowContext) {
+        Log.info("Load workflow workflowContext" + workflowContext);
 
         nodes.values().forEach(node -> node.unload(this));
         nodes.clear();
@@ -169,10 +170,10 @@ public class Workflow {
         });
         scheduledTasks.clear();
 
-        this.context = context;
+        this.workflowContext = workflowContext;
         writeWorkflowToFile();
 
-        for (var data : context.getNodes()) {
+        for (var data : workflowContext.getNodes()) {
             var node = nodeTypes.get(data.getName());
 
             if (node == null) {
@@ -298,7 +299,7 @@ public class Workflow {
                 " period: " + period);
 
         scheduledTasks
-                .add(controller.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
+                .add(context.get().BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
                         TimeUnit.SECONDS));
     }
 
@@ -309,13 +310,13 @@ public class Workflow {
                 " delay: " + delay);
 
         scheduledTasks
-                .add(controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
+                .add(context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
                         TimeUnit.SECONDS));
     }
 
     public void schedule(Runnable runnable, long delay) {
         Log.debug("Schedule task: " + runnable.getClass().getName() + " delay: " + delay);
-        scheduledTasks.add(controller.BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
+        scheduledTasks.add(context.get().BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
     }
 
 }

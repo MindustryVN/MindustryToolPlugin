@@ -1,6 +1,11 @@
 package mindustrytool;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.pf4j.Plugin;
@@ -22,10 +27,10 @@ import mindustrytool.handler.ApiGateway;
 import mindustrytool.handler.ClientCommandHandler;
 import mindustrytool.handler.EventHandler;
 import mindustrytool.handler.HttpServer;
+import mindustrytool.handler.HudHandler;
 import mindustrytool.handler.RtvVoteHandler;
 import mindustrytool.handler.ServerCommandHandler;
 import mindustrytool.handler.SessionHandler;
-import mindustrytool.utils.HudUtils;
 import mindustrytool.workflow.Workflow;
 import mindustrytoolpluginloader.MindustryToolPlugin;
 
@@ -39,9 +44,20 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     public HttpServer httpServer;
     public SessionHandler sessionHandler;
     public Workflow workflow;
+    public HudHandler hudHandler;
 
     public static final UUID SERVER_ID = UUID.fromString(System.getenv("SERVER_ID"));
     public static boolean isUnloaded = false;
+
+    public final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(
+            0,
+            20,
+            5,
+            TimeUnit.SECONDS,
+            new SynchronousQueue<Runnable>());
+
+    public final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
+            .newSingleThreadScheduledExecutor();
 
     public ServerController() {
         apiGateway = new ApiGateway(this);
@@ -51,7 +67,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         serverCommandHandler = new ServerCommandHandler(this);
         sessionHandler = new SessionHandler();
         httpServer = new HttpServer(this);
-        workflow = new Workflow();
+        workflow = new Workflow(this);
+        hudHandler = new HudHandler(this);
 
         Log.info("Server controller created: " + this);
     }
@@ -74,7 +91,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         apiGateway.init();
         workflow.init();
 
-        Config.BACKGROUND_SCHEDULER.schedule(() -> {
+        BACKGROUND_SCHEDULER.schedule(() -> {
             try {
                 if (!Vars.state.isGame()) {
                     Log.info("Server not hosting, auto host");
@@ -87,7 +104,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             }
         }, 10, TimeUnit.SECONDS);
 
-        Config.BACKGROUND_SCHEDULER.schedule(() -> {
+        BACKGROUND_SCHEDULER.schedule(() -> {
             if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                 Vars.state.set(State.paused);
                 Log.info("No player: paused");
@@ -116,7 +133,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                 eventHandler.onPlayerJoin(playerJoin);
             } else if (event instanceof PlayerLeave playerLeave) {
                 eventHandler.onPlayerLeave(playerLeave);
-                HudUtils.onPlayerLeave(playerLeave);
+                hudHandler.onPlayerLeave(playerLeave);
             } else if (event instanceof PlayerChatEvent playerChat) {
                 eventHandler.onPlayerChat(playerChat);
             } else if (event instanceof ServerLoadEvent serverLoad) {
@@ -128,7 +145,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             } else if (event instanceof TapEvent tapEvent) {
                 eventHandler.onTap(tapEvent);
             } else if (event instanceof MenuOptionChooseEvent menuOption) {
-                HudUtils.onMenuOptionChoose(menuOption);
+                hudHandler.onMenuOptionChoose(menuOption);
             } else if (event instanceof GameOverEvent gameOverEvent) {
                 eventHandler.onGameOver(gameOverEvent);
             }
@@ -142,8 +159,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void stop() {
         isUnloaded = true;
-        Config.BACKGROUND_TASK_EXECUTOR.shutdown();
-        Config.BACKGROUND_SCHEDULER.shutdown();
+        BACKGROUND_TASK_EXECUTOR.shutdown();
+        BACKGROUND_SCHEDULER.shutdown();
 
         eventHandler.unload();
         httpServer.unload();
@@ -153,7 +170,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
         sessionHandler.clear();
         workflow.clear();
 
-        HudUtils.unload();
+        hudHandler.unload();
 
         apiGateway = null;
         voteHandler = null;

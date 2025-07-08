@@ -1,8 +1,8 @@
-package mindustrytool.utils;
+package mindustrytool.handler;
 
 import mindustry.gen.Call;
 import mindustry.gen.Player;
-import mindustrytool.Config;
+import mindustrytool.ServerController;
 import mindustrytool.type.HudOption;
 import mindustrytool.type.MenuData;
 import mindustrytool.type.PlayerPressCallback;
@@ -17,24 +17,30 @@ import java.util.List;
 import mindustry.game.EventType.MenuOptionChooseEvent;
 import mindustry.game.EventType.PlayerLeave;
 
-public class HudUtils {
+public class HudHandler {
 
     public static final int HUB_UI = 1;
     public static final int SERVERS_UI = 2;
     public static final int LOGIN_UI = 3;
     public static final int SERVER_REDIRECT = 4;
 
-    public static Cache<String, LinkedList<MenuData>> menus = Caffeine.newBuilder()
+    private final ServerController controller;
+
+    public HudHandler(ServerController controller) {
+        this.controller = controller;
+    }
+
+    public Cache<String, LinkedList<MenuData>> menus = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofMinutes(10))
             .maximumSize(100)
             .build();
 
-    public static void unload() {
+    public void unload() {
         menus.invalidateAll();
         menus = null;
     }
 
-    public static void onPlayerLeave(PlayerLeave event) {
+    public void onPlayerLeave(PlayerLeave event) {
         var menu = menus.getIfPresent(event.player.uuid());
         if (menu != null) {
             for (var data : menu) {
@@ -48,13 +54,13 @@ public class HudUtils {
         return new HudOption(callback, text);
     }
 
-    public static void showFollowDisplay(Player player, int id, String title, String description, Object state,
+    public void showFollowDisplay(Player player, int id, String title, String description, Object state,
             List<HudOption> options) {
         showFollowDisplays(player, id, title, description, state,
                 options.stream().map(option -> List.of(option)).toList());
     }
 
-    public static synchronized void showFollowDisplays(Player player, int id, String title, String description,
+    public synchronized void showFollowDisplays(Player player, int id, String title, String description,
             Object state,
             List<List<HudOption>> options) {
 
@@ -81,7 +87,7 @@ public class HudUtils {
         userMenu.addLast(new MenuData(id, title, description, optionTexts, callbacks, state));
     }
 
-    public static void onMenuOptionChoose(MenuOptionChooseEvent event) {
+    public void onMenuOptionChoose(MenuOptionChooseEvent event) {
         var menu = menus.getIfPresent(event.player.uuid());
 
         if (menu == null || menu.isEmpty()) {
@@ -102,12 +108,12 @@ public class HudUtils {
             return;
         }
 
-        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+        controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
             callback.accept(event.player, data.getState());
         });
     }
 
-    public static synchronized void closeFollowDisplay(Player player, int id) {
+    public synchronized void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(player.con, id);
 
         var menu = menus.getIfPresent(player.uuid());

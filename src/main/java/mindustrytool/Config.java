@@ -1,12 +1,5 @@
 package mindustrytool;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 public class Config {
 
     public static Boolean isLoaded = false;
@@ -18,16 +11,6 @@ public class Config {
     public static final String ENV = System.getenv("ENV");
 
     public static final boolean IS_DEVELOPMENT = ENV != null && ENV.equals("DEV");
-
-    public static final ExecutorService BACKGROUND_TASK_EXECUTOR = new ThreadPoolExecutor(
-            0,
-            20,
-            5,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>());
-
-    public static final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
-            .newSingleThreadScheduledExecutor();
 
     public static final String SERVER_IP = "103.20.96.24";
     public static final String DISCORD_INVITE_URL = "https://discord.com/invite/DCX5yrRUyp";

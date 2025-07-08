@@ -44,7 +44,6 @@ import mindustrytool.type.ServerCommandDto;
 import mindustrytool.type.StartServerDto;
 import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
-import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.workflow.errors.WorkflowError;
 import io.javalin.Javalin;
@@ -170,7 +169,7 @@ public class HttpServer {
             }
 
             if (player != null) {
-                HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI);
+                controller.hudHandler.closeFollowDisplay(player, HudHandler.LOGIN_UI);
                 controller.eventHandler.setPlayerData(request, player);
             }
             context.result();
@@ -395,7 +394,7 @@ public class HttpServer {
 
                 data.put("stats", getStats());
                 data.put("session", controller.sessionHandler.get());
-                data.put("hud", HudUtils.menus.asMap());
+                data.put("hud", controller.hudHandler.menus.asMap());
                 data.put("buildLogs", controller.apiGateway.buildLogs);
                 data.put("isHub", Config.IS_HUB);
                 data.put("ip", Config.SERVER_IP);
@@ -415,8 +414,8 @@ public class HttpServer {
                 gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
                 data.put("executors", java.util.Map.of(
-                        "backgroundExecutor", Config.BACKGROUND_TASK_EXECUTOR.toString(), //
-                        "backgroundScheduler", Config.BACKGROUND_SCHEDULER.toString()//
+                        "backgroundExecutor", controller.BACKGROUND_TASK_EXECUTOR.toString(), //
+                        "backgroundScheduler", controller.BACKGROUND_SCHEDULER.toString()//
                 ));
 
                 data.put("gameStats", gameStats);

@@ -18,7 +18,7 @@ import arc.util.Log;
 import io.javalin.http.sse.SseClient;
 import lombok.Getter;
 import mindustry.Vars;
-import mindustrytool.Config;
+import mindustrytool.ServerController;
 import mindustrytool.type.WorkflowContext;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.workflow.errors.WorkflowError;
@@ -56,6 +56,12 @@ public class Workflow {
 
     private final Queue<SseClient> workflowEventConsumers = new ConcurrentLinkedQueue<>();
 
+    private final ServerController controller;
+
+    public Workflow(ServerController controller) {
+        this.controller = controller;
+    }
+
     public Queue<SseClient> getWorkflowEventConsumers() {
         return workflowEventConsumers;
     }
@@ -89,7 +95,7 @@ public class Workflow {
             WORKFLOW_FILE.file().createNewFile();
             WORKFLOW_DATA_FILE.file().createNewFile();
 
-            Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
+            controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(
                     () -> {
                         try {
                             workflowEventConsumers.forEach(client -> client.sendComment("heartbeat"));
@@ -292,7 +298,7 @@ public class Workflow {
                 " period: " + period);
 
         scheduledTasks
-                .add(Config.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
+                .add(controller.BACKGROUND_SCHEDULER.scheduleAtFixedRate(() -> tryRun(runnable), delay, period,
                         TimeUnit.SECONDS));
     }
 
@@ -303,13 +309,13 @@ public class Workflow {
                 " delay: " + delay);
 
         scheduledTasks
-                .add(Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
+                .add(controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
                         TimeUnit.SECONDS));
     }
 
     public void schedule(Runnable runnable, long delay) {
         Log.debug("Schedule task: " + runnable.getClass().getName() + " delay: " + delay);
-        scheduledTasks.add(Config.BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
+        scheduledTasks.add(controller.BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
     }
 
 }

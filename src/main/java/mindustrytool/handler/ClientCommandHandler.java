@@ -16,7 +16,6 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.HudOption;
 import mindustrytool.type.MindustryPlayerDto;
@@ -24,7 +23,6 @@ import mindustrytool.type.PaginationRequest;
 import mindustrytool.type.PlayerDto;
 import mindustrytool.type.PlayerPressCallback;
 import mindustrytool.type.TeamDto;
-import mindustrytool.utils.HudUtils;
 
 public class ClientCommandHandler {
 
@@ -205,7 +203,7 @@ public class ClientCommandHandler {
                     + (req - cur) + " votes missing)");
 
             if (!isPreparingForNewWave)
-                Config.BACKGROUND_SCHEDULER.schedule(() -> {
+            controller.BACKGROUND_SCHEDULER.schedule(() -> {
                     Call.sendMessage("[scarlet]Vote for "
                             + (waveVoted == 1 ? "sending a new wave"
                                     : "skipping [scarlet]" + waveVoted + "[] waves")
@@ -257,11 +255,11 @@ public class ClientCommandHandler {
     }
 
     public void onServerChoose(Player player, String id, String name) {
-        HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
+        controller.hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
         player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
 
         try {
-            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 var data = controller.apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
@@ -294,7 +292,7 @@ public class ClientCommandHandler {
     }
 
     public void sendRedirectServerList(Player player, int page) {
-        Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+        controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 var size = 8;
                 var request = new PaginationRequest()//
@@ -310,53 +308,56 @@ public class ClientCommandHandler {
                 };
 
                 List<List<HudOption>> options = new ArrayList<>(List.of(
-                        List.of(HudUtils.option(invalid, "[#FFD700]Server name"),
-                                HudUtils.option(invalid, "[#FFD700]Players playing")),
-                        List.of(HudUtils.option(invalid, "[#87CEEB]Server Gamemode"),
-                                HudUtils.option(invalid, "[#FFA500]Map Playing")),
-                        List.of(HudUtils.option(invalid, "[#DA70D6]Server Mods")),
-                        List.of(HudUtils.option(invalid, "[#B0B0B0]Server Description"))));
+                        List.of(HudHandler.option(invalid, "[#FFD700]Server name"),
+                                HudHandler.option(invalid, "[#FFD700]Players playing")),
+                        List.of(HudHandler.option(invalid, "[#87CEEB]Server Gamemode"),
+                                HudHandler.option(invalid, "[#FFA500]Map Playing")),
+                        List.of(HudHandler.option(invalid, "[#DA70D6]Server Mods")),
+                        List.of(HudHandler.option(invalid, "[#B0B0B0]Server Description"))));
 
                 servers.forEach(server -> {
                     PlayerPressCallback valid = (p, s) -> //
                     onServerChoose(p, server.getId().toString(), server.getName());
 
-                    options.add(List.of(HudUtils.option(invalid, "-----------------")));
-                    options.add(List.of(HudUtils.option(valid, "[#FFD700]%s".formatted(server.getName())),
-                            HudUtils.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
-                    options.add(List.of(HudUtils.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
-                            HudUtils.option(valid, "[#1E90FF]Map: %s".formatted(
+                    options.add(List.of(HudHandler.option(invalid, "-----------------")));
+                    options.add(List.of(HudHandler.option(valid, "[#FFD700]%s".formatted(server.getName())),
+                            HudHandler.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(List.of(HudHandler.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
+                            HudHandler.option(valid, "[#1E90FF]Map: %s".formatted(
                                     server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {
-                        options.add(List.of(HudUtils.option(valid,
+                        options.add(List.of(HudHandler.option(valid,
                                 "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
                     }
 
                     if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
-                        options.add(List.of(HudUtils.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
+                        options.add(
+                                List.of(HudHandler.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
                     }
 
                 });
 
                 options.add(List.of(//
                         page > 0//
-                                ? HudUtils.option((p, state) -> {
+                                ? HudHandler.option((p, state) -> {
                                     sendRedirectServerList(player, (int) state - 1);
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
                                 }, "[yellow]Previous")
-                                : HudUtils.option(invalid, "First page"), //
+                                : HudHandler.option(invalid, "First page"), //
                         servers.size() == size//
-                                ? HudUtils.option((p, state) -> {
+                                ? HudHandler.option((p, state) -> {
                                     sendRedirectServerList(player, (int) state + 1);
-                                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                                    controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI);
                                 }, "[green]Next")
-                                : HudUtils.option(invalid, "No more")));
+                                : HudHandler.option(invalid, "No more")));
 
-                options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
+                options.add(List.of(HudHandler.option(
+                        (p, state) -> controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
                         "[red]Close")));
 
-                HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
+                controller.hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "Servers", "",
+                        Integer.valueOf(page), options);
             } catch (Exception e) {
                 Log.err(e);
             }

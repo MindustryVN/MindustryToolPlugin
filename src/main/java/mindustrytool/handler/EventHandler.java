@@ -40,7 +40,6 @@ import mindustrytool.type.PlayerPressCallback;
 import mindustrytool.type.ServerCore;
 import mindustrytool.type.TeamDto;
 import mindustrytool.type.ServerResponseData;
-import mindustrytool.utils.HudUtils;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.world.Tile;
 import mindustry.world.blocks.campaign.Accelerator;
@@ -86,7 +85,7 @@ public class EventHandler {
         if (Config.IS_HUB) {
             setupCustomServerDiscovery();
 
-            updateServerTask = Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+            updateServerTask = controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var request = new PaginationRequest().setPage(page).setSize(size);
 
@@ -98,7 +97,7 @@ public class EventHandler {
                 }
             }, 0, 30, TimeUnit.SECONDS);
 
-            updateServerCore = Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+            updateServerCore = controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
                 try {
                     var map = Vars.state.map;
 
@@ -404,7 +403,7 @@ public class EventHandler {
                 return;
             }
 
-            Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+            controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
                 try {
                     controller.apiGateway.sendChatMessage(chat);
                 } catch (Throwable e) {
@@ -417,7 +416,7 @@ public class EventHandler {
             Groups.player.forEach(p -> groupByLocale.getOrDefault(p.locale(), new ArrayList<>()).add(p));
 
             groupByLocale.forEach((locale, ps) -> {
-                Config.BACKGROUND_TASK_EXECUTOR.execute(() -> {
+                controller.BACKGROUND_TASK_EXECUTOR.execute(() -> {
                     try {
                         String translatedMessage = translationCache.get(locale + message,
                                 _ignore -> controller.apiGateway.translate(message, locale));
@@ -472,7 +471,7 @@ public class EventHandler {
             String chat = Strings.format("@ leaved the server, current players: @", playerName,
                     Math.max(Groups.player.size() - 1, 0));
 
-            Config.BACKGROUND_SCHEDULER.schedule(() -> {
+            controller.BACKGROUND_SCHEDULER.schedule(() -> {
                 if (!Vars.state.isPaused() && Groups.player.size() == 0) {
                     Vars.state.set(State.paused);
                     Log.info("No player: paused");
@@ -481,7 +480,7 @@ public class EventHandler {
 
             Log.info(chat);
 
-            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 controller.apiGateway.sendChatMessage(chat);
             });
         } catch (Throwable e) {
@@ -529,14 +528,14 @@ public class EventHandler {
                         && serverData.players > 0//
                 ) {
                     var options = List.of(//
-                            HudUtils.option((p, state) -> {
-                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                            HudHandler.option((p, state) -> {
+                                controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
                             }, "[red]No"),
-                            HudUtils.option((p, state) -> {
+                            HudHandler.option((p, state) -> {
                                 onServerChoose(p, serverData.id.toString(), serverData.name);
-                                HudUtils.closeFollowDisplay(p, HudUtils.SERVER_REDIRECT);
+                                controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
                             }, "[green]Yes"));
-                    HudUtils.showFollowDisplay(player, HudUtils.SERVER_REDIRECT, "Redirect",
+                    controller.hudHandler.showFollowDisplay(player, HudHandler.SERVER_REDIRECT, "Redirect",
                             "Do you want to go to server: " + serverData.getName(), null, options);
                 }
             }
@@ -563,7 +562,7 @@ public class EventHandler {
 
             Log.info(chat);
 
-            Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+            controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 controller.apiGateway.sendChatMessage(chat);
             });
 
@@ -584,24 +583,25 @@ public class EventHandler {
         var options = new ArrayList<HudOption>();
 
         if (loginLink != null && !loginLink.isEmpty()) {
-            options.add(HudUtils.option((trigger, state) -> {
+            options.add(HudHandler.option((trigger, state) -> {
                 Call.openURI(trigger.con, loginLink);
-                HudUtils.closeFollowDisplay(trigger, HudUtils.HUB_UI);
+                controller.hudHandler.closeFollowDisplay(trigger, HudHandler.HUB_UI);
 
             }, "[green]Login via MindustryTool"));
         }
 
-        options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"));
+        options.add(HudHandler.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"));
         options.add(
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"));
+                HudHandler.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"));
         options.add(
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
-        options.add(HudUtils.option((p, state) -> {
+                HudHandler.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
+        options.add(HudHandler.option((p, state) -> {
             sendServerList(player, 0);
-            HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
+            controller.hudHandler.closeFollowDisplay(p, HudHandler.HUB_UI);
         }, "[red]Close"));
 
-        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
+        controller.hudHandler.showFollowDisplay(player, HudHandler.HUB_UI, "Servers", Config.HUB_MESSAGE, null,
+                options);
     }
 
     public void sendServerList(Player player, int page) {
@@ -627,41 +627,42 @@ public class EventHandler {
                 mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                 if (server.getMapName() == null) {
-                    options.add(List.of(HudUtils.option(valid, "[yellow]%s".formatted(server.getName())),
-                            HudUtils.option(valid, "[scarlet]Server offline.")));
+                    options.add(List.of(HudHandler.option(valid, "[yellow]%s".formatted(server.getName())),
+                            HudHandler.option(valid, "[scarlet]Server offline.")));
                 } else {
-                    options.add(List.of(HudUtils.option(valid, server.getName()),
-                            HudUtils.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
+                    options.add(List.of(HudHandler.option(valid, server.getName()),
+                            HudHandler.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
 
                     options.add(List.of(
-                            HudUtils.option(valid,
+                            HudHandler.option(valid,
                                     "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
-                            HudUtils.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
+                            HudHandler.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
                 }
 
                 if (server.getMods() != null && !server.getMods().isEmpty()) {
                     options.add(List
-                            .of(HudUtils.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
+                            .of(HudHandler.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
                 }
 
                 if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
-                    options.add(List.of(HudUtils.option(valid, "[grey]%s".formatted(server.getDescription()))));
+                    options.add(List.of(HudHandler.option(valid, "[grey]%s".formatted(server.getDescription()))));
                 }
 
-                options.add(List.of(HudUtils.option(invalid, "-----------------")));
+                options.add(List.of(HudHandler.option(invalid, "-----------------")));
             });
 
-            options.add(List.of(page > 0 ? HudUtils.option((p, state) -> {
+            options.add(List.of(page > 0 ? HudHandler.option((p, state) -> {
                 sendServerList(player, (int) state - 1);
-            }, "[orange]Previous") : HudUtils.option(invalid, "First page"),
-                    servers.size() == size ? HudUtils.option((p, state) -> {
+            }, "[orange]Previous") : HudHandler.option(invalid, "First page"),
+                    servers.size() == size ? HudHandler.option((p, state) -> {
                         sendServerList(player, (int) state + 1);
-                    }, "[lime]Next") : HudUtils.option(invalid, "No more")));
+                    }, "[lime]Next") : HudHandler.option(invalid, "No more")));
 
-            options.add(List.of(HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI),
-                    "[scarlet]Close")));
+            options.add(List.of(
+                    HudHandler.option((p, state) -> controller.hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
+                            "[scarlet]Close")));
 
-            HudUtils.showFollowDisplays(player, HudUtils.SERVERS_UI, "List of all servers",
+            controller.hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "List of all servers",
                     Config.CHOOSE_SERVER_MESSAGE, Integer.valueOf(page), options);
         } catch (Throwable e) {
             Log.err(e);
@@ -669,9 +670,9 @@ public class EventHandler {
     }
 
     public void onServerChoose(Player player, String id, String name) {
-        HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
+        controller.hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
 
-        Config.BACKGROUND_TASK_EXECUTOR.submit(() -> {
+        controller.BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait"

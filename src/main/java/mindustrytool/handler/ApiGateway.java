@@ -19,7 +19,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
-import mindustrytool.Config;
 import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
 import mindustrytool.type.MindustryPlayerDto;
@@ -29,8 +28,9 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    final ServerController controller;
+    private final ServerController controller;
     private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
+    private HttpClient httpClient;
 
     public Cache<PaginationRequest, ServerDto> serverQueryCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofSeconds(15))
@@ -39,20 +39,20 @@ public class ApiGateway {
 
     public ApiGateway(ServerController controller) {
         this.controller = controller;
+        httpClient = HttpClient.newBuilder()//
+                .connectTimeout(Duration.ofSeconds(2))//
+                .executor(controller.BACKGROUND_TASK_EXECUTOR)
+                .build();
+
         Log.info("Api gateway handler created: " + this);
     }
-
-    private HttpClient httpClient = HttpClient.newBuilder()//
-            .connectTimeout(Duration.ofSeconds(2))//
-            .executor(Config.BACKGROUND_TASK_EXECUTOR)
-            .build();
 
     public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(100);
 
     public void init() {
         Log.info("Setup api gateway");
 
-        Config.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
+        controller.BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
 
                 Log.debug("Sending build logs: " + buildLogs.size());

@@ -66,13 +66,13 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             .newSingleThreadScheduledExecutor();
 
     public ServerController() {
+        httpServer = new HttpServer(context);
         apiGateway = new ApiGateway(context);
         voteHandler = new RtvVoteHandler();
         eventHandler = new EventHandler(context);
         clientCommandHandler = new ClientCommandHandler(context);
         serverCommandHandler = new ServerCommandHandler(context);
         sessionHandler = new SessionHandler();
-        httpServer = new HttpServer(context);
         workflow = new Workflow(context);
         hudHandler = new HudHandler(context);
 

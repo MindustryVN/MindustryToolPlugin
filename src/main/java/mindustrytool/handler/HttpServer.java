@@ -426,7 +426,9 @@ public class HttpServer {
                                         "state", thread.getState().name(),
                                         "group",
                                         thread.getThreadGroup() == null ? "null" : thread.getThreadGroup().getName(),
-                                        "stacktrace", List.of(thread.getStackTrace())))
+                                        "stacktrace",
+                                        List.of(thread.getStackTrace()).stream().map(stack -> stack.toString())
+                                                .toList()))
                                 .toList());
 
                 var maps = new ArrayList<HashMap<String, String>>();

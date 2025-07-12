@@ -140,9 +140,11 @@ public class HttpServer {
         });
 
         app.post("host", ctx -> {
-            StartServerDto request = ctx.bodyAsClass(StartServerDto.class);
-            host(request);
-            ctx.result();
+            Utils.appPostWithTimeout(() -> {
+                StartServerDto request = ctx.bodyAsClass(StartServerDto.class);
+                host(request);
+                ctx.result();
+            }, 50_000);
         });
 
         app.post("set-player", ctx -> {
@@ -330,11 +332,10 @@ public class HttpServer {
         app.post("say", ctx -> {
             if (!Vars.state.isGame()) {
                 Log.err("Not hosting. Host a game first.");
-                return;
+            } else {
+                String message = ctx.body();
+                Call.sendMessage("[]" + message);
             }
-
-            String message = ctx.body();
-            Call.sendMessage("[]" + message);
 
             ctx.result();
         });

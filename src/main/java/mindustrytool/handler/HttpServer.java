@@ -266,9 +266,7 @@ public class HttpServer {
             ctx.json(result);
         });
 
-        app.get("commands", ctx ->
-
-        {
+        app.get("commands", ctx -> {
             var commands = context.get().serverCommandHandler.getHandler() == null
                     ? List.of()
                     : context.get().serverCommandHandler.getHandler()//
@@ -286,7 +284,6 @@ public class HttpServer {
                             .list();
 
             ctx.json(commands);
-
         });
 
         app.post("commands", ctx -> {
@@ -426,7 +423,10 @@ public class HttpServer {
                                 .map(thread -> java.util.Map.of(
                                         "id", thread.getId(),
                                         "name", thread.getName(),
-                                        "state", thread.getState().name()))
+                                        "state", thread.getState().name(),
+                                        "group",
+                                        thread.getThreadGroup() == null ? "null" : thread.getThreadGroup().getName(),
+                                        "stacktrace", List.of(thread.getStackTrace())))
                                 .toList());
 
                 var maps = new ArrayList<HashMap<String, String>>();

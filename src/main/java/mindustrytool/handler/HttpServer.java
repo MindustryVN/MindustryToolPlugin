@@ -74,13 +74,12 @@ public class HttpServer {
 
             }));
 
-            int maxThreads = 50;
-            int minThreads = 0;
-            // to finish
             config.http.asyncTimeout = 5_000;
             config.useVirtualThreads = true;
 
-            config.jetty.threadPool = new ExecutorThreadPool(maxThreads, minThreads);
+            var pool = new ExecutorThreadPool(50, 0);
+            pool.setName("HttpServer");
+            config.jetty.threadPool = pool;
             config.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
 
             config.registerPlugin(new RouteOverviewPlugin());

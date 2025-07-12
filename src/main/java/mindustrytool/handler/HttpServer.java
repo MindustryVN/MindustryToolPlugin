@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -59,6 +61,22 @@ public class HttpServer {
 
     private final WeakReference<ServerController> context;
 
+    public class RequestInfo {
+        public final String method;
+        public final String path;
+        public final String ip;
+        public final long timestamp;
+
+        public RequestInfo(String method, String path, String ip, long timestamp) {
+            this.method = method;
+            this.path = path;
+            this.ip = ip;
+            this.timestamp = timestamp;
+        }
+    }
+
+    private final Map<String, RequestInfo> activeRequests = new ConcurrentHashMap<>();
+
     public HttpServer(WeakReference<ServerController> context) {
         this.context = context;
 
@@ -89,6 +107,21 @@ public class HttpServer {
                     Log.debug("[" + ctx.method().name() + "] " + Math.round(ms) + "ms " + ctx.fullUrl());
                 }
             });
+        });
+
+        app.before(ctx -> {
+            String reqId = UUID.randomUUID().toString();
+            ctx.attribute("reqId", reqId);
+            activeRequests.put(reqId, new RequestInfo(
+                    ctx.method().name(), ctx.path(), ctx.ip(), System.currentTimeMillis()));
+        });
+
+        // Remove when request finishes
+        app.after(ctx -> {
+            String reqId = ctx.attribute("reqId");
+            if (reqId != null) {
+                activeRequests.remove(reqId);
+            }
         });
 
         Log.info("Http server created: " + this);
@@ -430,6 +463,8 @@ public class HttpServer {
                                         List.of(thread.getStackTrace()).stream().map(stack -> stack.toString())
                                                 .toList()))
                                 .toList());
+
+                data.put("activeRequest", activeRequests.values());
 
                 var maps = new ArrayList<HashMap<String, String>>();
                 Vars.maps.all().forEach(map -> {

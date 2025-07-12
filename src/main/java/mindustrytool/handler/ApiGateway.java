@@ -42,7 +42,6 @@ public class ApiGateway {
         this.context = context;
         httpClient = HttpClient.newBuilder()//
                 .connectTimeout(Duration.ofSeconds(2))//
-                .executor(context.get().BACKGROUND_TASK_EXECUTOR)
                 .build();
 
         Log.info("Api gateway handler created: " + this);

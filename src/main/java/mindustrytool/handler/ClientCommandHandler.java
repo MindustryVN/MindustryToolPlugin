@@ -259,7 +259,8 @@ public class ClientCommandHandler {
 
     public void onServerChoose(Player player, String id, String name) {
         context.get().hudHandler.closeFollowDisplay(player, HudHandler.SERVERS_UI);
-        player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
+        player.sendMessage(
+                String.format("[green]Starting server [white]%s, [white]redirection will happen soon", name));
 
         try {
             context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
@@ -323,22 +324,23 @@ public class ClientCommandHandler {
                     onServerChoose(p, server.getId().toString(), server.getName());
 
                     options.add(Arrays.asList(HudHandler.option(invalid, "-----------------")));
-                    options.add(Arrays.asList(HudHandler.option(valid, "[#FFD700]%s".formatted(server.getName())),
-                            HudHandler.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
+                    options.add(Arrays.asList(HudHandler.option(valid, String.format("[#FFD700]%s", server.getName())),
+                            HudHandler.option(valid, String.format("[#32CD32]Players: %d", server.getPlayers()))));
                     options.add(Arrays.asList(
-                            HudHandler.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
+                            HudHandler.option(valid, String.format("[#87CEEB]Gamemode: %s", server.getMode())),
                             HudHandler.option(valid, "[#1E90FF]Map: %s".formatted(
                                     server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {
                         options.add(Arrays.asList(HudHandler.option(valid,
-                                "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
+                                String.format("[#DA70D6]Mods: %s", String.join(", ", server.getMods())))));
                     }
 
                     if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
                         options.add(
                                 Arrays.asList(
-                                        HudHandler.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
+                                        HudHandler.option(valid,
+                                                String.format("[#B0B0B0]%s", server.getDescription()))));
                     }
 
                 });

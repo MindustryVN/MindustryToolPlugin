@@ -132,13 +132,13 @@ public class EventHandler {
                                     mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                                     String message = //
-                                            "%s (Tap core to join)\n\n".formatted(server.getName()) //
-                                                    + "[white]Status: %s\n".formatted(serverStatus)//
-                                                    + "[white]Players: %s\n".formatted(server.getPlayers())//
-                                                    + "[white]Map: %s\n".formatted(server.getMapName())//
-                                                    + "[white]Mode: %s\n".formatted(server.getMode())//
-                                                    + "[white]Description: %s\n".formatted(server.getDescription())//
-                                                    + (mods.isEmpty() ? "" : "[white]Mods: %s".formatted(mods));
+                                            String.format("%s (Tap core to join)\n\n", server.getName()) //
+                                                    + String.format("[white]Status: %s\n", serverStatus)//
+                                                    + String.format("[white]Players: %s\n", server.getPlayers())//
+                                                    + String.format("[white]Map: %s\n", server.getMapName())//
+                                                    + String.format("[white]Mode: %s\n", server.getMode())//
+                                                    + String.format("[white]Description: %s\n", server.getDescription())//
+                                                    + (mods.isEmpty() ? "" : String.format("[white]Mods: %s", mods));
 
                                     Tile tile = Vars.world.tile(coreX, coreY);
 
@@ -274,7 +274,7 @@ public class EventHandler {
     private void setName(Player player, String name, int level) {
         try {
             var icon = getIconBaseOnLevel(level);
-            var newName = "[white]%s [%s] %s".formatted(icon, level, name);
+            var newName = String.format("[white]%s [%s] %s", icon, level, name);
 
             if (!newName.equals(player.name)) {
                 var hasLevelInName = player.name.matches("\\[\\d+\\]");
@@ -282,7 +282,7 @@ public class EventHandler {
                 player.name(newName);
 
                 if (hasLevelInName) {
-                    player.sendMessage("You have leveled up to level %s".formatted(level));
+                    player.sendMessage(String.format("You have leveled up to level %s", level));
                 }
             }
         } catch (Throwable e) {
@@ -628,25 +628,27 @@ public class EventHandler {
                 mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                 if (server.getMapName() == null) {
-                    options.add(Arrays.asList(HudHandler.option(valid, "[yellow]%s".formatted(server.getName())),
+                    options.add(Arrays.asList(HudHandler.option(valid, String.format("[yellow]%s", server.getName())),
                             HudHandler.option(valid, "[scarlet]Server offline.")));
                 } else {
                     options.add(Arrays.asList(HudHandler.option(valid, server.getName()),
-                            HudHandler.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
+                            HudHandler.option(valid, String.format("[lime]Players:[] %d", server.getPlayers()))));
 
                     options.add(Arrays.asList(
                             HudHandler.option(valid,
-                                    "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
-                            HudHandler.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
+                                    String.format("[cyan]Gamemode:[] %s", server.getMode().toLowerCase())),
+                            HudHandler.option(valid, String.format("[blue]Map:[] %s", server.getMapName()))));
                 }
 
                 if (server.getMods() != null && !server.getMods().isEmpty()) {
                     options.add(List
-                            .of(HudHandler.option(valid, "[purple]Mods:[] %s".formatted(String.join(", ", mods)))));
+                            .of(HudHandler.option(valid,
+                                    String.format("[purple]Mods:[] %s", String.join(", ", mods)))));
                 }
 
                 if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
-                    options.add(Arrays.asList(HudHandler.option(valid, "[grey]%s".formatted(server.getDescription()))));
+                    options.add(Arrays
+                            .asList(HudHandler.option(valid, String.format("[grey]%s", server.getDescription()))));
                 }
 
                 options.add(Arrays.asList(HudHandler.option(invalid, "-----------------")));
@@ -679,7 +681,7 @@ public class EventHandler {
                 player.sendMessage(
                         "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait"
                                 .formatted(name));
-                Log.info("Send host command to server %s %S".formatted(name, id));
+                Log.info(String.format("Send host command to server %s %S", name, id));
                 var data = context.get().apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
                 Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"

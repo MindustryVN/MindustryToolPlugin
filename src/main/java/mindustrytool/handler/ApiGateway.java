@@ -194,7 +194,7 @@ public class ApiGateway {
         return serverQueryCache.get(request, _ignore -> {
             try {
                 HttpResponse response = send(
-                        get("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize())));
+                        get(String.format("servers?page=%s&size=%s", request.getPage(), request.getSize())));
                 String result = response.getResultAsString();
                 return JsonUtils.readJsonAsClass(result, ServerDto.class);
             } catch (Exception e) {
@@ -206,7 +206,7 @@ public class ApiGateway {
 
     public String translate(String text, String targetLanguage) {
         try {
-            HttpResponse response = send(post("translate/%s".formatted(targetLanguage))
+            HttpResponse response = send(post(String.format("translate/%s", targetLanguage))
                     .header("Content-Type", "text/plain")//
                     .content(text));
 

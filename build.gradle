@@ -1,9 +1,16 @@
 apply plugin: "java"
 
 version '1.0'
-
 java {
+    targetCompatibility = 8
     sourceCompatibility = JavaVersion.VERSION_17
+}
+
+allprojects{
+    tasks.withType(JavaCompile){
+        options.annotationProcessorPath = configurations.annotationProcessor
+        options.compilerArgs.addAll(['--release', '8'])
+    }
 }
 
 sourceSets {
@@ -40,7 +47,7 @@ dependencies{
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 
-    compileOnly 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
 
     compileOnly files('lib/MindustryToolPluginLoader.jar')
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.2'
@@ -49,7 +56,7 @@ dependencies{
     implementation 'com.github.ben-manes.caffeine:caffeine:2.9.3'
     implementation 'org.slf4j:slf4j-simple:2.0.16'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
     annotationProcessor 'org.pf4j:pf4j:3.13.0'
 
@@ -59,17 +66,12 @@ dependencies{
 
     testImplementation "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     testImplementation "com.github.Anuken.Mindustry:core:$mindustryVersion"
-    testImplementation 'org.projectlombok:lombok:1.18.32'
+    testImplementation 'org.projectlombok:lombok:1.18.30'
     testImplementation files('lib/MindustryToolPluginLoader.jar')
 }
 
 test {
     useJUnitPlatform() // Needed for JUnit 5
-}
-
-tasks.withType(JavaCompile) {
-    options.annotationProcessorPath = configurations.annotationProcessor
-    // options.release = 8
 }
 
 jar{

@@ -1,22 +1,24 @@
 package mindustrytool.handler;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import arc.util.Http;
+import arc.util.Http.HttpRequest;
+import arc.util.Http.HttpResponse;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
@@ -31,7 +33,6 @@ public class ApiGateway {
 
     private final WeakReference<ServerController> context;
     private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
-    private HttpClient httpClient;
 
     public Cache<PaginationRequest, ServerDto> serverQueryCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofSeconds(15))
@@ -40,10 +41,6 @@ public class ApiGateway {
 
     public ApiGateway(WeakReference<ServerController> context) {
         this.context = context;
-        httpClient = HttpClient.newBuilder()//
-                .connectTimeout(Duration.ofSeconds(2))//
-                .executor(context.get().BACKGROUND_TASK_EXECUTOR)
-                .build();
 
         Log.info("Api gateway handler created: " + this);
     }
@@ -55,24 +52,20 @@ public class ApiGateway {
 
         context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
             if (buildLogs.size() > 0) {
-
-                Log.debug("Sending build logs: " + buildLogs.size());
-
-                var logs = new ArrayList<>(buildLogs);
-
-                buildLogs.clear();
-
-                var request = setHeaders(HttpRequest.newBuilder(path("build-log")))//
-                        .header("Content-Type", "application/json")//
-                        .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(logs)))//
-                        .build();
-
                 try {
-                    httpClient.send(request, BodyHandlers.ofString());
-                } catch (IOException | InterruptedException e) {
+
+                    Log.debug("Sending build logs: " + buildLogs.size());
+
+                    List logs = new ArrayList<>(buildLogs);
+
+                    buildLogs.clear();
+
+                    send((post("build-log"))
+                            .header("Content-Type", "application/json")//
+                            .content(JsonUtils.toJsonString(logs)));
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
-
             }
 
         }, 0, 1, TimeUnit.SECONDS);
@@ -83,63 +76,77 @@ public class ApiGateway {
 
     public void unload() {
         serverQueryCache.invalidateAll();
-        httpClient = null;
         serverQueryCache = null;
     }
 
-    private Builder setHeaders(Builder builder) {
-        return builder
-                .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
-                .timeout(Duration.ofSeconds(2));
-    }
-
-    private URI path(String... path) {
-        var uri = URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
+    private String uri(String... path) {
+        URI uri = URI.create("http://server-manager:8088/internal-api/v1/" + Strings.join("/", path));
         Log.debug("[REQUEST]: " + uri);
 
-        return uri;
+        return uri.toString();
+    }
+
+    private HttpRequest get(String... path) {
+        return Http.get(uri(path));
+    }
+
+    private HttpRequest post(String... path) {
+        return Http.post(uri(path));
+    }
+
+    private HttpResponse send(HttpRequest req) {
+        return send(req, 2);
+    }
+
+    private HttpResponse send(HttpRequest req, int timeout) {
+        CompletableFuture<HttpResponse> res = new CompletableFuture<>();
+        req.error(res::completeExceptionally).submit(result -> {
+            if (result.getStatus().code >= 400) {
+                res.completeExceptionally(new RuntimeException(result.getResultAsString()));
+            } else {
+                res.complete(result);
+            }
+        });
+        try {
+            return res.get(timeout, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public MindustryPlayerDto setPlayer(PlayerDto payload) {
-        var request = setHeaders(HttpRequest.newBuilder(path("players")))//
+        HttpResponse response = send((post("players"))
                 .header("Content-Type", "application/json")//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
-                .build();
+                .content(JsonUtils.toJsonString(payload)));
 
         try {
-            var result = httpClient.send(request, BodyHandlers.ofString()).body();
+            String result = response.getResultAsString();
 
             if (result == null || result.isEmpty()) {
                 throw new RuntimeException("Received empty response from server");
             }
 
             return JsonUtils.readJsonAsClass(result, MindustryPlayerDto.class);
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public void sendPlayerLeave(PlayerDto payload) {
-        var request = setHeaders(HttpRequest.newBuilder(path("players/leave")))//
-                .header("Content-Type", "application/json")//
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJsonString(payload)))//
-                .build();
-
         try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+            send(post("players/leave")
+                    .header("Content-Type", "application/json")//
+                    .content(JsonUtils.toJsonString(payload)));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
     public int getTotalPlayer() {
-        var request = setHeaders(HttpRequest.newBuilder(path("total-player")))//
-                .GET()//
-                .build();
-
         try {
-            var result = httpClient.send(request, BodyHandlers.ofString()).body();
+            HttpResponse response = send(get("total-player"));
+            String result = response.getResultAsString();
             return JsonUtils.readJsonAsClass(result, Integer.class);
         } catch (Exception e) {
             return 0;
@@ -148,14 +155,11 @@ public class ApiGateway {
     }
 
     public void sendChatMessage(String chat) {
-        var request = setHeaders(HttpRequest.newBuilder(path("chat")))//
-                .header("Content-Type", "application/json")//
-                .POST(HttpRequest.BodyPublishers.ofString(chat))//
-                .build();
-
         try {
-            httpClient.send(request, BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+            send(post("chat")
+                    .header("Content-Type", "application/json")//
+                    .content(JsonUtils.toJsonString(chat)));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -171,15 +175,12 @@ public class ApiGateway {
         Object lock = locks.computeIfAbsent(targetServerId, k -> new Object());
 
         synchronized (lock) {
-            var request = setHeaders(HttpRequest.newBuilder(path("host")))//
-                    .header("Content-Type", "text/plain")//
-                    .POST(HttpRequest.BodyPublishers.ofString(targetServerId))//
-                    .timeout(Duration.ofSeconds(45))
-                    .build();
-
             try {
-                return httpClient.send(request, BodyHandlers.ofString()).body();
-            } catch (IOException | InterruptedException e) {
+                return send(post("host")
+                        .header("Content-Type", "text/plain")//
+                        .content(targetServerId), 45)
+                        .getResultAsString();
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
                 locks.remove(targetServerId);
@@ -189,14 +190,10 @@ public class ApiGateway {
 
     public synchronized ServerDto getServers(PaginationRequest request) {
         return serverQueryCache.get(request, _ignore -> {
-            var req = setHeaders(
-                    HttpRequest.newBuilder(
-                            path("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize()))))//
-                    .GET()//
-                    .build();
-
             try {
-                var result = httpClient.send(req, BodyHandlers.ofString()).body();
+                HttpResponse response = send(
+                        get("servers?page=%s&size=%s".formatted(request.getPage(), request.getSize())));
+                String result = response.getResultAsString();
                 return JsonUtils.readJsonAsClass(result, ServerDto.class);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -206,20 +203,15 @@ public class ApiGateway {
     }
 
     public String translate(String text, String targetLanguage) {
-        var req = setHeaders(HttpRequest.newBuilder(path("translate/%s".formatted(targetLanguage))))//
-                .POST(HttpRequest.BodyPublishers.ofString(text))//
-                .timeout(Duration.ofSeconds(10))
-                .build();
-
         try {
-            var result = httpClient.send(req, BodyHandlers.ofString());
+            HttpResponse response = send(post("translate/%s".formatted(targetLanguage))
+                    .header("Content-Type", "text/plain")//
+                    .content(text));
 
-            if (result.statusCode() != 200) {
-                throw new RuntimeException("Can not translate: " + result.body());
-            }
+            String result = response.getResultAsString();
 
-            return result.body();
-        } catch (IOException | InterruptedException e) {
+            return result;
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

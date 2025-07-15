@@ -1,5 +1,6 @@
 package mindustrytool.type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -12,7 +13,7 @@ public class ModMetaDto {
     private String internalName;
     private String minGameVersion = "0";
     private String displayName, author, description, subtitle, version, main, repo;
-    private List<String> dependencies = List.of();
+    private List<String> dependencies = new ArrayList<>();
     private boolean hidden;
     private boolean java;
 }

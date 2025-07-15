@@ -12,8 +12,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.lang.ref.WeakReference;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mindustry.game.EventType.MenuOptionChooseEvent;
 import mindustry.game.EventType.PlayerLeave;
@@ -58,7 +60,7 @@ public class HudHandler {
     public void showFollowDisplay(Player player, int id, String title, String description, Object state,
             List<HudOption> options) {
         showFollowDisplays(player, id, title, description, state,
-                options.stream().map(option -> List.of(option)).toList());
+                options.stream().map(option -> Arrays.asList(option)).collect(Collectors.toList()));
     }
 
     public synchronized void showFollowDisplays(Player player, int id, String title, String description,
@@ -75,7 +77,7 @@ public class HudHandler {
 
         var callbacks = options.stream()//
                 .flatMap(option -> option.stream().map(l -> l.getCallback()))//
-                .toList();
+                .collect(Collectors.toList());
 
         var userMenu = menus.get(player.uuid(), k -> new LinkedList<>());
 

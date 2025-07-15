@@ -2,6 +2,7 @@ package mindustrytool.handler;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -198,7 +199,8 @@ public class ClientCommandHandler {
             }
 
             session.votedVNW = true;
-            int cur = context.get().sessionHandler.count(p -> p.votedVNW), req = Mathf.ceil(0.6f * Groups.player.size());
+            int cur = context.get().sessionHandler.count(p -> p.votedVNW),
+                    req = Mathf.ceil(0.6f * Groups.player.size());
             Call.sendMessage(player.name + "[orange] has voted to "
                     + (waveVoted == 1 ? "send a new wave" : "skip [green]" + waveVoted + " waves") + ". [lightgray]("
                     + (req - cur) + " votes missing)");
@@ -308,38 +310,40 @@ public class ClientCommandHandler {
                     sendRedirectServerList(p, (int) s);
                 };
 
-                List<List<HudOption>> options = new ArrayList<>(List.of(
-                        List.of(HudHandler.option(invalid, "[#FFD700]Server name"),
+                List<List<HudOption>> options = new ArrayList<>(Arrays.asList(
+                        Arrays.asList(HudHandler.option(invalid, "[#FFD700]Server name"),
                                 HudHandler.option(invalid, "[#FFD700]Players playing")),
-                        List.of(HudHandler.option(invalid, "[#87CEEB]Server Gamemode"),
+                        Arrays.asList(HudHandler.option(invalid, "[#87CEEB]Server Gamemode"),
                                 HudHandler.option(invalid, "[#FFA500]Map Playing")),
-                        List.of(HudHandler.option(invalid, "[#DA70D6]Server Mods")),
-                        List.of(HudHandler.option(invalid, "[#B0B0B0]Server Description"))));
+                        Arrays.asList(HudHandler.option(invalid, "[#DA70D6]Server Mods")),
+                        Arrays.asList(HudHandler.option(invalid, "[#B0B0B0]Server Description"))));
 
                 servers.forEach(server -> {
                     PlayerPressCallback valid = (p, s) -> //
                     onServerChoose(p, server.getId().toString(), server.getName());
 
-                    options.add(List.of(HudHandler.option(invalid, "-----------------")));
-                    options.add(List.of(HudHandler.option(valid, "[#FFD700]%s".formatted(server.getName())),
+                    options.add(Arrays.asList(HudHandler.option(invalid, "-----------------")));
+                    options.add(Arrays.asList(HudHandler.option(valid, "[#FFD700]%s".formatted(server.getName())),
                             HudHandler.option(valid, "[#32CD32]Players: %d".formatted(server.getPlayers()))));
-                    options.add(List.of(HudHandler.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
+                    options.add(Arrays.asList(
+                            HudHandler.option(valid, "[#87CEEB]Gamemode: %s".formatted(server.getMode())),
                             HudHandler.option(valid, "[#1E90FF]Map: %s".formatted(
                                     server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {
-                        options.add(List.of(HudHandler.option(valid,
+                        options.add(Arrays.asList(HudHandler.option(valid,
                                 "[#DA70D6]Mods: %s".formatted(String.join(", ", server.getMods())))));
                     }
 
                     if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
                         options.add(
-                                List.of(HudHandler.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
+                                Arrays.asList(
+                                        HudHandler.option(valid, "[#B0B0B0]%s".formatted(server.getDescription()))));
                     }
 
                 });
 
-                options.add(List.of(//
+                options.add(Arrays.asList(//
                         page > 0//
                                 ? HudHandler.option((p, state) -> {
                                     sendRedirectServerList(player, (int) state - 1);
@@ -353,7 +357,7 @@ public class ClientCommandHandler {
                                 }, "[green]Next")
                                 : HudHandler.option(invalid, "No more")));
 
-                options.add(List.of(HudHandler.option(
+                options.add(Arrays.asList(HudHandler.option(
                         (p, state) -> context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
                         "[red]Close")));
 

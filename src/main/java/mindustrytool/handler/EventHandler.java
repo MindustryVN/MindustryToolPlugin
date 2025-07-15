@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +73,7 @@ public class EventHandler {
 
     private ScheduledFuture<?> updateServerTask, updateServerCore;
 
-    private final List<String> icons = List.of(//
+    private final List<String> icons = Arrays.asList(//
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
@@ -527,7 +528,7 @@ public class EventHandler {
                         && !serverData.getId().equals(ServerController.SERVER_ID)
                         && serverData.players > 0//
                 ) {
-                    var options = List.of(//
+                    var options = Arrays.asList(//
                             HudHandler.option((p, state) -> {
                                 context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
                             }, "[red]No"),
@@ -627,13 +628,13 @@ public class EventHandler {
                 mods.removeIf(m -> m.trim().equalsIgnoreCase("mindustrytoolplugin"));
 
                 if (server.getMapName() == null) {
-                    options.add(List.of(HudHandler.option(valid, "[yellow]%s".formatted(server.getName())),
+                    options.add(Arrays.asList(HudHandler.option(valid, "[yellow]%s".formatted(server.getName())),
                             HudHandler.option(valid, "[scarlet]Server offline.")));
                 } else {
-                    options.add(List.of(HudHandler.option(valid, server.getName()),
+                    options.add(Arrays.asList(HudHandler.option(valid, server.getName()),
                             HudHandler.option(valid, "[lime]Players:[] %d".formatted(server.getPlayers()))));
 
-                    options.add(List.of(
+                    options.add(Arrays.asList(
                             HudHandler.option(valid,
                                     "[cyan]Gamemode:[] %s".formatted(server.getMode().toLowerCase())),
                             HudHandler.option(valid, "[blue]Map:[] %s".formatted(server.getMapName()))));
@@ -645,21 +646,22 @@ public class EventHandler {
                 }
 
                 if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
-                    options.add(List.of(HudHandler.option(valid, "[grey]%s".formatted(server.getDescription()))));
+                    options.add(Arrays.asList(HudHandler.option(valid, "[grey]%s".formatted(server.getDescription()))));
                 }
 
-                options.add(List.of(HudHandler.option(invalid, "-----------------")));
+                options.add(Arrays.asList(HudHandler.option(invalid, "-----------------")));
             });
 
-            options.add(List.of(page > 0 ? HudHandler.option((p, state) -> {
+            options.add(Arrays.asList(page > 0 ? HudHandler.option((p, state) -> {
                 sendServerList(player, (int) state - 1);
             }, "[orange]Previous") : HudHandler.option(invalid, "First page"),
                     servers.size() == size ? HudHandler.option((p, state) -> {
                         sendServerList(player, (int) state + 1);
                     }, "[lime]Next") : HudHandler.option(invalid, "No more")));
 
-            options.add(List.of(
-                    HudHandler.option((p, state) -> context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
+            options.add(Arrays.asList(
+                    HudHandler.option(
+                            (p, state) -> context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVERS_UI),
                             "[scarlet]Close")));
 
             context.get().hudHandler.showFollowDisplays(player, HudHandler.SERVERS_UI, "List of all servers",

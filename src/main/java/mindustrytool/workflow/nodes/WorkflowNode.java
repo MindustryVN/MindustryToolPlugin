@@ -3,6 +3,7 @@ package mindustrytool.workflow.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -245,7 +246,7 @@ public abstract class WorkflowNode {
             var result = new StringBuilder();
             int lastEnd = 0;
 
-            for (var match : matcher.results().toList()) {
+            for (var match : matcher.results().collect(Collectors.toList())) {
                 String path = match.group(1);
 
                 result.append(value, lastEnd, match.start());

@@ -3,6 +3,7 @@ package mindustrytool.handler;
 import java.lang.ref.WeakReference;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -278,7 +279,7 @@ public class HttpServer {
                                 .setBanned(ban.banned)
                                 .setAdmin(ban.admin)
                                 .setLastKicked(ban.lastKicked))
-                        .toList();
+                        .collect(Collectors.toList());
             });
 
             ctx.json(result);
@@ -301,7 +302,7 @@ public class HttpServer {
 
         app.get("commands", ctx -> {
             var commands = context.get().serverCommandHandler.getHandler() == null
-                    ? List.of()
+                    ? Arrays.asList()
                     : context.get().serverCommandHandler.getHandler()//
                             .getCommandList()
                             .map(command -> new ServerCommandDto()
@@ -460,9 +461,9 @@ public class HttpServer {
                                         "group",
                                         thread.getThreadGroup() == null ? "null" : thread.getThreadGroup().getName(),
                                         "stacktrace",
-                                        List.of(thread.getStackTrace()).stream().map(stack -> stack.toString())
-                                                .toList()))
-                                .toList());
+                                        Arrays.asList(thread.getStackTrace()).stream().map(stack -> stack.toString())
+                                                .collect(Collectors.toList())))
+                                .collect(Collectors.toList()));
 
                 data.put("activeRequest", activeRequests.values());
 
@@ -555,7 +556,7 @@ public class HttpServer {
         // var map = Vars.state.map;
         // String mapName = map != null ? map.name() : "";
         // List<ModDto> mods = Vars.mods == null //
-        // ? List.of()
+        // ? Arrays.asList()
         // : Vars.mods.list().map(mod -> new ModDto()//
         // .setFilename(mod.file.name())//
         // .setName(mod.name)

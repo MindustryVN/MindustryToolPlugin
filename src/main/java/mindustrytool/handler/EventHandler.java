@@ -641,9 +641,8 @@ public class EventHandler {
                 }
 
                 if (server.getMods() != null && !server.getMods().isEmpty()) {
-                    options.add(List
-                            .of(HudHandler.option(valid,
-                                    String.format("[purple]Mods:[] %s", String.join(", ", mods)))));
+                    options.add(Arrays.asList(HudHandler.option(valid,
+                            String.format("[purple]Mods:[] %s", String.join(", ", mods)))));
                 }
 
                 if (server.getDescription() != null && !server.getDescription().trim().isEmpty()) {
@@ -678,14 +677,14 @@ public class EventHandler {
 
         context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
             try {
-                player.sendMessage(
-                        "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait"
-                                .formatted(name));
+                player.sendMessage(String.format(
+                        "[green]Starting server [white]%s, [white]this can take up to 1 minutes, please wait", name));
                 Log.info(String.format("Send host command to server %s %S", name, id));
                 var data = context.get().apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
-                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
-                        .formatted(player.coloredName(), name));
+                Call.sendMessage(
+                        String.format("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow",
+                                player.coloredName(), name));
 
                 String host = "";
                 int port = 6567;

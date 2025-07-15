@@ -266,8 +266,9 @@ public class ClientCommandHandler {
             context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
                 var data = context.get().apiGateway.host(id);
                 player.sendMessage("[green]Redirecting");
-                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
-                        .formatted(player.coloredName(), name));
+                Call.sendMessage(
+                        String.format("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow",
+                                player.coloredName(), name));
 
                 String host = "";
                 int port = 6567;
@@ -328,7 +329,7 @@ public class ClientCommandHandler {
                             HudHandler.option(valid, String.format("[#32CD32]Players: %d", server.getPlayers()))));
                     options.add(Arrays.asList(
                             HudHandler.option(valid, String.format("[#87CEEB]Gamemode: %s", server.getMode())),
-                            HudHandler.option(valid, "[#1E90FF]Map: %s".formatted(
+                            HudHandler.option(valid, String.format("[#1E90FF]Map: %s",
                                     server.getMapName() != null ? server.getMapName() : "[#FF4500]Server offline"))));
 
                     if (server.getMods() != null && !server.getMods().isEmpty()) {

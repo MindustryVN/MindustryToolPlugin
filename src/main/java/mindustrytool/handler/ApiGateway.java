@@ -87,11 +87,11 @@ public class ApiGateway {
     }
 
     private HttpRequest get(String... path) {
-        return Http.get(uri(path)).header("X-SERVER-ID", ServerController.SERVER_ID.toString());
+        return Http.get(uri(path));
     }
 
     private HttpRequest post(String... path) {
-        return Http.post(uri(path)).header("X-SERVER-ID", ServerController.SERVER_ID.toString());
+        return Http.post(uri(path));
     }
 
     private HttpResponse send(HttpRequest req) {
@@ -101,6 +101,7 @@ public class ApiGateway {
     private HttpResponse send(HttpRequest req, int timeout) {
         CompletableFuture<HttpResponse> res = new CompletableFuture<>();
         req
+                .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
                 .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
                 .submit(result -> {
                     if (result.getStatus().code >= 400) {

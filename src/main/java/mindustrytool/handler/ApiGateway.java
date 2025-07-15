@@ -100,13 +100,15 @@ public class ApiGateway {
 
     private HttpResponse send(HttpRequest req, int timeout) {
         CompletableFuture<HttpResponse> res = new CompletableFuture<>();
-        req.error(res::completeExceptionally).submit(result -> {
-            if (result.getStatus().code >= 400) {
-                res.completeExceptionally(new RuntimeException(result.getResultAsString()));
-            } else {
-                res.complete(result);
-            }
-        });
+        req
+                .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
+                .submit(result -> {
+                    if (result.getStatus().code >= 400) {
+                        res.completeExceptionally(new RuntimeException(req.url + " " + result.getResultAsString()));
+                    } else {
+                        res.complete(result);
+                    }
+                });
         try {
             return res.get(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {

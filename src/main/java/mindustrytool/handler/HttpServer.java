@@ -104,7 +104,7 @@ public class HttpServer {
 
             config.requestLogger.http((ctx, ms) -> {
                 if (!ctx.fullUrl().contains("stats")) {
-                    Log.debug("[" + ctx.method().name() + "] " + Math.round(ms) + "ms " + ctx.fullUrl());
+                    Log.info("[" + ctx.method().name() + "] " + Math.round(ms) + "ms " + ctx.fullUrl());
                 }
             });
         });

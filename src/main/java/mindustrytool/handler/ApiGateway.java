@@ -87,11 +87,11 @@ public class ApiGateway {
     }
 
     private HttpRequest get(String... path) {
-        return Http.get(uri(path));
+        return Http.get(uri(path)).header("X-SERVER-ID", ServerController.SERVER_ID.toString());
     }
 
     private HttpRequest post(String... path) {
-        return Http.post(uri(path));
+        return Http.post(uri(path)).header("X-SERVER-ID", ServerController.SERVER_ID.toString());
     }
 
     private HttpResponse send(HttpRequest req) {

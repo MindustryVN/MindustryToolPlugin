@@ -414,7 +414,9 @@ public class HttpServer {
                 ctx.json(context.get().workflow.getWorkflowContext());
             } catch (WorkflowError e) {
                 Log.err("Failed to load workflow", e);
-                ctx.status(400).json(Map.of("message", "Failed to load workflow: " + e.getMessage()));
+                HashMap<String, String> result = new HashMap<>();
+                result.put("message", "Failed to load workflow: " + e.getMessage());
+                ctx.status(400).json(result);
             }
         });
 
@@ -444,25 +446,30 @@ public class HttpServer {
                 gameStats.put("unitsCreated", Vars.state.stats.unitsCreated);
                 gameStats.put("wavesLasted", Vars.state.stats.wavesLasted);
 
-                data.put("executors", java.util.Map.of(
-                        "backgroundExecutor", context.get().BACKGROUND_TASK_EXECUTOR.toString(), //
-                        "backgroundScheduler", context.get().BACKGROUND_SCHEDULER.toString()//
-                ));
+                HashMap<String, String> executors = new HashMap<>();
+                executors.put("backgroundExecutor", context.get().BACKGROUND_TASK_EXECUTOR.toString());
+                executors.put("backgroundScheduler", context.get().BACKGROUND_SCHEDULER.toString());
+
+                data.put("executors", executors);
 
                 data.put("gameStats", gameStats);
                 data.put("locales", Vars.locales);
                 data.put("threads",
                         Thread.getAllStackTraces().keySet().stream()
                                 .sorted((a, b) -> a.getName().compareTo(b.getName()))
-                                .map(thread -> java.util.Map.of(
-                                        "id", thread.getId(),
-                                        "name", thread.getName(),
-                                        "state", thread.getState().name(),
-                                        "group",
-                                        thread.getThreadGroup() == null ? "null" : thread.getThreadGroup().getName(),
-                                        "stacktrace",
-                                        Arrays.asList(thread.getStackTrace()).stream().map(stack -> stack.toString())
-                                                .collect(Collectors.toList())))
+                                .map(thread -> {
+                                    HashMap<String, Object> info = new HashMap<>();
+
+                                    info.put("id", thread.getId());
+                                    info.put("name", thread.getName());
+                                    info.put("state", thread.getState().name());
+                                    info.put("group", thread.getThreadGroup() == null ? "null"
+                                            : thread.getThreadGroup().getName());
+                                    info.put("stacktrace", Arrays.asList(thread.getStackTrace()).stream()
+                                            .map(stack -> stack.toString()).collect(Collectors.toList()));
+
+                                    return info;
+                                })
                                 .collect(Collectors.toList()));
 
                 data.put("activeRequest", activeRequests.values());
@@ -474,14 +481,18 @@ public class HttpServer {
                     maps.add(tags);
                 });
                 data.put("maps",
-                        Vars.maps.all().map(map -> java.util.Map.of(
-                                "name", map.name(), //
-                                "author", map.author(), //
-                                "file", map.file.absolutePath(),
-                                "tags", map.tags,
-                                "description", map.description(),
-                                "width", map.width,
-                                "height", map.height)).list());
+                        Vars.maps.all().map(map -> {
+                            HashMap<String, Object> info = new HashMap<>();
+                            info.put("name", map.name()); //
+                            info.put("author", map.author()); //
+                            info.put("file", map.file.absolutePath());
+                            info.put("tags", map.tags);
+                            info.put("description", map.description());
+                            info.put("width", map.width);
+                            info.put("height", map.height);
+
+                            return info;
+                        }).list());
                 data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
                 data.put("votes", context.get().voteHandler.votes);
 
@@ -499,7 +510,9 @@ public class HttpServer {
             ctx.json(res);
         });
 
-        app.sse("workflow/events", client -> {
+        app.sse("workflow/events", client ->
+
+        {
             client.keepAlive();
             client.sendComment("connected");
 
@@ -514,8 +527,9 @@ public class HttpServer {
             Log.err("Unhandled api exception", exception);
 
             try {
-                var result = java.util.Map.of("message",
-                        exception.getMessage() == null ? "Unknown error" : exception.getMessage());
+
+                HashMap<String, Object> result = new HashMap<>();
+                result.put("message", exception.getMessage() == null ? "Unknown error" : exception.getMessage());
                 ctx.status(500).json(result);
             } catch (Exception e) {
                 Log.err("Failed to create error response", e);

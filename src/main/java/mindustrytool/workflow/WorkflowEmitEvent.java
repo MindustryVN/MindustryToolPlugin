@@ -30,7 +30,11 @@ public class WorkflowEmitEvent {
         variables.put(name, value);
         Log.debug("Add variable: " + name + " = " + value);
 
-        context.sendWorkflowEvent(new WorkflowEvent(current.getId(), "SET", Map.of(name, value.toString())));
+        HashMap<String, Object> vars = new HashMap<>();
+
+        vars.put(name, value);
+
+        context.sendWorkflowEvent(new WorkflowEvent(current.getId(), "SET", vars));
 
         return this;
     }
@@ -90,7 +94,9 @@ public class WorkflowEmitEvent {
             nextNode.execute(new WorkflowEmitEvent(step + 1, nextNode, context, variables));
         } catch (Exception e) {
             Log.err(e);
-            context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "ERROR", Map.of("message", e.getMessage())));
+            HashMap<String, Object> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "ERROR", error));
         }
         context.sendWorkflowEvent(new WorkflowEvent(nextNode.getId(), "EMIT", null));
     }

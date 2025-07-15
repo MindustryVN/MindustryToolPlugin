@@ -94,7 +94,7 @@ public class ServerCommandHandler {
             Player target = Groups.player.find(p -> p.uuid().equals(arg[0]));
 
             if (target != null) {
-                if (reason.isBlank()) {
+                if (reason.trim().isEmpty()) {
                     target.kick(KickReason.kick);
                 } else {
                     target.kick(reason);

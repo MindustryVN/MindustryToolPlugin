@@ -553,7 +553,7 @@ public class HttpServer {
         String gameMode = request.getMode();
         String commands = request.getHostCommand();
 
-        if (commands != null && !commands.isBlank()) {
+        if (commands != null && !commands.trim().isEmpty()) {
             String[] commandsArray = commands.split("\n");
             for (var command : commandsArray) {
                 Log.info("Host command: " + command);

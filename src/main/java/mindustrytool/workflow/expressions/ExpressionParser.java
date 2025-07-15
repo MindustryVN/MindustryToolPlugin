@@ -307,7 +307,7 @@ public class ExpressionParser {
             return null;
         }
 
-        if (path.isBlank()) {
+        if (path.trim().isEmpty()) {
             throw new WorkflowError("Trying to access empty path");
         }
 

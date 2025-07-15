@@ -122,7 +122,7 @@ public class Workflow {
 
     private void loadWorkflowFromFile() {
         String content = WORKFLOW_FILE.readString();
-        if (!content.isBlank()) {
+        if (!content.trim().isEmpty()) {
             workflowContext = JsonUtils.readJsonAsClass(content, WorkflowContext.class);
             load(workflowContext);
         }
@@ -310,13 +310,15 @@ public class Workflow {
                 " delay: " + delay);
 
         scheduledTasks
-                .add(context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay, delay,
+                .add(context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> tryRun(runnable), initialDelay,
+                        delay,
                         TimeUnit.SECONDS));
     }
 
     public void schedule(Runnable runnable, long delay) {
         Log.debug("Schedule task: " + runnable.getClass().getName() + " delay: " + delay);
-        scheduledTasks.add(context.get().BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
+        scheduledTasks
+                .add(context.get().BACKGROUND_SCHEDULER.schedule(() -> tryRun(runnable), delay, TimeUnit.SECONDS));
     }
 
 }

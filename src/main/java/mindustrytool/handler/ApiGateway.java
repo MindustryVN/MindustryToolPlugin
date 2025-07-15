@@ -102,6 +102,7 @@ public class ApiGateway {
         CompletableFuture<HttpResponse> res = new CompletableFuture<>();
         req
                 .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
+                .timeout(timeout * 1000)
                 .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
                 .submit(result -> {
                     if (result.getStatus().code >= 400) {

@@ -1,10 +1,14 @@
 package mindustrytool.utils;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import arc.Core;
 import arc.util.Log;
@@ -107,6 +111,15 @@ public class Utils {
             return future.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static String readInputStreamAsString(InputStream inputStream) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(inputStream, "UTF-8"))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (Throwable error) {
+            throw new RuntimeException(error);
         }
     }
 }

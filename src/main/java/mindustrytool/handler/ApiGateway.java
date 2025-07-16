@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -22,6 +20,7 @@ import arc.util.Http.HttpResponse;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
+import mindustrytool.utils.Utils;
 import mindustrytool.ServerController;
 import mindustrytool.type.BuildLogDto;
 import mindustrytool.type.MindustryPlayerDto;
@@ -103,17 +102,12 @@ public class ApiGateway {
         req
                 .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
                 .timeout(timeout * 1000)
+                .redirects(true)
                 .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
-                .submit(result -> {
-                    if (result.getStatus().code >= 400) {
-                        res.completeExceptionally(new RuntimeException(req.url + " " + result.getResultAsString()));
-                    } else {
-                        res.complete(result);
-                    }
-                });
+                .submit(res::complete);
         try {
             return res.get(timeout, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
@@ -124,9 +118,9 @@ public class ApiGateway {
                 .content(JsonUtils.toJsonString(payload)));
 
         try {
-            String result = response.getResultAsString();
+            String result = Utils.readInputStreamAsString(response.getResultAsStream());
 
-            if (result == null || result.isEmpty()) {
+            if (result.isEmpty()) {
                 throw new RuntimeException("Received empty response from server");
             }
 
@@ -150,7 +144,7 @@ public class ApiGateway {
     public int getTotalPlayer() {
         try {
             HttpResponse response = send(get("total-player"));
-            String result = response.getResultAsString();
+            String result = Utils.readInputStreamAsString(response.getResultAsStream());
             return JsonUtils.readJsonAsClass(result, Integer.class);
         } catch (Exception e) {
             return 0;
@@ -180,10 +174,10 @@ public class ApiGateway {
 
         synchronized (lock) {
             try {
-                return send(post("host")
+                return Utils.readInputStreamAsString(send(post("host")
                         .header("Content-Type", "text/plain")//
                         .content(targetServerId), 45)
-                        .getResultAsString();
+                        .getResultAsStream());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
@@ -197,7 +191,7 @@ public class ApiGateway {
             try {
                 HttpResponse response = send(
                         get(String.format("servers?page=%s&size=%s", request.getPage(), request.getSize())));
-                String result = response.getResultAsString();
+                String result = Utils.readInputStreamAsString(response.getResultAsStream());
                 return JsonUtils.readJsonAsClass(result, ServerDto.class);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -212,7 +206,7 @@ public class ApiGateway {
                     .header("Content-Type", "text/plain")//
                     .content(text));
 
-            String result = response.getResultAsString();
+            String result = Utils.readInputStreamAsString(response.getResultAsStream());
 
             return result;
         } catch (Exception e) {

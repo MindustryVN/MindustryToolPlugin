@@ -616,9 +616,7 @@ public class HttpServer {
     public byte[] mapPreview() {
         Pixmap pix = null;
         try {
-            var map = Vars.state.map;
-
-            if (map != null) {
+            if (Vars.state.map != null) {
                 pix = MapIO.generatePreview(Vars.world.tiles);
                 Fi file = Vars.dataDirectory.child(MAP_PREVIEW_FILE_NAME);
                 file.writePng(pix);

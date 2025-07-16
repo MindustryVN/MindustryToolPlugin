@@ -16,7 +16,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import arc.util.Http;
 import arc.util.Http.HttpRequest;
-import arc.util.Http.HttpResponse;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
@@ -93,18 +92,40 @@ public class ApiGateway {
         return Http.post(uri(path));
     }
 
-    private HttpResponse send(HttpRequest req) {
-        return send(req, 2);
+    private void send(HttpRequest req) {
+        send(req, 2, Void.class);
     }
 
-    private HttpResponse send(HttpRequest req, int timeout) {
-        CompletableFuture<HttpResponse> res = new CompletableFuture<>();
+    private <T> T send(HttpRequest req, Class<T> clazz) {
+        return send(req, 2, clazz);
+    }
+
+    private <T> T send(HttpRequest req, int timeout, Class<T> clazz) {
+        CompletableFuture<T> res = new CompletableFuture<>();
         req
                 .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
                 .timeout(timeout * 1000)
                 .redirects(true)
                 .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
-                .submit(res::complete);
+                .submit(response -> {
+                    try {
+                        if (clazz.equals(Void.class)) {
+                            res.complete(null);
+                            return;
+                        }
+
+                        if (clazz.equals(String.class)) {
+                            res.complete((T) response.getResultAsString());
+                            return;
+                        }
+
+                        res.complete(JsonUtils
+                                .readJsonAsClass(Utils.readInputStreamAsString(response.getResultAsStream()), clazz));
+                    } catch (Exception e) {
+                        res.completeExceptionally(e);
+                    }
+
+                });
         try {
             return res.get(timeout, TimeUnit.SECONDS);
         } catch (Throwable e) {
@@ -113,18 +134,11 @@ public class ApiGateway {
     }
 
     public MindustryPlayerDto setPlayer(PlayerDto payload) {
-        HttpResponse response = send((post("players"))
-                .header("Content-Type", "application/json")//
-                .content(JsonUtils.toJsonString(payload)));
 
         try {
-            String result = Utils.readInputStreamAsString(response.getResultAsStream());
-
-            if (result.isEmpty()) {
-                throw new RuntimeException("Received empty response from server");
-            }
-
-            return JsonUtils.readJsonAsClass(result, MindustryPlayerDto.class);
+            return send((post("players"))
+                    .header("Content-Type", "application/json")//
+                    .content(JsonUtils.toJsonString(payload)), MindustryPlayerDto.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -143,10 +157,9 @@ public class ApiGateway {
 
     public int getTotalPlayer() {
         try {
-            HttpResponse response = send(get("total-player"));
-            String result = Utils.readInputStreamAsString(response.getResultAsStream());
-            return JsonUtils.readJsonAsClass(result, Integer.class);
+            return send(get("total-player"), Integer.class);
         } catch (Exception e) {
+            e.printStackTrace();
             return 0;
         }
 
@@ -174,10 +187,9 @@ public class ApiGateway {
 
         synchronized (lock) {
             try {
-                return Utils.readInputStreamAsString(send(post("host")
+                return send(post("host")
                         .header("Content-Type", "text/plain")//
-                        .content(targetServerId), 45)
-                        .getResultAsStream());
+                        .content(targetServerId), 45, String.class);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
@@ -189,10 +201,9 @@ public class ApiGateway {
     public synchronized ServerDto getServers(PaginationRequest request) {
         return serverQueryCache.get(request, _ignore -> {
             try {
-                HttpResponse response = send(
-                        get(String.format("servers?page=%s&size=%s", request.getPage(), request.getSize())));
-                String result = Utils.readInputStreamAsString(response.getResultAsStream());
-                return JsonUtils.readJsonAsClass(result, ServerDto.class);
+                return send(
+                        get(String.format("servers?page=%s&size=%s", request.getPage(), request.getSize())),
+                        ServerDto.class);
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ServerDto();
@@ -202,13 +213,9 @@ public class ApiGateway {
 
     public String translate(String text, String targetLanguage) {
         try {
-            HttpResponse response = send(post(String.format("translate/%s", targetLanguage))
+            return send(post(String.format("translate/%s", targetLanguage))
                     .header("Content-Type", "text/plain")//
-                    .content(text));
-
-            String result = Utils.readInputStreamAsString(response.getResultAsStream());
-
-            return result;
+                    .content(text), String.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

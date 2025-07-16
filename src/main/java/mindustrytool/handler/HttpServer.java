@@ -607,6 +607,9 @@ public class HttpServer {
         // .setStatus(Vars.state.isGame() ? "HOST" : "UP");
 
         return new StatsDto()//
+                .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
+                .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
+                .setVersion("V" + Version.number + "Build" + Version.build)
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 

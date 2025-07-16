@@ -6,10 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.pf4j.Plugin;
 
@@ -59,8 +57,7 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
             20,
             5,
             TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>(),
-            new DefaultThreadFactory());
+            new SynchronousQueue<Runnable>());
 
     public final ScheduledExecutorService BACKGROUND_SCHEDULER = Executors
             .newSingleThreadScheduledExecutor();
@@ -165,8 +162,8 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void stop() {
         isUnloaded = true;
-        BACKGROUND_TASK_EXECUTOR.shutdown();
-        BACKGROUND_SCHEDULER.shutdown();
+        BACKGROUND_TASK_EXECUTOR.shutdownNow();
+        BACKGROUND_SCHEDULER.shutdownNow();
 
         eventHandler.unload();
         httpServer.unload();
@@ -193,31 +190,5 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
     @Override
     public void delete() {
         Log.info("Server controller deleted: " + this);
-    }
-
-    private static class DefaultThreadFactory implements ThreadFactory {
-        private static final AtomicInteger poolNumber = new AtomicInteger(1);
-        private final ThreadGroup group;
-        private final AtomicInteger threadNumber = new AtomicInteger(1);
-        private final String namePrefix;
-
-        @SuppressWarnings("deprecation")
-        DefaultThreadFactory() {
-            @SuppressWarnings("removal")
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = "background-pool-" + poolNumber.getAndIncrement() + "-thread-";
-        }
-
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                    namePrefix + threadNumber.getAndIncrement(),
-                    0);
-            if (t.isDaemon())
-                t.setDaemon(false);
-            if (t.getPriority() != Thread.NORM_PRIORITY)
-                t.setPriority(Thread.NORM_PRIORITY);
-            return t;
-        }
     }
 }

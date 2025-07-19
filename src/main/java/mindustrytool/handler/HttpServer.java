@@ -590,7 +590,7 @@ public class HttpServer {
         // .setVersion(mod.meta.version)))
         // .list();
 
-        // int players = Groups.player.size();
+        int players = Groups.player.size();
 
         // return new StatsDto()//
         // .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
@@ -609,6 +609,7 @@ public class HttpServer {
         return new StatsDto()//
                 .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
                 .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
+                .setPlayers(players)//
                 .setVersion("V" + Version.number + "Build" + Version.build)
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }

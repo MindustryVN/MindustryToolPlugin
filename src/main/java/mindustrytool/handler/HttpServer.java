@@ -567,49 +567,43 @@ public class HttpServer {
     }
 
     private StatsDto getStats() {
-        // var map = Vars.state.map;
-        // String mapName = map != null ? map.name() : "";
-        // List<ModDto> mods = Vars.mods == null //
-        // ? Arrays.asList()
-        // : Vars.mods.list().map(mod -> new ModDto()//
-        // .setFilename(mod.file.name())//
-        // .setName(mod.name)
-        // .setMeta(new ModMetaDto()//
-        // .setAuthor(mod.meta.author)//
-        // .setDependencies(mod.meta.dependencies.list())
-        // .setDescription(mod.meta.description)
-        // .setDisplayName(mod.meta.displayName)
-        // .setHidden(mod.meta.hidden)
-        // .setInternalName(mod.meta.internalName)
-        // .setJava(mod.meta.java)
-        // .setMain(mod.meta.main)
-        // .setMinGameVersion(mod.meta.minGameVersion)
-        // .setName(mod.meta.name)
-        // .setRepo(mod.meta.repo)
-        // .setSubtitle(mod.meta.subtitle)
-        // .setVersion(mod.meta.version)))
-        // .list();
+        var map = Vars.state.map;
+        String mapName = map != null ? map.name() : "";
+        List<ModDto> mods = Vars.mods == null //
+                ? Arrays.asList()
+                : Vars.mods.list().map(mod -> new ModDto()//
+                        .setFilename(mod.file.name())//
+                        .setName(mod.name)
+                        .setMeta(new ModMetaDto()//
+                                .setAuthor(mod.meta.author)//
+                                .setDependencies(mod.meta.dependencies.list())
+                                .setDescription(mod.meta.description)
+                                .setDisplayName(mod.meta.displayName)
+                                .setHidden(mod.meta.hidden)
+                                .setInternalName(mod.meta.internalName)
+                                .setJava(mod.meta.java)
+                                .setMain(mod.meta.main)
+                                .setMinGameVersion(mod.meta.minGameVersion)
+                                .setName(mod.meta.name)
+                                .setRepo(mod.meta.repo)
+                                .setSubtitle(mod.meta.subtitle)
+                                .setVersion(mod.meta.version)))
+                        .list();
 
-        // int players = Groups.player.size();
-
-        // return new StatsDto()//
-        // .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
-        // .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
-        // .setPlayers(players)//
-        // .setMapName(mapName)
-        // .setMods(mods)//
-        // .setTps(Core.graphics.getFramesPerSecond())//
-        // .setHosting(Vars.state.isGame())
-        // .setPaused(Vars.state.isPaused())//
-        // .setVersion("V" + Version.number + "Build" + Version.build)
-        // .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
-        // .select(value -> Time.millis() - value < 0).size)//
-        // .setStatus(Vars.state.isGame() ? "HOST" : "UP");
+        int players = Groups.player.size();
 
         return new StatsDto()//
                 .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
                 .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
+                .setPlayers(players)//
+                .setMapName(mapName)
+                .setMods(mods)//
+                .setTps(Core.graphics.getFramesPerSecond())//
+                .setHosting(Vars.state.isGame())
+                .setPaused(Vars.state.isPaused())//
                 .setVersion("V" + Version.number + "Build" + Version.build)
+                .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
+                        .select(value -> Time.millis() - value < 0).size)//
                 .setStatus(Vars.state.isGame() ? "HOST" : "UP");
     }
 

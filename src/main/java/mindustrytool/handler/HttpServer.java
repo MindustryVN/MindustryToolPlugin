@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -521,6 +522,27 @@ public class HttpServer {
             });
 
             context.get().workflow.getWorkflowEventConsumers().add(client);
+        });
+
+        app.exception(TimeoutException.class, (exception, ctx) -> {
+            Log.warn("Timeout exception", exception);
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("message", exception.getMessage() == null ? "Unknown error" : exception.getMessage());
+            ctx.status(400).json(result);
+        });
+
+        app.exception(Exception.class, (exception, ctx) -> {
+            Log.err("Unhandled api exception", exception);
+
+            try {
+
+                HashMap<String, Object> result = new HashMap<>();
+                result.put("message", exception.getMessage() == null ? "Unknown error" : exception.getMessage());
+                ctx.status(500).json(result);
+            } catch (Exception e) {
+                Log.err("Failed to create error response", e);
+                ctx.status(500).json("Failed to create error response");
+            }
         });
 
         app.exception(Exception.class, (exception, ctx) -> {

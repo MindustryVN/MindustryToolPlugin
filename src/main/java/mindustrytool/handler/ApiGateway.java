@@ -129,12 +129,11 @@ public class ApiGateway {
         try {
             return res.get(timeout, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(req.method + " " + req.url,  e); 
         }
     }
 
     public MindustryPlayerDto setPlayer(PlayerDto payload) {
-
         try {
             return send((post("players"))
                     .header("Content-Type", "application/json")//

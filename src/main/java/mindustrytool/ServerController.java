@@ -143,8 +143,6 @@ public class ServerController extends Plugin implements MindustryToolPlugin {
                 eventHandler.onServerLoad(serverLoad);
             } else if (event instanceof PlayerConnect playerConnect) {
                 eventHandler.onPlayerConnect(playerConnect);
-            } else if (event instanceof BlockBuildEndEvent blockBuild) {
-                eventHandler.onBuildBlockEnd(blockBuild);
             } else if (event instanceof TapEvent tapEvent) {
                 eventHandler.onTap(tapEvent);
             } else if (event instanceof MenuOptionChooseEvent menuOption) {

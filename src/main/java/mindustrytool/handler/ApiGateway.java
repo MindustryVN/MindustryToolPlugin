@@ -43,31 +43,8 @@ public class ApiGateway {
         Log.info("Api gateway handler created: " + this);
     }
 
-    public final BlockingQueue<BuildLogDto> buildLogs = new LinkedBlockingQueue<>(100);
-
     public void init() {
         Log.info("Setup api gateway");
-
-        context.get().BACKGROUND_SCHEDULER.scheduleWithFixedDelay(() -> {
-            if (buildLogs.size() > 0) {
-                try {
-
-                    Log.debug("Sending build logs: " + buildLogs.size());
-
-                    List logs = new ArrayList<>(buildLogs);
-
-                    buildLogs.clear();
-
-                    send((post("build-log"))
-                            .header("Content-Type", "application/json")//
-                            .content(JsonUtils.toJsonString(logs)));
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }, 0, 1, TimeUnit.SECONDS);
-
         Log.info("Setup api gateway done");
 
     }
@@ -173,12 +150,6 @@ public class ApiGateway {
             e.printStackTrace();
         }
 
-    }
-
-    public void sendBuildLog(BuildLogDto buildLog) {
-        if (!buildLogs.offer(buildLog)) {
-            Log.warn("Build log queue is full. Dropping log.");
-        }
     }
 
     public String host(String targetServerId) {

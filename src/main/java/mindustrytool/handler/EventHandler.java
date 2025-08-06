@@ -227,50 +227,6 @@ public class EventHandler {
         }
     }
 
-    public void onBuildBlockEnd(BlockBuildEndEvent event) {
-        try {
-
-            if (event.unit == null || !event.unit.isPlayer()) {
-                return;
-            }
-
-            var tile = event.tile;
-
-            if (tile == null) {
-                return;
-            }
-
-            var building = event.tile.build;
-
-            if (building == null) {
-                return;
-            }
-
-            var player = event.unit.getPlayer();
-            var playerName = player.plainName();
-            var locale = player.locale();
-            var team = new TeamDto()//
-                    .setColor(player.team().color.toString())
-                    .setName(player.team().name);
-
-            var buildLog = new BuildLogDto()//
-                    .setPlayer(new PlayerDto()//
-                            .setLocale(locale)//
-                            .setName(playerName)
-                            .setTeam(team)
-                            .setUuid(player.uuid()))
-                    .setBuilding(new BuildingDto()//
-                            .setX(building.x())
-                            .setY(building.y())
-                            .setName(building.block != null ? building.block.name : "Unknown"))
-                    .setMessage(event.breaking ? "Breaking" : "Building");
-
-            context.get().apiGateway.sendBuildLog(buildLog);
-        } catch (Throwable e) {
-            Log.err(e);
-        }
-    }
-
     private void setName(Player player, String name, int level) {
         try {
             var icon = getIconBaseOnLevel(level);

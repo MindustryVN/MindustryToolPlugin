@@ -105,7 +105,7 @@ public class HttpServer {
             config.registerPlugin(new RouteOverviewPlugin());
 
             config.requestLogger.http((ctx, ms) -> {
-                if (!ctx.fullUrl().contains("stats")) {
+                if (!ctx.fullUrl().contains("stats") && !ctx.fullUrl().contains("hosting")) {
                     Log.info("[" + ctx.method().name() + "] " + Math.round(ms) + "ms " + ctx.fullUrl());
                 }
             });

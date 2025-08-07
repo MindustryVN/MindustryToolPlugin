@@ -3,12 +3,8 @@ package mindustrytool.handler;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -16,12 +12,12 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import arc.util.Http;
 import arc.util.Http.HttpRequest;
+import arc.util.Http.HttpStatusException;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustrytool.utils.JsonUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.ServerController;
-import mindustrytool.type.BuildLogDto;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
 import mindustrytool.type.PlayerDto;
@@ -29,7 +25,7 @@ import mindustrytool.type.ServerDto;
 
 public class ApiGateway {
 
-    private final WeakReference<ServerController> context;
+    final WeakReference<ServerController> context;
     private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
 
     public Cache<PaginationRequest, ServerDto> serverQueryCache = Caffeine.newBuilder()
@@ -83,7 +79,15 @@ public class ApiGateway {
                 .header("X-SERVER-ID", ServerController.SERVER_ID.toString())
                 .timeout(timeout * 1000)
                 .redirects(true)
-                .error(error -> res.completeExceptionally(new RuntimeException(req.url, error)))
+                .error(error -> {
+                    if (error instanceof HttpStatusException) {
+                        HttpStatusException e = (HttpStatusException) error;
+                        res.completeExceptionally(
+                                new RuntimeException(req.url + " " + e.response.getResultAsString(), e));
+                    } else {
+                        res.completeExceptionally(new RuntimeException(req.url, error));
+                    }
+                })
                 .submit(response -> {
                     try {
                         if (clazz.equals(Void.class)) {
@@ -106,7 +110,7 @@ public class ApiGateway {
         try {
             return res.get(timeout, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            throw new RuntimeException(req.method + " " + req.url,  e); 
+            throw new RuntimeException(req.method + " " + req.url, e);
         }
     }
 

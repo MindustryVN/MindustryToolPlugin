@@ -87,8 +87,12 @@ public class Utils {
     public static void appPostWithTimeout(Runnable r, int timeout) {
         CompletableFuture<Void> v = new CompletableFuture<>();
         Core.app.post(() -> {
-            r.run();
-            v.complete(null);
+            try {
+                r.run();
+                v.complete(null);
+            } catch (Throwable e) {
+                v.completeExceptionally(e);
+            }
         });
         try {
             v.get(timeout, TimeUnit.MILLISECONDS);
@@ -104,7 +108,11 @@ public class Utils {
     public static <T> T appPostWithTimeout(Supplier<T> fn, int timeout) {
         CompletableFuture<T> future = new CompletableFuture<T>();
         Core.app.post(() -> {
-            future.complete(fn.get());
+            try {
+                future.complete(fn.get());
+            } catch (Throwable e) {
+                future.completeExceptionally(e);
+            }
         });
 
         try {

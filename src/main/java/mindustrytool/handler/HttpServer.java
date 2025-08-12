@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import arc.Core;
 import arc.files.Fi;
 import arc.graphics.Pixmap;
+import arc.struct.ObjectMap;
+import arc.struct.ObjectMap.Entries;
 import arc.struct.Seq;
 import arc.util.CommandHandler.Command;
 import arc.util.CommandHandler.ResponseType;
@@ -51,6 +53,7 @@ import mindustrytool.type.StatsDto;
 import mindustrytool.type.TeamDto;
 import mindustrytool.utils.Utils;
 import mindustrytool.workflow.errors.WorkflowError;
+import mindustrytool.workflow.nodes.WorkflowNode;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.json.JavalinJackson;
@@ -97,7 +100,7 @@ public class HttpServer {
             config.http.asyncTimeout = 5_000;
             config.useVirtualThreads = true;
 
-            var pool = new ExecutorThreadPool(50, 0);
+            ExecutorThreadPool pool = new ExecutorThreadPool(50, 0);
             pool.setName("HttpServer");
             config.jetty.threadPool = pool;
             config.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests
@@ -133,13 +136,13 @@ public class HttpServer {
         Log.info("Setup http server");
 
         app.get("stats", ctx -> {
-            var stats = Utils.appPostWithTimeout(this::getStats);
+            StatsDto stats = Utils.appPostWithTimeout(this::getStats);
             ctx.contentType(ContentType.APPLICATION_JSON);
             ctx.json(stats);
         });
 
         app.get("image", ctx -> {
-            var mapPreview = Utils.appPostWithTimeout(this::mapPreview);
+            byte[] mapPreview = Utils.appPostWithTimeout(this::mapPreview);
             ctx.contentType(ContentType.IMAGE_PNG).result(mapPreview);
         });
 
@@ -214,10 +217,10 @@ public class HttpServer {
 
         app.get("players", ctx -> {
 
-            var players = new ArrayList<Player>();
+            ArrayList<Player> players = new ArrayList<Player>();
             Groups.player.forEach(players::add);
 
-            var result = Utils
+            List<PlayerDto> result = Utils
                     .appPostWithTimeout(() -> (players.stream()//
                             .map(player -> new PlayerDto()//
                                     .setName(player.coloredName())//
@@ -237,10 +240,10 @@ public class HttpServer {
         });
 
         app.get("player-infos", ctx -> {
-            var pageString = ctx.queryParam("page");
-            var sizeString = ctx.queryParam("size");
-            var isBannedString = ctx.queryParam("banned");
-            var filter = ctx.queryParam("filter");
+            String pageString = ctx.queryParam("page");
+            String sizeString = ctx.queryParam("size");
+            String isBannedString = ctx.queryParam("banned");
+            String filter = ctx.queryParam("filter");
 
             int page = pageString != null ? Integer.parseInt(pageString) : 0;
             int size = sizeString != null ? Integer.parseInt(sizeString) : 10;
@@ -260,7 +263,7 @@ public class HttpServer {
                 conditions.add(info -> info.banned == isBanned);
             }
 
-            var result = Utils.appPostWithTimeout(() -> {
+            List<PlayerInfoDto> result = Utils.appPostWithTimeout(() -> {
                 Seq<PlayerInfo> bans = Vars.netServer.admins.playerInfo.values().toSeq();
 
                 return bans.list()//
@@ -288,9 +291,9 @@ public class HttpServer {
 
         app.get("kicks", ctx -> {
 
-            var result = Utils.appPostWithTimeout(() -> {
-                var res = new HashMap<>();
-                for (var entry : Vars.netServer.admins.kickedIPs.entries()) {
+            HashMap<Object, Object> result = Utils.appPostWithTimeout(() -> {
+                HashMap<Object, Object> res = new HashMap<>();
+                for (ObjectMap.Entry<String, Long> entry : Vars.netServer.admins.kickedIPs.entries()) {
                     if (entry.value != 0 && Time.millis() - entry.value < 0) {
                         res.put(entry.key, entry.value);
                     }
@@ -302,7 +305,7 @@ public class HttpServer {
         });
 
         app.get("commands", ctx -> {
-            var commands = context.get().serverCommandHandler.getHandler() == null
+            List<ServerCommandDto> commands = context.get().serverCommandHandler.getHandler() == null
                     ? Arrays.asList()
                     : context.get().serverCommandHandler.getHandler()//
                             .getCommandList()
@@ -325,7 +328,7 @@ public class HttpServer {
             String[] commands = ctx.bodyAsClass(String[].class);
 
             if (commands != null) {
-                for (var command : commands) {
+                for (String command : commands) {
                     Log.info("Execute command: " + command);
 
                     context.get().serverCommandHandler.execute(command, response -> {
@@ -377,9 +380,9 @@ public class HttpServer {
         });
 
         app.get("workflow/nodes/{id}/autocomplete", ctx -> {
-            var id = ctx.pathParam("id");
-            var input = ctx.queryParam("input");
-            var node = context.get().workflow.getNodes().get(id);
+            String id = ctx.pathParam("id");
+            String input = ctx.queryParam("input");
+            WorkflowNode node = context.get().workflow.getNodes().get(id);
 
             if (node == null) {
                 ctx.status(404);
@@ -391,7 +394,7 @@ public class HttpServer {
         });
 
         app.get("workflow/version", ctx -> {
-            var data = context.get().workflow.readWorkflowData();
+            JsonNode data = context.get().workflow.readWorkflowData();
             if (data == null || data.get("createdAt") == null) {
                 ctx.json(0L);
             } else {
@@ -404,12 +407,12 @@ public class HttpServer {
         });
 
         app.post("workflow", ctx -> {
-            var payload = ctx.bodyAsClass(JsonNode.class);
+            JsonNode payload = ctx.bodyAsClass(JsonNode.class);
             context.get().workflow.writeWorkflowData(payload);
         });
 
         app.post("workflow/load", ctx -> {
-            var payload = ctx.bodyAsClass(WorkflowContext.class);
+            WorkflowContext payload = ctx.bodyAsClass(WorkflowContext.class);
             try {
                 context.get().workflow.load(payload);
                 ctx.json(context.get().workflow.getWorkflowContext());
@@ -422,21 +425,20 @@ public class HttpServer {
         });
 
         app.get("json", ctx -> {
-            var res = Utils.appPostWithTimeout(() -> {
+            HashMap<String,Object> res = Utils.appPostWithTimeout(() -> {
 
-                var data = new HashMap<String, Object>();
+                HashMap data = new HashMap<String, Object>();
 
                 data.put("stats", getStats());
                 data.put("session", context.get().sessionHandler.get());
                 data.put("hud", context.get().hudHandler.menus.asMap());
-                data.put("buildLogs", context.get().apiGateway.buildLogs);
                 data.put("isHub", Config.IS_HUB);
                 data.put("ip", Config.SERVER_IP);
                 data.put("units", Groups.unit.size());
                 data.put("enemies", Vars.state.enemies);
                 data.put("tps", Core.graphics.getFramesPerSecond());
 
-                var gameStats = new HashMap<String, Object>();
+                HashMap gameStats = new HashMap<String, Object>();
 
                 gameStats.put("buildingsBuilt", Vars.state.stats.buildingsBuilt);
                 gameStats.put("buildingsDeconstructed", Vars.state.stats.buildingsDeconstructed);
@@ -475,9 +477,9 @@ public class HttpServer {
 
                 data.put("activeRequest", activeRequests.values());
 
-                var maps = new ArrayList<HashMap<String, String>>();
+                ArrayList<HashMap<String, String>> maps = new ArrayList<HashMap<String, String>>();
                 Vars.maps.all().forEach(map -> {
-                    var tags = new HashMap<String, String>();
+                    HashMap<String, String> tags = new HashMap<>();
                     map.tags.each((key, value) -> tags.put(key, value));
                     maps.add(tags);
                 });
@@ -497,7 +499,7 @@ public class HttpServer {
                 data.put("mods", Vars.mods.list().map(mod -> mod.meta.toString()).list());
                 data.put("votes", context.get().voteHandler.votes);
 
-                var settings = new HashMap<String, Object>();
+                HashMap<String, Object> settings = new HashMap<String, Object>();
 
                 Core.settings.keys().forEach(key -> {
                     settings.put(key, Core.settings.get(key, null));
@@ -577,7 +579,7 @@ public class HttpServer {
 
         if (commands != null && !commands.trim().isEmpty()) {
             String[] commandsArray = commands.split("\n");
-            for (var command : commandsArray) {
+            for (String command : commandsArray) {
                 Log.info("Host command: " + command);
                 context.get().serverCommandHandler.execute(command, (_ignore) -> {
                 });
@@ -589,7 +591,7 @@ public class HttpServer {
     }
 
     private StatsDto getStats() {
-        var map = Vars.state.map;
+        mindustry.maps.Map map = Vars.state.map;
         String mapName = map != null ? map.name() : "";
         List<ModDto> mods = Vars.mods == null //
                 ? Arrays.asList()

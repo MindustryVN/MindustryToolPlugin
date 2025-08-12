@@ -20,4 +20,5 @@ public class StatsDto {
     private boolean isPaused = false;
     private boolean isHosting = false;
     private String version = "custom";
+    private Long startedAt = System.currentTimeMillis();
 }

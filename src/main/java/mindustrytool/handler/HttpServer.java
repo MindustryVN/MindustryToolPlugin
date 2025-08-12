@@ -626,7 +626,8 @@ public class HttpServer {
                 .setVersion("V" + Version.number + "Build" + Version.build)
                 .setKicks(Vars.netServer.admins.kickedIPs.values().toSeq()
                         .select(value -> Time.millis() - value < 0).size)//
-                .setStatus(Vars.state.isGame() ? "HOST" : "UP");
+                .setStatus(Vars.state.isGame() ? "HOST" : "UP")
+                .setStartedAt(Core.settings.getLong("startedAt", System.currentTimeMillis()));
     }
 
     public byte[] mapPreview() {

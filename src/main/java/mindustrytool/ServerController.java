@@ -14,7 +14,6 @@ import org.pf4j.Plugin;
 import arc.util.*;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
-import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.MenuOptionChooseEvent;
 import mindustry.game.EventType.PlayerChatEvent;

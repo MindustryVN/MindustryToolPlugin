@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import arc.Core;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.core.GameState.State;
-import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerConnect;
@@ -32,8 +32,6 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustrytool.Config;
 import mindustrytool.ServerController;
-import mindustrytool.type.BuildLogDto;
-import mindustrytool.type.BuildingDto;
 import mindustrytool.type.HudOption;
 import mindustrytool.type.MindustryPlayerDto;
 import mindustrytool.type.PaginationRequest;
@@ -399,50 +397,52 @@ public class EventHandler {
     }
 
     public void onPlayerLeave(PlayerLeave event) {
-        try {
-            var player = event.player;
-            var team = player.team();
-            var request = new PlayerDto()//
-                    .setName(player.coloredName())//
-                    .setIp(player.ip())//
-                    .setLocale(player.locale())//
-                    .setUuid(player.uuid())//
-                    .setTeam(new TeamDto()//
-                            .setName(team.name)//
-                            .setColor(team.color.toString()));
+        Core.app.post(() -> {
+            try {
+                var player = event.player;
+                var team = player.team();
+                var request = new PlayerDto()//
+                        .setName(player.coloredName())//
+                        .setIp(player.ip())//
+                        .setLocale(player.locale())//
+                        .setUuid(player.uuid())//
+                        .setTeam(new TeamDto()//
+                                .setName(team.name)//
+                                .setColor(team.color.toString()));
 
-            context.get().apiGateway.sendPlayerLeave(request);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+                context.get().apiGateway.sendPlayerLeave(request);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
 
-        try {
+            try {
 
-            Player player = event.player;
+                Player player = event.player;
 
-            context.get().sessionHandler.remove(player);
+                context.get().sessionHandler.remove(player);
 
-            context.get().voteHandler.removeVote(player);
+                context.get().voteHandler.removeVote(player);
 
-            String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ leaved the server, current players: @", playerName,
-                    Math.max(Groups.player.size() - 1, 0));
+                String playerName = event.player != null ? event.player.plainName() : "Unknown";
+                String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                        Math.max(Groups.player.size() - 1, 0));
 
-            context.get().BACKGROUND_SCHEDULER.schedule(() -> {
-                if (!Vars.state.isPaused() && Groups.player.size() == 0) {
-                    Vars.state.set(State.paused);
-                    Log.info("No player: paused");
-                }
-            }, 10, TimeUnit.SECONDS);
+                context.get().BACKGROUND_SCHEDULER.schedule(() -> {
+                    if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                        Vars.state.set(State.paused);
+                        Log.info("No player: paused");
+                    }
+                }, 10, TimeUnit.SECONDS);
 
-            Log.info(chat);
+                Log.info(chat);
 
-            context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
-                context.get().apiGateway.sendChatMessage(chat);
-            });
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+                context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                    context.get().apiGateway.sendChatMessage(chat);
+                });
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public synchronized ServerResponseData getTopServer() {
@@ -467,73 +467,75 @@ public class EventHandler {
     }
 
     public void onPlayerJoin(PlayerJoin event) {
-        try {
-            if (Vars.state.isPaused()) {
-                Vars.state.set(State.playing);
-                Log.info("Player join: unpaused");
-            }
-
-            var player = event.player;
-
-            context.get().sessionHandler.put(player);
-
-            if (Config.IS_HUB) {
-                var serverData = getTopServer();
-
-                if (serverData != null //
-                        && !serverData.getId().equals(ServerController.SERVER_ID)
-                        && serverData.players > 0//
-                ) {
-                    var options = Arrays.asList(//
-                            HudHandler.option((p, state) -> {
-                                context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
-                            }, "[red]No"),
-                            HudHandler.option((p, state) -> {
-                                onServerChoose(p, serverData.id.toString(), serverData.name);
-                                context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
-                            }, "[green]Yes"));
-                    context.get().hudHandler.showFollowDisplay(player, HudHandler.SERVER_REDIRECT, "Redirect",
-                            "Do you want to go to server: " + serverData.getName(), null, options);
+        Core.app.post(() -> {
+            try {
+                if (Vars.state.isPaused()) {
+                    Vars.state.set(State.playing);
+                    Log.info("Player join: unpaused");
                 }
+
+                var player = event.player;
+
+                context.get().sessionHandler.put(player);
+
+                if (Config.IS_HUB) {
+                    var serverData = getTopServer();
+
+                    if (serverData != null //
+                            && !serverData.getId().equals(ServerController.SERVER_ID)
+                            && serverData.players > 0//
+                    ) {
+                        var options = Arrays.asList(//
+                                HudHandler.option((p, state) -> {
+                                    context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
+                                }, "[red]No"),
+                                HudHandler.option((p, state) -> {
+                                    onServerChoose(p, serverData.id.toString(), serverData.name);
+                                    context.get().hudHandler.closeFollowDisplay(p, HudHandler.SERVER_REDIRECT);
+                                }, "[green]Yes"));
+                        context.get().hudHandler.showFollowDisplay(player, HudHandler.SERVER_REDIRECT, "Redirect",
+                                "Do you want to go to server: " + serverData.getName(), null, options);
+                    }
+                }
+
+                PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
+
+                if (target != null) {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
+                }
+
+                String playerName = player != null ? player.plainName() : "Unknown";
+                String chat = Strings.format("@ joined the server, current players: @", playerName,
+                        Groups.player.size());
+
+                var team = player.team();
+                var request = new PlayerDto()//
+                        .setName(player.coloredName())//
+                        .setIp(player.ip())//
+                        .setLocale(player.locale())//
+                        .setUuid(player.uuid())//
+                        .setTeam(new TeamDto()//
+                                .setName(team.name)//
+                                .setColor(team.color.toString()));
+
+                Log.info(chat);
+
+                context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
+                    context.get().apiGateway.sendChatMessage(chat);
+                });
+
+                var playerData = context.get().apiGateway.setPlayer(request);
+
+                if (Config.IS_HUB) {
+                    sendHub(event.player, playerData.getLoginLink());
+                }
+
+                setPlayerData(playerData, player);
+
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
-
-            PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
-
-            if (target != null) {
-                Vars.netServer.admins.unAdminPlayer(target.id);
-            }
-
-            String playerName = player != null ? player.plainName() : "Unknown";
-            String chat = Strings.format("@ joined the server, current players: @", playerName,
-                    Groups.player.size());
-
-            var team = player.team();
-            var request = new PlayerDto()//
-                    .setName(player.coloredName())//
-                    .setIp(player.ip())//
-                    .setLocale(player.locale())//
-                    .setUuid(player.uuid())//
-                    .setTeam(new TeamDto()//
-                            .setName(team.name)//
-                            .setColor(team.color.toString()));
-
-            Log.info(chat);
-
-            context.get().BACKGROUND_TASK_EXECUTOR.submit(() -> {
-                context.get().apiGateway.sendChatMessage(chat);
-            });
-
-            var playerData = context.get().apiGateway.setPlayer(request);
-
-            if (Config.IS_HUB) {
-                sendHub(event.player, playerData.getLoginLink());
-            }
-
-            setPlayerData(playerData, player);
-
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public void sendHub(Player player, String loginLink) {
